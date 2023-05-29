@@ -14,6 +14,10 @@ import (
 	probing "github.com/prometheus-community/pro-bing"
 )
 
+/*
+Ping proxy host
+*/
+
 type NeoPinger struct {
 	conf       *conf.NeoBoxConf
 	pingedList *ProxyList
@@ -32,9 +36,9 @@ func NewNeoPinger(cnf *conf.NeoBoxConf) *NeoPinger {
 	}
 }
 
-func (that *NeoPinger) send() {
+func (that *NeoPinger) send(force ...bool) {
 	that.sendChan = make(chan *Proxy, 30)
-	r := that.fetcher.GetRawProxyList(false)
+	r := that.fetcher.GetRawProxyList(force...)
 	fmt.Printf("find %v raw proxies.", len(r))
 	for _, rawUri := range r {
 		p := DefaultProxyPool.Get(rawUri)
@@ -48,7 +52,7 @@ func (that *NeoPinger) send() {
 func (that *NeoPinger) ping(p *Proxy) {
 	if p != nil {
 		if pinger, err := probing.NewPinger(p.Address()); err == nil {
-			if runtime.GOOS == "windows" {
+			if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
 				pinger.SetPrivileged(true)
 			}
 			pinger.Count = 5
@@ -60,8 +64,6 @@ func (that *NeoPinger) ping(p *Proxy) {
 					if p.RTT <= that.conf.MaxAvgRTT {
 						that.pingedList.AddProxies(p)
 					}
-				} else {
-					fmt.Println("ping failed: ", p.String())
 				}
 			}
 			if err := pinger.Run(); err != nil {
@@ -87,8 +89,8 @@ func (that *NeoPinger) startPing() {
 	}
 }
 
-func (that *NeoPinger) Run() *ProxyList {
-	go that.send()
+func (that *NeoPinger) Run(force ...bool) *ProxyList {
+	go that.send(force...)
 	time.Sleep(time.Millisecond * 100)
 	that.pingedList.Clear()
 	for i := 0; i < that.conf.MaxPingers; i++ {

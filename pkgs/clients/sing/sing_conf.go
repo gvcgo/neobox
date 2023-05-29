@@ -4,7 +4,6 @@ var ConfStr string = `{
     "log": {
         "disabled": false,
         "level": "warning",
-        "output": "box.log",
         "timestamp": true
     },
     "dns": {

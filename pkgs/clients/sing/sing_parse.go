@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/gogf/gf/encoding/gjson"
+	"github.com/moqsien/neobox/pkgs/iface"
 	"github.com/moqsien/neobox/pkgs/parser"
-	"github.com/moqsien/neobox/pkgs/proxy"
 )
 
 /*
@@ -154,7 +154,10 @@ func getSsrStr(ob *parser.SSROutbound) *gjson.Json {
 	return nil
 }
 
-func GetConfStr(p *proxy.Proxy, inPort int, logPath string) (r string) {
+func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte) {
+	if p == nil {
+		return
+	}
 	rawUri := p.GetRawUri()
 	iob := p.GetParser()
 	var j *gjson.Json
@@ -187,6 +190,6 @@ func GetConfStr(p *proxy.Proxy, inPort int, logPath string) (r string) {
 	if logPath != "" {
 		j.Set("log.output", logPath)
 	}
-	r = j.MustToJsonIndentString()
+	r = j.MustToJsonIndent()
 	return
 }

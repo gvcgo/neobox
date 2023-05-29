@@ -6,8 +6,10 @@ import (
 )
 
 func main() {
-	f := proxy.NewNeoPinger(conf.GetDefaultConf())
-	f.Run()
+	// f := proxy.NewNeoPinger(conf.GetDefaultConf())
+	// f.Run()
 	// p := proxy.NewParser(conf.GetDefaultConf())
 	// p.Parse()
+	v := proxy.NewVerifier(conf.GetDefaultConf())
+	v.Run(false)
 }

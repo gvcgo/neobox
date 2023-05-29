@@ -16,3 +16,10 @@ type IProxy interface {
 	Address() string
 	GetParser() IOutboundParser
 }
+
+type IClient interface {
+	SetInPortAndLogFile(int, string)
+	SetProxy(IProxy)
+	Start() error
+	Close()
+}

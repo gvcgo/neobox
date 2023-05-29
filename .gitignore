@@ -1,0 +1,5 @@
+*.json
+*.db
+*.dat
+.vscode
+*.txt

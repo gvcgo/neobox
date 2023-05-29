@@ -17,7 +17,10 @@ type Proxy struct {
 
 func (that *Proxy) SetRawUri(rawUri string) {
 	that.RawUri = rawUri
-	that.p = nil
+	if that.p != nil {
+		parser.DefaultParserPool.Put(that.p)
+		that.p = nil
+	}
 }
 
 func (that *Proxy) newParser() {

@@ -5,7 +5,6 @@ import (
 
 	koanfer "github.com/moqsien/goutils/pkgs/koanfer"
 	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/neobox/pkgs/parser"
 	"github.com/moqsien/neobox/pkgs/utils/log"
 )
 
@@ -50,33 +49,33 @@ func NewParser(cnf *conf.NeoBoxConf) *Parser {
 func (that *Parser) Parse() {
 	rawProxies := that.fetcher.GetRawProxies(true)
 	for _, rawUri := range rawProxies.VmessList.List {
-		if iob := parser.DefaultParserPool.Get(rawUri); iob != nil {
-			that.ParsedList.Vmess = append(that.ParsedList.Vmess, iob.Decode(rawUri))
-			parser.DefaultParserPool.Put(iob)
+		if iob := DefaultProxyPool.Get(rawUri); iob != nil {
+			that.ParsedList.Vmess = append(that.ParsedList.Vmess, iob.Decode())
+			DefaultProxyPool.Put(iob)
 		}
 	}
 	for _, rawUri := range rawProxies.VlessList.List {
-		if iob := parser.DefaultParserPool.Get(rawUri); iob != nil {
-			that.ParsedList.Vless = append(that.ParsedList.Vless, iob.Decode(rawUri))
-			parser.DefaultParserPool.Put(iob)
+		if iob := DefaultProxyPool.Get(rawUri); iob != nil {
+			that.ParsedList.Vless = append(that.ParsedList.Vless, iob.Decode())
+			DefaultProxyPool.Put(iob)
 		}
 	}
 	for _, rawUri := range rawProxies.Trojan.List {
-		if iob := parser.DefaultParserPool.Get(rawUri); iob != nil {
-			that.ParsedList.Trojan = append(that.ParsedList.Trojan, iob.Decode(rawUri))
-			parser.DefaultParserPool.Put(iob)
+		if iob := DefaultProxyPool.Get(rawUri); iob != nil {
+			that.ParsedList.Trojan = append(that.ParsedList.Trojan, iob.Decode())
+			DefaultProxyPool.Put(iob)
 		}
 	}
 	for _, rawUri := range rawProxies.SSList.List {
-		if iob := parser.DefaultParserPool.Get(rawUri); iob != nil {
-			that.ParsedList.SS = append(that.ParsedList.SS, iob.Decode(rawUri))
-			parser.DefaultParserPool.Put(iob)
+		if iob := DefaultProxyPool.Get(rawUri); iob != nil {
+			that.ParsedList.SS = append(that.ParsedList.SS, iob.Decode())
+			DefaultProxyPool.Put(iob)
 		}
 	}
 	for _, rawUri := range rawProxies.SSRList.List {
-		if iob := parser.DefaultParserPool.Get(rawUri); iob != nil {
-			that.ParsedList.SSR = append(that.ParsedList.SSR, iob.Decode(rawUri))
-			parser.DefaultParserPool.Put(iob)
+		if iob := DefaultProxyPool.Get(rawUri); iob != nil {
+			that.ParsedList.SSR = append(that.ParsedList.SSR, iob.Decode())
+			DefaultProxyPool.Put(iob)
 		}
 	}
 	if err := that.koanfer.Save(that.ParsedList); err != nil {

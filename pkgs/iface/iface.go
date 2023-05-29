@@ -7,3 +7,11 @@ type IOutboundParser interface {
 	Decode(string) string
 	GetAddr() string
 }
+
+type IProxy interface {
+	SetRawUri(string)
+	GetRawUri() string
+	String() string
+	Decode() string
+	Address() string
+}

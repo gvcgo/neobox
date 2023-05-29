@@ -58,6 +58,11 @@ func (that *Proxy) GetRawUri() string {
 	return that.RawUri
 }
 
+func (that *Proxy) GetParser() iface.IOutboundParser {
+	that.newParser()
+	return that.p
+}
+
 /*
 Proxy Pool
 */

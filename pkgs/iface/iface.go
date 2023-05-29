@@ -14,4 +14,5 @@ type IProxy interface {
 	String() string
 	Decode() string
 	Address() string
+	GetParser() IOutboundParser
 }

@@ -32,7 +32,7 @@ func NewNeoPinger(cnf *conf.NeoBoxConf) *NeoPinger {
 	}
 }
 
-func (that *NeoPinger) Send() {
+func (that *NeoPinger) send() {
 	that.sendChan = make(chan *Proxy, 30)
 	r := that.fetcher.GetRawProxyList(false)
 	fmt.Printf("find %v raw proxies.", len(r))
@@ -71,7 +71,7 @@ func (that *NeoPinger) ping(p *Proxy) {
 	}
 }
 
-func (that *NeoPinger) Ping() {
+func (that *NeoPinger) startPing() {
 	that.wg.Add(1)
 	defer that.wg.Done()
 	for {
@@ -88,11 +88,11 @@ func (that *NeoPinger) Ping() {
 }
 
 func (that *NeoPinger) Run() *ProxyList {
-	go that.Send()
+	go that.send()
 	time.Sleep(time.Millisecond * 100)
 	that.pingedList.Clear()
 	for i := 0; i < that.conf.MaxPingers; i++ {
-		go that.Ping()
+		go that.startPing()
 	}
 	that.wg.Wait()
 	if that.pingedList.Len() > 0 {
@@ -103,6 +103,7 @@ func (that *NeoPinger) Run() *ProxyList {
 
 /*
 Set pinger for Unix
+https://github.com/prometheus-community/pro-bing
 */
 func SetPingWithoutRootForUnix() {
 	// sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"

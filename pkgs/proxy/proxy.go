@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/moqsien/goutils/pkgs/koanfer"
+	futils "github.com/moqsien/goutils/pkgs/utils"
 	"github.com/moqsien/neobox/pkgs/iface"
 	"github.com/moqsien/neobox/pkgs/parser"
 	"github.com/moqsien/neobox/pkgs/utils/log"
@@ -11,7 +12,7 @@ import (
 
 type Proxy struct {
 	RawUri string `json,koanf:"uri"`
-	RTT    int    `json,koanf:"rtt"`
+	RTT    int64  `json,koanf:"rtt"`
 	p      iface.IOutboundParser
 }
 
@@ -119,7 +120,9 @@ func NewProxyList(fPath string) *ProxyList {
 		path:    fPath,
 		lock:    &sync.RWMutex{},
 	}
-	pl.Load()
+	if ok, _ := futils.PathIsExist(fPath); ok {
+		pl.Load()
+	}
 	return pl
 }
 
@@ -128,6 +131,10 @@ func (that *ProxyList) AddProxies(p ...*Proxy) {
 	that.Proxies.List = append(that.Proxies.List, p...)
 	that.Proxies.Total = len(that.Proxies.List)
 	that.lock.Unlock()
+}
+
+func (that *ProxyList) Len() int {
+	return that.Proxies.Total
 }
 
 func (that *ProxyList) Save() {
@@ -140,4 +147,8 @@ func (that *ProxyList) Load() {
 	if err := that.koanfer.Load(that.Proxies); err != nil {
 		log.PrintError("load file failed: ", err)
 	}
+}
+
+func (that *ProxyList) Clear() {
+	that.Proxies.List = []*Proxy{}
 }

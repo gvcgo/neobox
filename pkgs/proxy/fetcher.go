@@ -73,6 +73,8 @@ func (that *Fetcher) GetRawProxies(force ...bool) *RawResult {
 	}
 	if ok, _ := futils.PathIsExist(that.path); !ok || flag {
 		flag = that.DownloadFile()
+	} else {
+		flag = true
 	}
 	if flag {
 		if rawProxy, err := os.ReadFile(that.path); err == nil {

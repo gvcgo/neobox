@@ -6,6 +6,8 @@ import (
 )
 
 func main() {
-	f := proxy.NewParser(conf.GetDefaultConf())
-	f.Parse()
+	f := proxy.NewNeoPinger(conf.GetDefaultConf())
+	f.Run()
+	// p := proxy.NewParser(conf.GetDefaultConf())
+	// p.Parse()
 }

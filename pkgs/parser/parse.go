@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"strings"
 	"sync"
 
 	"github.com/moqsien/neobox/pkgs/iface"
@@ -41,42 +40,45 @@ func NewParserPool() *ParserPool {
 	}
 }
 
-func (that *ParserPool) Get(rawUri string) (result iface.IOutboundParser) {
+func (that *ParserPool) Get(p iface.IProxy) (result iface.IOutboundParser) {
 	var ok bool
-	if strings.HasPrefix(rawUri, VmessScheme) {
+	switch p.Scheme() {
+	case VmessScheme:
 		vm := that.pools[VmessScheme].Get()
 		result, ok = vm.(*VmessOutbound)
-	} else if strings.HasPrefix(rawUri, VlessScheme) {
+	case VlessScheme:
 		vl := that.pools[VlessScheme].Get()
 		result, ok = vl.(*VlessOutbound)
-	} else if strings.HasPrefix(rawUri, TrojanScheme) {
+	case TrojanScheme:
 		tr := that.pools[TrojanScheme].Get()
 		result, ok = tr.(*TrojanOutbound)
-	} else if strings.HasPrefix(rawUri, SSScheme) {
+	case SSScheme:
 		ss := that.pools[SSScheme].Get()
 		result, ok = ss.(*SSOutbound)
-	} else if strings.HasPrefix(rawUri, SSRScheme) {
+	case SSRScheme:
 		ssr := that.pools[SSRScheme].Get()
 		result, ok = ssr.(*SSROutbound)
+	default:
 	}
 	if ok {
-		result.Parse(rawUri)
+		result.Parse(p.GetRawUri())
 	}
 	return
 }
 
 func (that *ParserPool) Put(parser iface.IOutboundParser) {
-	rawUri := parser.GetRawUri()
-	if strings.HasPrefix(rawUri, VmessScheme) {
+	switch parser.Scheme() {
+	case VmessScheme:
 		that.pools[VmessScheme].Put(parser)
-	} else if strings.HasPrefix(rawUri, VlessScheme) {
+	case VlessScheme:
 		that.pools[VlessScheme].Put(parser)
-	} else if strings.HasPrefix(rawUri, TrojanScheme) {
+	case TrojanScheme:
 		that.pools[TrojanScheme].Put(parser)
-	} else if strings.HasPrefix(rawUri, SSScheme) {
+	case SSScheme:
 		that.pools[SSScheme].Put(parser)
-	} else if strings.HasPrefix(rawUri, SSRScheme) {
+	case SSRScheme:
 		that.pools[SSRScheme].Put(parser)
+	default:
 	}
 }
 

@@ -79,3 +79,7 @@ func (that *VmessOutbound) Decode(rawUri string) string {
 func (that *VmessOutbound) GetAddr() string {
 	return that.Address
 }
+
+func (that *VmessOutbound) Scheme() string {
+	return VmessScheme
+}

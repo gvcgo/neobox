@@ -63,8 +63,10 @@ func (that *NeoPinger) ping(p *Proxy) {
 					p.RTT = s.AvgRtt.Milliseconds()
 					if p.RTT <= that.conf.MaxAvgRTT {
 						that.pingedList.AddProxies(p)
+						return
 					}
 				}
+				DefaultProxyPool.Put(p)
 			}
 			if err := pinger.Run(); err != nil {
 				log.PrintError(err)

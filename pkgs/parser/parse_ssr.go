@@ -81,3 +81,7 @@ func (that *SSROutbound) Decode(rawUri string) string {
 func (that *SSROutbound) GetAddr() string {
 	return that.Address
 }
+
+func (that *SSROutbound) Scheme() string {
+	return SSRScheme
+}

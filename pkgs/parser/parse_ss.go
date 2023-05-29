@@ -57,3 +57,7 @@ func (that *SSOutbound) Decode(rawUri string) string {
 	that.Parse(rawUri)
 	return fmt.Sprintf("shadowsocks://:%s:%s@%s:%d", that.Password, that.Method, that.Address, that.Port)
 }
+
+func (that *SSOutbound) Scheme() string {
+	return SSScheme
+}

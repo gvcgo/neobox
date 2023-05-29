@@ -50,3 +50,7 @@ func (that *VlessOutbound) Decode(rawUri string) string {
 func (that *VlessOutbound) GetAddr() string {
 	return that.Address
 }
+
+func (that *VlessOutbound) Scheme() string {
+	return VlessScheme
+}

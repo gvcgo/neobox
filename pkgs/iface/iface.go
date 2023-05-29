@@ -6,6 +6,7 @@ type IOutboundParser interface {
 	String() string
 	Decode(string) string
 	GetAddr() string
+	Scheme() string
 }
 
 type IProxy interface {
@@ -14,6 +15,7 @@ type IProxy interface {
 	String() string
 	Decode() string
 	Address() string
+	Scheme() string
 	GetParser() IOutboundParser
 }
 

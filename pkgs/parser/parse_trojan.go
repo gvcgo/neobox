@@ -51,3 +51,7 @@ func (that *TrojanOutbound) Decode(rawUri string) string {
 func (that *TrojanOutbound) GetAddr() string {
 	return that.Address
 }
+
+func (that *TrojanOutbound) Scheme() string {
+	return TrojanScheme
+}

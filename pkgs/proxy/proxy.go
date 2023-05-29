@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/moqsien/goutils/pkgs/koanfer"
@@ -14,19 +15,37 @@ type Proxy struct {
 	RawUri string `json,koanf:"uri"`
 	RTT    int64  `json,koanf:"rtt"`
 	p      iface.IOutboundParser
+	scheme string
 }
 
 func (that *Proxy) SetRawUri(rawUri string) {
 	that.RawUri = rawUri
+	that.parseScheme()
 	if that.p != nil {
 		parser.DefaultParserPool.Put(that.p)
 		that.p = nil
 	}
 }
 
+func (that *Proxy) parseScheme() {
+	if strings.HasPrefix(that.RawUri, parser.VmessScheme) {
+		that.scheme = parser.VmessScheme
+	} else if strings.HasPrefix(that.RawUri, parser.VlessScheme) {
+		that.scheme = parser.VlessScheme
+	} else if strings.HasPrefix(that.RawUri, parser.TrojanScheme) {
+		that.scheme = parser.TrojanScheme
+	} else if strings.HasPrefix(that.RawUri, parser.SSScheme) {
+		that.scheme = parser.SSRScheme
+	} else if strings.HasPrefix(that.RawUri, parser.SSRScheme) {
+		that.scheme = parser.SSRScheme
+	} else {
+		that.scheme = ""
+	}
+}
+
 func (that *Proxy) newParser() {
 	if that.p == nil {
-		that.p = parser.DefaultParserPool.Get(that.RawUri)
+		that.p = parser.DefaultParserPool.Get(that)
 	}
 }
 
@@ -36,6 +55,13 @@ func (that *Proxy) Address() (a string) {
 		a = that.p.GetAddr()
 	}
 	return
+}
+
+func (that *Proxy) Scheme() string {
+	if that.scheme == "" {
+		that.parseScheme()
+	}
+	return that.scheme
 }
 
 func (that *Proxy) String() (s string) {
@@ -155,5 +181,8 @@ func (that *ProxyList) Load() {
 }
 
 func (that *ProxyList) Clear() {
+	for _, p := range that.Proxies.List {
+		DefaultProxyPool.Put(p)
+	}
 	that.Proxies.List = []*Proxy{}
 }

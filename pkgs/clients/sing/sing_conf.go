@@ -13,10 +13,10 @@ var ConfStr string = `{
                 "address": "local",
                 "detour": "direct"
             },
-		{
-			"tag":"goolge",
-			"address":"8.8.8.8"
-		}
+            {
+                "tag": "goolge",
+                "address": "8.8.8.8"
+            }
         ],
         "rules": [
             {
@@ -66,11 +66,11 @@ var ConfStr string = `{
         ],
         "auto_detect_interface": true,
         "final": "vmess-out",
-		"geoip": {
-			"path": ""
-		},
-		"geosite": {
-			"path": ""
-		}
+        "geoip": {
+            "path": ""
+        },
+        "geosite": {
+            "path": ""
+        }
     }
 }`

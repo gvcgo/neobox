@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type TrojanOutboud struct {
+type TrojanOutbound struct {
 	Address  string
 	Port     int
 	Password string
@@ -21,7 +21,7 @@ type TrojanOutboud struct {
 /*
 trojan://b5e4e360-5946-470b-aad0-db98f50faa57@frontend.yijianlian.app:54430?security=tls&type=tcp&headerType=none#%F0%9F%87%BA%F0%9F%87%B8%20Relay%20%F0%9F%87%BA%F0%9F%87%B8%20United%20States%2011%20TG%3A%40SSRSUB
 */
-func (that *TrojanOutboud) Parse(rawUri string) {
+func (that *TrojanOutbound) Parse(rawUri string) {
 	that.Raw = rawUri
 	if strings.HasPrefix(rawUri, "trojan://") {
 		if u, err := url.Parse(rawUri); err == nil {
@@ -35,19 +35,19 @@ func (that *TrojanOutboud) Parse(rawUri string) {
 	}
 }
 
-func (that *TrojanOutboud) GetRawUri() string {
+func (that *TrojanOutbound) GetRawUri() string {
 	return that.Raw
 }
 
-func (that *TrojanOutboud) String() string {
+func (that *TrojanOutbound) String() string {
 	return fmt.Sprintf("trojan://%s:%d", that.Address, that.Port)
 }
 
-func (that *TrojanOutboud) Decode(rawUri string) string {
+func (that *TrojanOutbound) Decode(rawUri string) string {
 	rList := strings.Split(rawUri, "#")
 	return rList[0]
 }
 
-func (that *TrojanOutboud) GetAddr() string {
+func (that *TrojanOutbound) GetAddr() string {
 	return that.Address
 }

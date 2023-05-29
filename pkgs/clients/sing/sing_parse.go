@@ -83,7 +83,7 @@ var TrojanStr string = `{
 	"tls": {}
 }`
 
-func getTrojanConfStr(ob *parser.TrojanOutboud) *gjson.Json {
+func getTrojanConfStr(ob *parser.TrojanOutbound) *gjson.Json {
 	vTag := "trojan-out"
 	if ob != nil {
 		j := gjson.New(TrojanStr)
@@ -170,7 +170,7 @@ func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte) {
 			j = getVlessConfStr(ob)
 		}
 	} else if strings.HasPrefix(rawUri, parser.TrojanScheme) {
-		if ob, ok := iob.(*parser.TrojanOutboud); ok {
+		if ob, ok := iob.(*parser.TrojanOutbound); ok {
 			j = getTrojanConfStr(ob)
 		}
 	} else if strings.HasPrefix(rawUri, parser.SSScheme) {
@@ -187,7 +187,7 @@ func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte) {
 	if inPort > 0 && j != nil {
 		j.Set("inbounds.0.listen_port", inPort)
 	}
-	if logPath != "" {
+	if logPath != "" && j != nil {
 		j.Set("log.output", logPath)
 	}
 	r = j.MustToJsonIndent()

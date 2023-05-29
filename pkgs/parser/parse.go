@@ -29,7 +29,7 @@ func NewParserPool() *ParserPool {
 				return &VlessOutbound{}
 			}},
 			TrojanScheme: {New: func() any {
-				return &TrojanOutboud{}
+				return &TrojanOutbound{}
 			}},
 			SSRScheme: {New: func() any {
 				return &SSROutbound{}
@@ -51,7 +51,7 @@ func (that *ParserPool) Get(rawUri string) (result iface.IOutboundParser) {
 		result, ok = vl.(*VlessOutbound)
 	} else if strings.HasPrefix(rawUri, TrojanScheme) {
 		tr := that.pools[TrojanScheme].Get()
-		result, ok = tr.(*TrojanOutboud)
+		result, ok = tr.(*TrojanOutbound)
 	} else if strings.HasPrefix(rawUri, SSScheme) {
 		ss := that.pools[SSScheme].Get()
 		result, ok = ss.(*SSOutbound)

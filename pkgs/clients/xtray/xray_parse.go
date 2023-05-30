@@ -46,6 +46,7 @@ var VlessStr string = `{
 	}
 }`
 
+// TODO: xray-core config file parser
 func getVlessConfStr(ob *parser.VlessOutbound) *gjson.Json {
 	return nil
 }

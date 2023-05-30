@@ -46,7 +46,7 @@ func (that *SSOutbound) GetRawUri() string {
 }
 
 func (that *SSOutbound) String() string {
-	return fmt.Sprintf("shadowsocks://%s:%d", that.Address, that.Port)
+	return fmt.Sprintf("ss://%s:%d", that.Address, that.Port)
 }
 
 func (that *SSOutbound) GetAddr() string {
@@ -55,9 +55,15 @@ func (that *SSOutbound) GetAddr() string {
 
 func (that *SSOutbound) Decode(rawUri string) string {
 	that.Parse(rawUri)
-	return fmt.Sprintf("shadowsocks://:%s:%s@%s:%d", that.Password, that.Method, that.Address, that.Port)
+	return fmt.Sprintf("ss://%s:%s@%s:%d", that.Password, that.Method, that.Address, that.Port)
 }
 
 func (that *SSOutbound) Scheme() string {
 	return SSScheme
+}
+
+func TestSS() {
+	rawUri := "ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDU@13.231.193.143:443#JP%2033%20%E2%86%92%20tg%40nicevpn123"
+	p := &SSOutbound{}
+	p.Parse(rawUri)
 }

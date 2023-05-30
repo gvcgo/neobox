@@ -27,23 +27,22 @@ plain:lncn.org n8t
 remarks=俄罗斯
 group=Lncn.org
 */
-func (that *SSROutbound) parseEncryptMethod(str string) {
-	vlist := strings.Split(str, "origin:")
-	if len(vlist) == 2 {
-		vlist = strings.Split(vlist[1], ":")
-		if len(vlist) > 1 {
-			that.Method = vlist[0]
+func (that *SSROutbound) parseMethodPassword(str string) {
+	count := 4
+	vList := strings.SplitN(str, ":", count)
+	if len(vList) == count {
+		if strings.Contains(vList[0], "origin") {
+			that.Method = vList[1]
 		}
+		that.parsePassword(vList[3])
 	}
 }
 
 func (that *SSROutbound) parsePassword(str string) {
-	vlist := strings.Split(str, "plain:")
+	vlist := strings.Split(str, "?")
 	if len(vlist) == 2 {
-		vlist = strings.Split(vlist[1], "/")
-		if len(vlist) > 1 {
-			that.Password = crypt.DecodeBase64(utils.NormalizeSSR(vlist[0]))
-		}
+		r := utils.NormalizeSSR(vlist[0])
+		that.Password = crypt.DecodeBase64(r)
 	}
 }
 
@@ -56,8 +55,7 @@ func (that *SSROutbound) Parse(rawUri string) {
 		if len(vlist) == 3 {
 			that.Address = vlist[0]
 			that.Port, _ = strconv.Atoi(vlist[1])
-			that.parseEncryptMethod(r)
-			that.parsePassword(r)
+			that.parseMethodPassword(vlist[2])
 		}
 		if that.Method == "rc4" {
 			that.Method = "rc4-md5"
@@ -70,12 +68,12 @@ func (that *SSROutbound) GetRawUri() string {
 }
 
 func (that *SSROutbound) String() string {
-	return fmt.Sprintf("shadowsocksr://%s:%d", that.Address, that.Port)
+	return fmt.Sprintf("ssr://%s:%d", that.Address, that.Port)
 }
 
 func (that *SSROutbound) Decode(rawUri string) string {
 	that.Parse(rawUri)
-	return fmt.Sprintf("shadowsocksr://:%s:%s:%s@%s:%d", that.Password, that.Method, that.Email, that.Address, that.Port)
+	return fmt.Sprintf("ssr://%s:%s@%s:%d", that.Password, that.Method, that.Address, that.Port)
 }
 
 func (that *SSROutbound) GetAddr() string {
@@ -84,4 +82,11 @@ func (that *SSROutbound) GetAddr() string {
 
 func (that *SSROutbound) Scheme() string {
 	return SSRScheme
+}
+
+func TestSSR() {
+	rawUri := "ssr://anAtYW00OC02LmVxbm9kZS5uZXQ6ODA4MTpvcmlnaW46YWVzLTI1Ni1jZmI6dGxzMS4yX3RpY2tldF9hdXRoOlpVRnZhMkpoUkU0Mi8/b2Jmc3BhcmFtPSZyZW1hcmtzPThKJTJCSHIlMkZDZmg3WG5tYjNscTVZdE5EUTImcHJvdG9wYXJhbT0="
+	p := &SSROutbound{}
+	p.Parse(rawUri)
+	fmt.Println(p.Decode(rawUri))
 }

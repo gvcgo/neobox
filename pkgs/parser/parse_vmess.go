@@ -83,3 +83,9 @@ func (that *VmessOutbound) GetAddr() string {
 func (that *VmessOutbound) Scheme() string {
 	return VmessScheme
 }
+
+func TestVmess() {
+	rawUri := "eyJ2IjoiMiIsInBzIjoiVVMgNjYwIOKGkiB0Z0BuaWNldnBuMTIzIiwiYWRkIjoiMTM3LjE3NS4zLjIzMyIsInBvcnQiOiI1MzA0MiIsInR5cGUiOiJub25lIiwiaWQiOiI0MTgwNDhhZi1hMjkzLTRiOTktOWIwYy05OGNhMzU4MGRkMjQiLCJhaWQiOiI2NCIsIm5ldCI6InRjcCIsInBhdGgiOiIvcXdlciIsImhvc3QiOiIiLCJ0bHMiOiIifQ=="
+	p := &VmessOutbound{}
+	p.Parse(rawUri)
+}

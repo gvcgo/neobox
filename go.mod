@@ -6,7 +6,7 @@ require (
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/gogf/gf v1.16.9
 	github.com/gogf/gf/v2 v2.4.1
-	github.com/moqsien/goutils v0.0.0-20230529025252-3e3e771f68b8
+	github.com/moqsien/goutils v0.0.3
 	github.com/prometheus-community/pro-bing v0.1.0
 	github.com/sagernet/sing-box v1.2.7
 )

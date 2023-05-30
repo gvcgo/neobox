@@ -8,8 +8,9 @@ import (
 func main() {
 	// f := proxy.NewNeoPinger(conf.GetDefaultConf())
 	// f.Run()
-	// p := proxy.NewParser(conf.GetDefaultConf())
-	// p.Parse()
-	v := proxy.NewVerifier(conf.GetDefaultConf())
-	v.Run(false)
+	p := proxy.NewParser(conf.GetDefaultConf())
+	p.Parse()
+	// v := proxy.NewVerifier(conf.GetDefaultConf())
+	// v.Run(false)
+	// parser.TestSSR()
 }

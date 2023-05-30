@@ -35,7 +35,7 @@ func (that *Proxy) parseScheme() {
 	} else if strings.HasPrefix(that.RawUri, parser.TrojanScheme) {
 		that.scheme = parser.TrojanScheme
 	} else if strings.HasPrefix(that.RawUri, parser.SSScheme) {
-		that.scheme = parser.SSRScheme
+		that.scheme = parser.SSScheme
 	} else if strings.HasPrefix(that.RawUri, parser.SSRScheme) {
 		that.scheme = parser.SSRScheme
 	} else {

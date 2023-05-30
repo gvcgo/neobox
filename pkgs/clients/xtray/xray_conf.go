@@ -1,9 +1,6 @@
 package xtray
 
 var ConfStr string = `{
-    "log": {
-        "loglevel": "warning"
-    },
     "dns": {
         "servers": [
             {

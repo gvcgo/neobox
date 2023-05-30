@@ -59,8 +59,14 @@ func (that *VmessOutbound) Parse(rawUri string) {
 	that.SNI = j.GetString("sni")
 	that.TLS = j.GetString("tls")
 	that.Security = j.GetString("type")
-	if that.Security == "" && that.TLS != "" {
-		that.Security = "tls"
+	// TODO: type is security?
+	switch that.Security {
+	case "none", "reality", "tls":
+	default:
+		that.Security = "none"
+		if that.TLS != "" {
+			that.Security = "tls"
+		}
 	}
 	that.Aid = j.GetString("aid")
 }

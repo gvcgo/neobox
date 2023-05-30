@@ -2,11 +2,12 @@ package proxy
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"sync"
 	"time"
 
-	"github.com/moqsien/neobox/pkgs/clients/sing"
+	"github.com/moqsien/neobox/pkgs/clients"
 	"github.com/moqsien/neobox/pkgs/conf"
 )
 
@@ -19,6 +20,7 @@ type Verifier struct {
 }
 
 func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
+	os.Setenv("XRAY_LOCATION_ASSET", cnf.NeoWorkDir)
 	v := &Verifier{
 		conf:         cnf,
 		pinger:       NewNeoPinger(cnf),
@@ -42,7 +44,7 @@ sing-box start client slower than xray, so we mainly use xray to verify proxies.
 */
 // TODO: xray to verify proxies except ssr, sing-box to verify ssr
 func (that *Verifier) StartClient(inPort int) {
-	client := sing.NewClient()
+	client := clients.NewLocalClient(clients.TypeXray)
 	client.SetInPortAndLogFile(inPort, "")
 	that.wg.Add(1)
 	defer that.wg.Done()

@@ -39,7 +39,7 @@ func NewNeoPinger(cnf *conf.NeoBoxConf) *NeoPinger {
 func (that *NeoPinger) send(force ...bool) {
 	that.sendChan = make(chan *Proxy, 30)
 	r := that.fetcher.GetRawProxyList(force...)
-	fmt.Printf("find %v raw proxies.", len(r))
+	fmt.Printf("find %v raw proxies.\n", len(r))
 	for _, rawUri := range r {
 		p := DefaultProxyPool.Get(rawUri)
 		if p != nil {

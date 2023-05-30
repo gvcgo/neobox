@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/moqsien/neobox/pkgs/iface"
 	"github.com/moqsien/neobox/pkgs/parser"
 )
@@ -91,7 +92,7 @@ func getVmessConfStr(ob *parser.VmessOutbound) *gjson.Json {
 		j.Set("vnext.0.address", ob.Address)
 		j.Set("vnext.0.port", ob.Port)
 		j.Set("vnext.0.users.0.id", ob.UserId)
-		j.Set("vnext.0.users.0.alterId", ob.Aid)
+		j.Set("vnext.0.users.0.alterId", gconv.Int(ob.Aid))
 		j.Set("vnext.0.users.0.security", ob.UserSecurity)
 		settingsStr := j.MustToJsonIndentString()
 		streamStr := BlankStreamStr

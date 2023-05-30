@@ -34,6 +34,7 @@ func (that *Client) SetProxy(p iface.IProxy) {
 
 func (that *Client) Start() error {
 	cnf := GetConfStr(that.proxy, that.inPort, that.logPath)
+	// fmt.Println(string(cnf))
 	if config, err := serial.DecodeJSONConfig(bytes.NewReader(cnf)); err == nil {
 		var f *core.Config
 		f, err = config.Build()

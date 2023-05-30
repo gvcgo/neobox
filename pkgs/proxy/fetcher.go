@@ -63,6 +63,7 @@ func (that *Fetcher) DownloadFile() (success bool) {
 		}
 	})
 	that.collector.Visit(that.Conf.RawUriURL)
+	that.collector.Wait()
 	return
 }
 

@@ -11,6 +11,6 @@ func main() {
 	// p := proxy.NewParser(conf.GetDefaultConf())
 	// p.Parse()
 	v := proxy.NewVerifier(conf.GetDefaultConf())
-	v.Run(false)
+	v.Run(true)
 	// parser.TestSSR()
 }

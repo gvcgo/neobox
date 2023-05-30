@@ -4,12 +4,45 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/gocolly/colly/v2"
 	"github.com/moqsien/neobox/pkgs/clients"
 	"github.com/moqsien/neobox/pkgs/conf"
 )
+
+type CollectorPool struct {
+	pool *sync.Pool
+}
+
+func NewCollyPool() *CollectorPool {
+	return &CollectorPool{
+		pool: &sync.Pool{
+			New: func() any {
+				return colly.NewCollector()
+			},
+		},
+	}
+}
+
+var DefaultCollyPool = NewCollyPool()
+
+func (that *CollectorPool) Get(inPort int, timeout time.Duration) *colly.Collector {
+	c := that.pool.Get()
+	if co, ok := c.(*colly.Collector); ok {
+		co.SetProxy(fmt.Sprintf("socks5://localhost:%d", inPort))
+		co.SetRequestTimeout(timeout)
+		return co
+	}
+	return nil
+}
+
+func (that *CollectorPool) Put(c *colly.Collector) {
+	c.SetClient(nil)
+	that.pool.Put(c)
+}
 
 type Verifier struct {
 	verifiedList *ProxyList
@@ -39,10 +72,34 @@ func (that *Verifier) Send(force ...bool) {
 	close(that.sendChan)
 }
 
+func (that *Verifier) sendReq(inPort int, p *Proxy) {
+	if that.conf.VerificationTimeout <= 0 {
+		that.conf.VerificationTimeout = 3
+	}
+
+	if that.conf.VerificationUri == "" {
+		that.conf.VerificationUri = "https://www.google.com"
+	}
+	collector := DefaultCollyPool.Get(inPort, that.conf.VerificationTimeout)
+	collector.OnError(func(r *colly.Response, err error) {
+		fmt.Println("[Verify url failed] ", p.String(), err)
+	})
+	collector.OnResponse(func(r *colly.Response) {
+		if strings.Contains(string(r.Body), "</html>") {
+			fmt.Println(string(r.Body))
+			that.verifiedList.AddProxies(p)
+			fmt.Println("****Succeeded: ", p.String())
+		} else {
+			fmt.Println("[Verify url failed] ", p.String())
+		}
+	})
+	collector.Visit(that.conf.VerificationUri)
+	collector.Wait()
+}
+
 /*
 sing-box start client slower than xray, so we mainly use xray to verify proxies.
 */
-// TODO: xray to verify proxies except ssr, sing-box to verify ssr
 func (that *Verifier) StartClient(inPort int) {
 	client := clients.NewLocalClient(clients.TypeXray)
 	client.SetInPortAndLogFile(inPort, "")
@@ -57,9 +114,13 @@ func (that *Verifier) StartClient(inPort int) {
 			}
 			client.SetProxy(p)
 			start := time.Now()
-			client.Start()
-			// TODO: testing
+			if err := client.Start(); err != nil {
+				client.Close()
+				fmt.Println("[start client failed] ", err)
+				return
+			}
 			fmt.Printf("Proxy[%s] time consumed: %vs\n", p.String(), time.Since(start).Seconds())
+			that.sendReq(inPort, p)
 			client.Close()
 		default:
 			time.Sleep(time.Millisecond * 100)
@@ -79,6 +140,7 @@ func (that *Verifier) Run(force ...bool) {
 		go that.StartClient(i)
 	}
 	that.wg.Wait()
+	fmt.Println("----------- ", that.verifiedList.Len())
 	if that.verifiedList.Len() > 0 {
 		that.verifiedList.Save()
 	}

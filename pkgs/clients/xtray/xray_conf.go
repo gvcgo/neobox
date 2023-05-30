@@ -3,88 +3,105 @@ package xtray
 var ConfStr string = `{
     "dns": {
         "servers": [
-            {
-                "address": "1.1.1.1",
-                "domains": [
-                    "geosite:geolocation-!cn"
-                ]
-            },
-            {
-                "address": "223.5.5.5",
-                "domains": [
-                    "geosite:cn"
-                ],
-                "expectIPs": [
-                    "geoip:cn"
-                ]
-            },
-            {
-                "address": "114.114.114.114",
-                "domains": [
-                    "geosite:cn"
-                ]
-            },
-            "localhost"
+            "1.1.1.1",
+            "8.8.8.8",
+            "8.8.4.4"
         ]
     },
+    "fakedns": {
+        "ipPool": "198.18.0.0/15",
+        "poolSize": 65535
+    },
+    "inbounds": [
+        {
+            "port": 1080,
+            "listen": "127.0.0.1",
+            "protocol": "socks",
+            "settings": {
+                    "udp": true
+            }
+        }
+    ],
+    "log": {
+        "loglevel": "warning",
+        "error": ""
+    },
+    "outbounds": [
+        {
+            "protocol": "vmess",
+            "sendThrough": "0.0.0.0",
+            "settings": %s,
+            "streamSettings": %s,
+            "tag": "PROXY"
+        },
+        {
+            "protocol": "freedom",
+            "sendThrough": "0.0.0.0",
+            "settings": {
+                "domainStrategy": "AsIs",
+                "redirect": ":0"
+            },
+            "streamSettings": {},
+            "tag": "DIRECT"
+        },
+        {
+            "protocol": "blackhole",
+            "sendThrough": "0.0.0.0",
+            "settings": {
+                "response": {
+                        "type": "none"
+                }
+            },
+            "streamSettings": {},
+            "tag": "BLACKHOLE"
+        }
+    ],
     "routing": {
-        "domainStrategy": "IPIfNonMatch",
+        "domainMatcher": "mph",
+        "domainStrategy": "AsIs",
         "rules": [
+            {
+                "inboundTag": [
+                    "QV2RAY_API_INBOUND"
+                ],
+                "outboundTag": "QV2RAY_API",
+                "type": "field"
+            },
+            {
+                "ip": [
+                        "geoip:private"
+                ],
+                "outboundTag": "DIRECT",
+                "type": "field"
+            },
+            {
+                "ip": [
+                        "geoip:cn"
+                ],
+                "outboundTag": "DIRECT",
+                "type": "field"
+            },
+            {
+                "domain": [
+                        "geosite:cn"
+                ],
+                "outboundTag": "DIRECT",
+                "type": "field"
+            },
             {
                 "type": "field",
                 "domain": [
                     "geosite:category-ads-all"
                 ],
-                "outboundTag": "block"
-            },
-            {
-                "type": "field",
-                "domain": [
-                    "geosite:cn"
-                ],
-                "outboundTag": "direct"
-            },
-            {
-                "type": "field",
-                "ip": [
-                    "geoip:cn",
-                    "geoip:private"
-                ],
-                "outboundTag": "direct"
+                "outboundTag": "BLACKHOLE"
             },
             {
                 "type": "field",
                 "domain": [
                     "geosite:geolocation-!cn"
                 ],
-                "outboundTag": "proxy"
-            },
-            {
-                "type": "field",
-                "ip": [
-                    "223.5.5.5"
-                ],
-                "outboundTag": "direct"
+                "outboundTag": "PROXY"
             }
         ]
-    },
-    "inbounds": [
-        {
-            "tag": "http-in",
-            "protocol": "http",
-            "listen": "127.0.0.1",
-            "port": 2019
-        }
-    ],
-    "outbounds": [
-        %s,
-        {
-            "tag": "direct",
-            "protocol": "freedom"
-        },
-        {
-            "tag": "block",
-            "protocol": "blackhole"
-        }
-    ]
+    }
 }`

@@ -10,14 +10,12 @@ import (
 	"github.com/moqsien/neobox/pkgs/parser"
 )
 
+/*
+https://xtls.github.io/config/#%E6%A6%82%E8%BF%B0
+https://xtls.github.io/document/level-0/ch08-xray-clients.html#_8-3-%E9%99%84%E5%8A%A0%E9%A2%98-1-%E5%9C%A8-pc-%E7%AB%AF%E6%89%8B%E5%B7%A5%E9%85%8D%E7%BD%AE-xray-core
+*/
+
 var (
-	XOutboundStr string = `{
-	"protocol": "vmess",
-	"sendThrough": "0.0.0.0",
-	"settings": %s,
-	"streamSettings": %s,
-	"tag": "proxy"
-}`
 	DefaulStreamStr string = `{
 	"network": "ws",
 	"security": "tls",
@@ -65,10 +63,6 @@ var (
 	BlankStreamStr = `{}`
 )
 
-/*
-https://xtls.github.io/config/#%E6%A6%82%E8%BF%B0
-https://xtls.github.io/document/level-0/ch08-xray-clients.html#_8-3-%E9%99%84%E5%8A%A0%E9%A2%98-1-%E5%9C%A8-pc-%E7%AB%AF%E6%89%8B%E5%B7%A5%E9%85%8D%E7%BD%AE-xray-core
-*/
 var VmessSettingsStr string = `{
     "vnext": [
         {
@@ -86,7 +80,7 @@ var VmessSettingsStr string = `{
     ]
 }`
 
-func getVmessConfStr(ob *parser.VmessOutbound) *gjson.Json {
+func getVmessConfStr(ob *parser.VmessOutbound, inPort int, logPath string) (r []byte) {
 	if ob != nil {
 		j := gjson.New(VmessSettingsStr)
 		j.Set("vnext.0.address", ob.Address)
@@ -94,7 +88,7 @@ func getVmessConfStr(ob *parser.VmessOutbound) *gjson.Json {
 		j.Set("vnext.0.users.0.id", ob.UserId)
 		j.Set("vnext.0.users.0.alterId", gconv.Int(ob.Aid))
 		j.Set("vnext.0.users.0.security", ob.UserSecurity)
-		settingsStr := j.MustToJsonIndentString()
+		settings := j.MustToJsonIndentString()
 		streamStr := BlankStreamStr
 		if ob.Security != "" && ob.Path != "" && ob.Network != "" {
 			j = gjson.New(DefaulStreamStr)
@@ -108,10 +102,17 @@ func getVmessConfStr(ob *parser.VmessOutbound) *gjson.Json {
 			}
 			streamStr = j.MustToJsonIndentString()
 		}
-		xoutboundStr := fmt.Sprintf(XOutboundStr, settingsStr, streamStr)
-		return gjson.New(fmt.Sprintf(ConfStr, xoutboundStr))
+		cnf := fmt.Sprintf(ConfStr, settings, streamStr)
+		j = gjson.New(cnf)
+		if inPort > 0 {
+			j.Set("inbounds.0.port", inPort)
+		}
+		if logPath != "" {
+			j.Set("log.error", logPath)
+		}
+		return j.MustToJsonIndent()
 	}
-	return nil
+	return
 }
 
 var VlessSettingsStr string = `{
@@ -131,14 +132,14 @@ var VlessSettingsStr string = `{
 	]
 }`
 
-func getVlessConfStr(ob *parser.VlessOutbound) *gjson.Json {
+func getVlessConfStr(ob *parser.VlessOutbound, inPort int, logPath string) (r []byte) {
 	if ob != nil {
 		j := gjson.New(VlessSettingsStr)
 		j.Set("vnext.0.address", ob.Address)
 		j.Set("vnext.0.port", ob.Port)
 		j.Set("vnext.0.users.0.id", ob.UserId)
 		j.Set("vnext.0.users.0.encryption", ob.Encryption)
-		settingsStr := j.MustToJsonIndentString()
+		settings := j.MustToJsonString()
 		streamStr := BlankStreamStr
 		if ob.Security != "" && ob.Path != "" && ob.Type != "" {
 			j = gjson.New(DefaulStreamStr)
@@ -150,12 +151,19 @@ func getVlessConfStr(ob *parser.VlessOutbound) *gjson.Json {
 				j.Set("tcpSettings.header.request.path.1", ob.Path)
 				j.Set("tcpSettings.header.request.headers.Host.0", ob.Address)
 			}
-			streamStr = j.MustToJsonIndentString()
+			streamStr = j.MustToJsonString()
 		}
-		xoutboundStr := fmt.Sprintf(XOutboundStr, settingsStr, streamStr)
-		return gjson.New(fmt.Sprintf(ConfStr, xoutboundStr))
+		cnf := fmt.Sprintf(ConfStr, settings, streamStr)
+		j = gjson.New(cnf)
+		if inPort > 0 {
+			j.Set("inbounds.0.port", inPort)
+		}
+		if logPath != "" {
+			j.Set("log.error", logPath)
+		}
+		return j.MustToJsonIndent()
 	}
-	return nil
+	return
 }
 
 var TrojanSettingsStr string = `{
@@ -170,18 +178,25 @@ var TrojanSettingsStr string = `{
     ]
 }`
 
-func getTrojanConfStr(ob *parser.TrojanOutbound) *gjson.Json {
+func getTrojanConfStr(ob *parser.TrojanOutbound, inPort int, logPath string) (r []byte) {
 	if ob != nil {
 		j := gjson.New(TrojanSettingsStr)
 		j.Set("servers.0.address", ob.Address)
 		j.Set("servers.0.port", ob.Port)
 		j.Set("servers.0.password", ob.Password)
 		j.Set("servers.0.email", ob.Email)
-		settingsStr := j.MustToJsonIndentString()
-		xoutboundStr := fmt.Sprintf(XOutboundStr, settingsStr, BlankStreamStr)
-		return gjson.New(xoutboundStr)
+		settings := j.MustToJsonIndentString()
+		cnf := fmt.Sprintf(ConfStr, settings, BlankStreamStr)
+		j = gjson.New(cnf)
+		if inPort > 0 {
+			j.Set("inbounds.0.port", inPort)
+		}
+		if logPath != "" {
+			j.Set("log.error", logPath)
+		}
+		return j.MustToJsonIndent()
 	}
-	return nil
+	return
 }
 
 var SSSettingsStr string = `{
@@ -197,25 +212,32 @@ var SSSettingsStr string = `{
     ]
 }`
 
-func getSsStr(ob *parser.SSOutbound) *gjson.Json {
+func getSsStr(ob *parser.SSOutbound, inPort int, logPath string) (r []byte) {
 	if ob != nil {
 		j := gjson.New(SSSettingsStr)
 		j.Set("servers.0.address", ob.Address)
 		j.Set("servers.0.port", ob.Port)
 		j.Set("servers.0.password", ob.Password)
 		j.Set("servers.0.method", ob.Method)
-		settingsStr := j.MustToJsonIndentString()
-		xoutboundStr := fmt.Sprintf(XOutboundStr, settingsStr, BlankStreamStr)
-		return gjson.New(xoutboundStr)
+		settings := j.MustToJsonIndentString()
+		cnf := fmt.Sprintf(ConfStr, settings, BlankStreamStr)
+		j = gjson.New(cnf)
+		if inPort > 0 {
+			j.Set("inbounds.0.port", inPort)
+		}
+		if logPath != "" {
+			j.Set("log.error", logPath)
+		}
+		return j.MustToJsonIndent()
 	}
-	return nil
+	return
 }
 
 /*
 xray-core does not support SSR.
 */
-func getSsrStr(ob *parser.SSROutbound) *gjson.Json {
-	return nil
+func getSsrStr(ob *parser.SSROutbound, inPort int, logPath string) (r []byte) {
+	return
 }
 
 func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte) {
@@ -224,38 +246,26 @@ func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte) {
 	}
 	rawUri := p.GetRawUri()
 	iob := p.GetParser()
-	var j *gjson.Json
 	if strings.HasPrefix(rawUri, parser.VmessScheme) {
 		if ob, ok := iob.(*parser.VmessOutbound); ok {
-			j = getVmessConfStr(ob)
+			return getVmessConfStr(ob, inPort, logPath)
 		}
 	} else if strings.HasPrefix(rawUri, parser.VlessScheme) {
 		if ob, ok := iob.(*parser.VlessOutbound); ok {
-			j = getVlessConfStr(ob)
+			return getVlessConfStr(ob, inPort, logPath)
 		}
 	} else if strings.HasPrefix(rawUri, parser.TrojanScheme) {
 		if ob, ok := iob.(*parser.TrojanOutbound); ok {
-			j = getTrojanConfStr(ob)
+			return getTrojanConfStr(ob, inPort, logPath)
 		}
 	} else if strings.HasPrefix(rawUri, parser.SSScheme) {
 		if ob, ok := iob.(*parser.SSOutbound); ok {
-			j = getSsStr(ob)
+			return getSsStr(ob, inPort, logPath)
 		}
 	} else if strings.HasPrefix(rawUri, parser.SSRScheme) {
 		if ob, ok := iob.(*parser.SSROutbound); ok {
-			j = getSsrStr(ob)
+			return getSsrStr(ob, inPort, logPath)
 		}
-	} else {
-		return
-	}
-	if j != nil {
-		if inPort > 0 {
-			j.Set("inbounds.0.port", inPort)
-		}
-		if logPath != "" {
-			j.Set("log.error", logPath)
-		}
-		return j.MustToJsonIndent()
 	}
 	return
 }

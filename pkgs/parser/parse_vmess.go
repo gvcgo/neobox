@@ -10,17 +10,18 @@ import (
 )
 
 type VmessOutbound struct {
-	Address  string `json:"address"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	UserId   string `json:"id"`
-	Network  string `json:"network"`
-	Security string `json:"security"`
-	Path     string `json:"path"`
-	Raw      string `json:"raw"`
-	SNI      string `json:"sni"`
-	Type     string `json:"type"`
-	Aid      string `json:"aid"`
+	Address      string `json:"address"`
+	Host         string `json:"host"`
+	Port         int    `json:"port"`
+	UserId       string `json:"id"`
+	Network      string `json:"network"`
+	UserSecurity string `json:"user_security"`
+	Security     string `json:"security"`
+	Path         string `json:"path"`
+	Raw          string `json:"raw"`
+	SNI          string `json:"sni"`
+	TLS          string `json:"tls"`
+	Aid          string `json:"aid"`
 }
 
 /*
@@ -41,21 +42,25 @@ func (that *VmessOutbound) Parse(rawUri string) {
 	j := gjson.New(rawUri)
 	that.Address = j.GetString("add")
 	that.Host = j.GetString("host")
+	if that.Host == "" {
+		that.Host = that.Address
+	}
 	that.Port, _ = strconv.Atoi(j.GetString("port"))
 	that.UserId = j.GetString("id")
 	that.Network = j.GetString("net")
 	if that.Network == "" {
 		that.Network = "tcp"
 	}
-	that.Security = j.GetString("tls")
-	if that.Security == "" {
-		that.Security = "none"
+	that.UserSecurity = j.GetString("scy")
+	if that.UserSecurity == "" {
+		that.UserSecurity = "auto"
 	}
 	that.Path = j.GetString("path")
 	that.SNI = j.GetString("sni")
-	that.Type = j.GetString("type")
-	if that.Type == "none" {
-		that.Type = "ws"
+	that.TLS = j.GetString("tls")
+	that.Security = j.GetString("type")
+	if that.Security == "" && that.TLS != "" {
+		that.Security = "tls"
 	}
 	that.Aid = j.GetString("aid")
 }

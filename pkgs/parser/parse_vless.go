@@ -29,7 +29,13 @@ func (that *VlessOutbound) Parse(rawUri string) {
 		that.UserId = r.User.Username()
 		that.Security = r.Query().Get("security")
 		that.Encryption = r.Query().Get("encryption")
+		if that.Encryption == "" {
+			that.Encryption = "none"
+		}
 		that.Type = r.Query().Get("type")
+		if that.Type == "" {
+			that.Type = "tcp"
+		}
 		that.Path = r.Query().Get("path")
 	}
 }

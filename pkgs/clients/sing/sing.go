@@ -36,7 +36,7 @@ func (that *Client) Start() (err error) {
 	if len(conf) > 0 {
 		opt := &option.Options{}
 		if err = opt.UnmarshalJSON(conf); err != nil {
-			log.PrintError(err)
+			log.PrintError("[Build config for Sing-Box failed] ", err)
 			return err
 		}
 
@@ -48,17 +48,18 @@ func (that *Client) Start() (err error) {
 		})
 		if err != nil {
 			that.Close()
-			log.PrintError(err)
+			log.PrintError("[Init Sing-Box Failed] ", err)
 			return
 		}
 
 		err = that.Box.Start()
 		if err != nil {
 			that.Close()
-			log.PrintError(err)
+			log.PrintError("[Start Sing-Box Failed] ", err)
 		}
 		return
 	} else {
+		log.PrintError("[Parse config file failed]")
 		return fmt.Errorf("cannot parse proxy")
 	}
 }

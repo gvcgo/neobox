@@ -62,7 +62,7 @@ func (that *NeoPinger) ping(p *Proxy) {
 				if s.PacketLoss < 10.0 {
 					p.RTT = s.AvgRtt.Milliseconds()
 					if p.RTT <= that.conf.MaxAvgRTT {
-						that.pingedList.AddProxies(p)
+						that.pingedList.AddProxies(*p)
 						return
 					}
 				}

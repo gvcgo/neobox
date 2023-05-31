@@ -128,9 +128,9 @@ func (that *ProxyPool) Put(p *Proxy) {
 Proxy list
 */
 type Proxies struct {
-	List      []*Proxy `json,koanf:"proxy_list"`
-	UpdatedAt string   `json,koanf:"updated_time"`
-	Total     int      `json,koanf:"total"`
+	List      []Proxy `json,koanf:"proxy_list"`
+	UpdatedAt string  `json,koanf:"updated_time"`
+	Total     int     `json,koanf:"total"`
 }
 
 type ProxyList struct {
@@ -147,7 +147,7 @@ func NewProxyList(fPath string) *ProxyList {
 		return nil
 	}
 	pl := &ProxyList{
-		Proxies: &Proxies{List: []*Proxy{}},
+		Proxies: &Proxies{List: []Proxy{}},
 		koanfer: k,
 		path:    fPath,
 		lock:    &sync.RWMutex{},
@@ -158,7 +158,7 @@ func NewProxyList(fPath string) *ProxyList {
 	return pl
 }
 
-func (that *ProxyList) AddProxies(p ...*Proxy) {
+func (that *ProxyList) AddProxies(p ...Proxy) {
 	if len(p) > 0 {
 		that.lock.Lock()
 		that.Proxies.List = append(that.Proxies.List, p...)
@@ -186,7 +186,8 @@ func (that *ProxyList) Load() {
 
 func (that *ProxyList) Clear() {
 	for _, p := range that.Proxies.List {
-		DefaultProxyPool.Put(p)
+		DefaultProxyPool.Put(&p)
 	}
-	that.Proxies.List = []*Proxy{}
+	that.Proxies.List = []Proxy{}
+	that.Proxies.Total = 0
 }

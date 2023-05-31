@@ -11,6 +11,7 @@ import (
 	"github.com/gocolly/colly/v2"
 	"github.com/moqsien/neobox/pkgs/clients"
 	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/neobox/pkgs/parser"
 )
 
 type CollectorPool struct {
@@ -40,7 +41,6 @@ func (that *CollectorPool) Get(inPort int, timeout time.Duration) *colly.Collect
 }
 
 func (that *CollectorPool) Put(c *colly.Collector) {
-	c.SetClient(nil)
 	that.pool.Put(c)
 }
 
@@ -49,8 +49,9 @@ type Verifier struct {
 	conf         *conf.NeoBoxConf
 	pinger       *NeoPinger
 	sendChan     chan *Proxy
-	wg           sync.WaitGroup
+	sendSSRChan  chan *Proxy
 	originList   *ProxyList
+	wg           *sync.WaitGroup
 }
 
 func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
@@ -59,18 +60,30 @@ func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
 		conf:         cnf,
 		pinger:       NewNeoPinger(cnf),
 		verifiedList: NewProxyList(filepath.Join(cnf.NeoWorkDir, cnf.VerifiedFileName)),
-		wg:           sync.WaitGroup{},
+		wg:           &sync.WaitGroup{},
 	}
 	return v
 }
 
-func (that *Verifier) Send(force ...bool) {
+func (that *Verifier) send(cType clients.ClientType, force ...bool) {
 	that.originList = that.pinger.Run(force...)
-	that.sendChan = make(chan *Proxy, 30)
-	for _, p := range that.originList.Proxies.List {
-		that.sendChan <- p
+	if cType == clients.TypeXray {
+		that.sendChan = make(chan *Proxy, 30)
+		for _, p := range that.originList.Proxies.List {
+			if p.Scheme() != parser.SSRScheme {
+				that.sendChan <- &p
+			}
+		}
+		close(that.sendChan)
+	} else {
+		that.sendSSRChan = make(chan *Proxy, 30)
+		for _, p := range that.originList.Proxies.List {
+			if p.Scheme() == parser.SSRScheme {
+				that.sendSSRChan <- &p
+			}
+		}
+		close(that.sendSSRChan)
 	}
-	close(that.sendChan)
 }
 
 func (that *Verifier) sendReq(inPort int, p *Proxy) {
@@ -85,10 +98,11 @@ func (that *Verifier) sendReq(inPort int, p *Proxy) {
 	collector.OnError(func(r *colly.Response, err error) {
 		fmt.Println("[Verify url failed] ", p.String(), err)
 	})
-
+	startTime := time.Now()
 	collector.OnResponse(func(r *colly.Response) {
 		if strings.Contains(string(r.Body), "</html>") {
-			that.verifiedList.AddProxies(p)
+			p.RTT = time.Since(startTime).Milliseconds()
+			that.verifiedList.AddProxies(*p)
 			fmt.Println("[********]Succeeded: ", p.String())
 		} else {
 			fmt.Println("[Verify url failed] ", p.String())
@@ -96,19 +110,29 @@ func (that *Verifier) sendReq(inPort int, p *Proxy) {
 	})
 	collector.Visit(that.conf.VerificationUri)
 	collector.Wait()
+	DefaultCollyPool.Put(collector)
 }
 
 /*
 sing-box start client slower than xray, so we mainly use xray to verify proxies.
 */
-func (that *Verifier) StartClient(inPort int) {
-	client := clients.NewLocalClient(clients.TypeXray)
+func (that *Verifier) StartClient(inPort int, cType clients.ClientType) {
+	client := clients.NewLocalClient(cType)
 	client.SetInPortAndLogFile(inPort, "")
 	that.wg.Add(1)
 	defer that.wg.Done()
+	var recChan chan *Proxy
 	for {
+		if recChan == nil {
+			switch cType {
+			case clients.TypeXray:
+				recChan = that.sendChan
+			default:
+				recChan = that.sendSSRChan
+			}
+		}
 		select {
-		case p, ok := <-that.sendChan:
+		case p, ok := <-recChan:
 			if p == nil && !ok {
 				client.Close()
 				return
@@ -116,7 +140,7 @@ func (that *Verifier) StartClient(inPort int) {
 			client.SetProxy(p)
 			start := time.Now()
 			if err := client.Start(); err != nil {
-				fmt.Println("[start client failed] ", err, "\n", string(client.GetConf()))
+				fmt.Println("[start client failed] ", err, p.String())
 				client.Close()
 				return
 			}
@@ -130,22 +154,46 @@ func (that *Verifier) StartClient(inPort int) {
 }
 
 func (that *Verifier) Run(force ...bool) {
-	go that.Send(force...)
-	time.Sleep(time.Second * 2)
+	if that.originList != nil {
+		that.originList.Clear()
+	}
+	if that.verifiedList != nil {
+		that.verifiedList.Clear()
+	}
+
 	start, end := that.conf.VerifierPortRange.Min, that.conf.VerifierPortRange.Max
 	if start > end {
 		start, end = end, start
 	}
-	that.verifiedList.Clear()
+	time.Sleep(10 * time.Second)
+	go that.send(clients.TypeXray, force...)
+	time.Sleep(time.Second * 2)
 	for i := start; i <= end; i++ {
-		go that.StartClient(i)
+		go that.StartClient(i, clients.TypeXray)
 	}
+	fmt.Println("filters for [vmess/ss/vless/trojan] started.")
 	that.wg.Wait()
-	fmt.Println("----------- ", that.verifiedList.Len())
+	fmt.Println("filters for [vmess/ss/vless/trojan] stopped.")
+
+	go that.send(clients.TypeSing, force...)
+	time.Sleep(time.Second * 2)
+	sPort := that.conf.VerifierPortRange.Max
+	if that.conf.VerifierPortRange.Min > sPort {
+		sPort = that.conf.VerifierPortRange.Min
+	}
+	for i := 1; i <= 10; i++ {
+		go that.StartClient(sPort+i, clients.TypeSing)
+	}
+	fmt.Println("filters for [ssr] started.")
+	that.wg.Wait()
+	fmt.Println("filters for [ssr] stopped.")
+
 	if that.verifiedList.Len() > 0 {
 		that.verifiedList.Save()
 	}
-	if that.originList != nil {
-		that.originList.Clear()
+
+	fmt.Printf("[info] Find %d available proxies.\n", that.verifiedList.Len())
+	if that.verifiedList.Len() > 0 {
+		that.verifiedList.Save()
 	}
 }

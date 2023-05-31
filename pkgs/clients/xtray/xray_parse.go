@@ -8,6 +8,7 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/moqsien/neobox/pkgs/iface"
 	"github.com/moqsien/neobox/pkgs/parser"
+	"github.com/moqsien/neobox/pkgs/utils/errs"
 )
 
 /*
@@ -271,7 +272,7 @@ func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte, err error
 			return getSsrStr(ob, inPort, logPath), nil
 		}
 	} else {
-		err = fmt.Errorf("unsupported proxy")
+		err = new(errs.UnSupportedProxySchemeError)
 	}
 	return
 }

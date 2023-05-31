@@ -169,6 +169,9 @@ func (that *ProxyList) AddProxies(p ...Proxy) {
 }
 
 func (that *ProxyList) Len() int {
+	if that.Proxies == nil {
+		return 0
+	}
 	return that.Proxies.Total
 }
 

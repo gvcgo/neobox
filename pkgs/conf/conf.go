@@ -21,6 +21,8 @@ type NeoBoxConf struct {
 	VerifierPortRange   *PortRange    `json:"verifier_port_range"`  // number of goroutines to verify the proxies
 	VerificationUri     string        `json:"verification_uri"`     // google url for verification
 	VerificationTimeout time.Duration `json:"verification_timeout"` // in seconds
+	VerificationCron    string        `json:"verification_cron"`    // crontab for verifier
+	NeoBoxClientInPort  int           `json:"neo_box_client_in_port"`
 }
 
 func GetDefaultConf() (n *NeoBoxConf) {
@@ -41,5 +43,7 @@ func GetDefaultConf() (n *NeoBoxConf) {
 	}
 	n.VerificationUri = "https://www.google.com"
 	n.VerificationTimeout = 3
+	n.VerificationCron = "@every 2h"
+	n.NeoBoxClientInPort = 2019
 	return
 }

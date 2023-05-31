@@ -53,21 +53,38 @@ type Verifier struct {
 	originList   *ProxyList
 	wg           *sync.WaitGroup
 	useExtra     bool
+	isRunning    bool
+	vPath        string
 }
 
 func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
 	os.Setenv("XRAY_LOCATION_ASSET", cnf.NeoWorkDir)
+	vPath := filepath.Join(cnf.NeoWorkDir, cnf.VerifiedFileName)
 	v := &Verifier{
 		conf:         cnf,
 		pinger:       NewNeoPinger(cnf),
-		verifiedList: NewProxyList(filepath.Join(cnf.NeoWorkDir, cnf.VerifiedFileName)),
+		verifiedList: NewProxyList(vPath),
 		wg:           &sync.WaitGroup{},
+		vPath:        vPath,
 	}
 	return v
 }
 
 func (that *Verifier) SetUseExtraOrNot(useOrNot bool) {
 	that.useExtra = useOrNot
+}
+
+func (that *Verifier) GetProxyByIndex(pIdx int) *Proxy {
+	if that.verifiedList == nil || that.verifiedList.Len() == 0 {
+		return nil
+	}
+	if that.verifiedList != nil {
+		that.verifiedList.Load()
+	}
+	if pIdx >= that.verifiedList.Len() {
+		return &that.verifiedList.Proxies.List[0]
+	}
+	return &that.verifiedList.Proxies.List[pIdx]
 }
 
 func (that *Verifier) send(cType clients.ClientType, force ...bool) {
@@ -179,7 +196,7 @@ func (that *Verifier) Run(force ...bool) {
 	if start > end {
 		start, end = end, start
 	}
-	time.Sleep(10 * time.Second)
+	that.isRunning = true
 	go that.send(clients.TypeXray, force...)
 	time.Sleep(time.Second * 2)
 	for i := start; i <= end; i++ {
@@ -210,4 +227,9 @@ func (that *Verifier) Run(force ...bool) {
 	if that.verifiedList.Len() > 0 {
 		that.verifiedList.Save()
 	}
+	that.isRunning = false
+}
+
+func (that *Verifier) IsRunning() bool {
+	return that.isRunning
 }

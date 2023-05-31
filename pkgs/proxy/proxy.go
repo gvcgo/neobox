@@ -4,6 +4,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gogf/gf/os/gtime"
 	"github.com/moqsien/goutils/pkgs/koanfer"
 	futils "github.com/moqsien/goutils/pkgs/utils"
 	"github.com/moqsien/neobox/pkgs/iface"
@@ -128,7 +129,7 @@ Proxy list
 */
 type Proxies struct {
 	List      []*Proxy `json,koanf:"proxy_list"`
-	UpdatedAt string   `json,koanf:"updated_at"`
+	UpdatedAt string   `json,koanf:"updated_time"`
 	Total     int      `json,koanf:"total"`
 }
 
@@ -158,10 +159,13 @@ func NewProxyList(fPath string) *ProxyList {
 }
 
 func (that *ProxyList) AddProxies(p ...*Proxy) {
-	that.lock.Lock()
-	that.Proxies.List = append(that.Proxies.List, p...)
-	that.Proxies.Total = len(that.Proxies.List)
-	that.lock.Unlock()
+	if len(p) > 0 {
+		that.lock.Lock()
+		that.Proxies.List = append(that.Proxies.List, p...)
+		that.Proxies.Total = len(that.Proxies.List)
+		that.Proxies.UpdatedAt = gtime.Now().String()
+		that.lock.Unlock()
+	}
 }
 
 func (that *ProxyList) Len() int {

@@ -32,8 +32,8 @@ var DefaultCollyPool = NewCollyPool()
 func (that *CollectorPool) Get(inPort int, timeout time.Duration) *colly.Collector {
 	c := that.pool.Get()
 	if co, ok := c.(*colly.Collector); ok {
-		co.SetProxy(fmt.Sprintf("socks5://localhost:%d", inPort))
-		co.SetRequestTimeout(timeout)
+		co.SetProxy(fmt.Sprintf("http://localhost:%d", inPort))
+		co.SetRequestTimeout(timeout * time.Second)
 		return co
 	}
 	return nil
@@ -50,6 +50,7 @@ type Verifier struct {
 	pinger       *NeoPinger
 	sendChan     chan *Proxy
 	wg           sync.WaitGroup
+	originList   *ProxyList
 }
 
 func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
@@ -64,9 +65,9 @@ func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
 }
 
 func (that *Verifier) Send(force ...bool) {
-	pList := that.pinger.Run(force...)
+	that.originList = that.pinger.Run(force...)
 	that.sendChan = make(chan *Proxy, 30)
-	for _, p := range pList.Proxies.List {
+	for _, p := range that.originList.Proxies.List {
 		that.sendChan <- p
 	}
 	close(that.sendChan)
@@ -84,11 +85,11 @@ func (that *Verifier) sendReq(inPort int, p *Proxy) {
 	collector.OnError(func(r *colly.Response, err error) {
 		fmt.Println("[Verify url failed] ", p.String(), err)
 	})
+
 	collector.OnResponse(func(r *colly.Response) {
 		if strings.Contains(string(r.Body), "</html>") {
-			fmt.Println(string(r.Body))
 			that.verifiedList.AddProxies(p)
-			fmt.Println("****Succeeded: ", p.String())
+			fmt.Println("[********]Succeeded: ", p.String())
 		} else {
 			fmt.Println("[Verify url failed] ", p.String())
 		}
@@ -115,8 +116,8 @@ func (that *Verifier) StartClient(inPort int) {
 			client.SetProxy(p)
 			start := time.Now()
 			if err := client.Start(); err != nil {
+				fmt.Println("[start client failed] ", err, "\n", string(client.GetConf()))
 				client.Close()
-				fmt.Println("[start client failed] ", err)
 				return
 			}
 			fmt.Printf("Proxy[%s] time consumed: %vs\n", p.String(), time.Since(start).Seconds())
@@ -143,5 +144,8 @@ func (that *Verifier) Run(force ...bool) {
 	fmt.Println("----------- ", that.verifiedList.Len())
 	if that.verifiedList.Len() > 0 {
 		that.verifiedList.Save()
+	}
+	if that.originList != nil {
+		that.originList.Clear()
 	}
 }

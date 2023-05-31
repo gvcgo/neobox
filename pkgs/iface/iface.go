@@ -24,4 +24,5 @@ type IClient interface {
 	SetProxy(IProxy)
 	Start() error
 	Close()
+	GetConf() []byte
 }

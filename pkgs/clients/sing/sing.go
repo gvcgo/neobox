@@ -16,6 +16,7 @@ type Client struct {
 	logPath string
 	*box.Box
 	cancel context.CancelFunc
+	conf   []byte
 }
 
 func NewClient() *Client {
@@ -32,10 +33,10 @@ func (that *Client) SetProxy(p iface.IProxy) {
 }
 
 func (that *Client) Start() (err error) {
-	conf := GetConfStr(that.proxy, that.inPort, that.logPath)
-	if len(conf) > 0 {
+	that.conf = GetConfStr(that.proxy, that.inPort, that.logPath)
+	if len(that.conf) > 0 {
 		opt := &option.Options{}
-		if err = opt.UnmarshalJSON(conf); err != nil {
+		if err = opt.UnmarshalJSON(that.conf); err != nil {
 			log.PrintError("[Build config for Sing-Box failed] ", err)
 			return err
 		}
@@ -71,9 +72,14 @@ func (that *Client) cancelBox() {
 }
 
 func (that *Client) Close() {
+	that.conf = nil
 	that.cancelBox()
 	if that.Box != nil {
 		that.Box.Close()
 		that.Box = nil
 	}
+}
+
+func (that *Client) GetConf() []byte {
+	return that.conf
 }

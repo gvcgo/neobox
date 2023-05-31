@@ -3,6 +3,7 @@ package proxy
 import (
 	"path/filepath"
 
+	"github.com/gogf/gf/v2/os/gtime"
 	koanfer "github.com/moqsien/goutils/pkgs/koanfer"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/utils/log"
@@ -12,11 +13,12 @@ import (
 Parse all raw proxies to a file.
 */
 type ParsedResult struct {
-	Vmess  []string `json,koanf:"vmess"`
-	Vless  []string `json,koanf:"vless"`
-	Trojan []string `json,koanf:"trojan"`
-	SS     []string `json,koanf:"ss"`
-	SSR    []string `json,koanf:"ssr"`
+	Vmess     []string `json,koanf:"vmess"`
+	Vless     []string `json,koanf:"vless"`
+	Trojan    []string `json,koanf:"trojan"`
+	SS        []string `json,koanf:"ss"`
+	SSR       []string `json,koanf:"ssr"`
+	UpdatedAt string   `json,koanf:"update_time"`
 }
 
 type Parser struct {
@@ -78,6 +80,8 @@ func (that *Parser) Parse() {
 			DefaultProxyPool.Put(iob)
 		}
 	}
+
+	that.ParsedList.UpdatedAt = gtime.Now().String()
 	if err := that.koanfer.Save(that.ParsedList); err != nil {
 		log.PrintError("save file failed: ", err)
 	}

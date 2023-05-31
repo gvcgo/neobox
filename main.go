@@ -11,6 +11,7 @@ func main() {
 	// p := proxy.NewParser(conf.GetDefaultConf())
 	// p.Parse()
 	v := proxy.NewVerifier(conf.GetDefaultConf())
-	v.Run(true)
+	v.Run(false)
+	// fmt.Println(gtime.Now().String())
 	// parser.TestSSR()
 }

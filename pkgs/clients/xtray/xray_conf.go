@@ -16,10 +16,8 @@ var ConfStr string = `{
         {
             "port": 1080,
             "listen": "127.0.0.1",
-            "protocol": "socks",
-            "settings": {
-                    "udp": true
-            }
+            "protocol": "http",
+            "tag": "http-in"
         }
     ],
     "log": {
@@ -60,13 +58,6 @@ var ConfStr string = `{
         "domainMatcher": "mph",
         "domainStrategy": "AsIs",
         "rules": [
-            {
-                "inboundTag": [
-                    "QV2RAY_API_INBOUND"
-                ],
-                "outboundTag": "QV2RAY_API",
-                "type": "field"
-            },
             {
                 "ip": [
                         "geoip:private"

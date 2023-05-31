@@ -17,6 +17,7 @@ type Client struct {
 	proxy   iface.IProxy
 	logPath string
 	*core.Instance
+	conf []byte
 }
 
 func NewClient() *Client {
@@ -33,9 +34,12 @@ func (that *Client) SetProxy(p iface.IProxy) {
 }
 
 func (that *Client) Start() error {
-	cnf := GetConfStr(that.proxy, that.inPort, that.logPath)
-	// fmt.Println(string(cnf))
-	if config, err := serial.DecodeJSONConfig(bytes.NewReader(cnf)); err == nil {
+	var err error
+	if that.conf, err = GetConfStr(that.proxy, that.inPort, that.logPath); err != nil {
+		log.PrintError(err)
+		return err
+	}
+	if config, err := serial.DecodeJSONConfig(bytes.NewReader(that.conf)); err == nil {
 		var f *core.Config
 		f, err = config.Build()
 		if err != nil {
@@ -60,9 +64,14 @@ func (that *Client) Start() error {
 }
 
 func (that *Client) Close() {
+	that.conf = nil
 	if that.Instance != nil {
 		that.Instance.Close()
 		that.Instance = nil
 		runtime.GC()
 	}
+}
+
+func (that *Client) GetConf() []byte {
+	return that.conf
 }

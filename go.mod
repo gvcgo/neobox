@@ -7,6 +7,7 @@ require (
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/gogf/gf v1.16.9
 	github.com/gogf/gf/v2 v2.4.1
+	github.com/moqsien/goktrl v1.3.7
 	github.com/moqsien/goutils v0.0.4
 	github.com/moqsien/hackbrowser v1.0.3
 	github.com/prometheus-community/pro-bing v0.1.0
@@ -92,7 +93,6 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/moqsien/goktrl v1.3.7 // indirect
 	github.com/moqsien/processes v1.0.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/onsi/ginkgo/v2 v2.9.2 // indirect

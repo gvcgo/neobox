@@ -25,6 +25,7 @@ type NeoBoxConf struct {
 	NeoBoxClientInPort  int               `json:"neobox_client_port"`   // local in port for client
 	GeoInfoUrls         map[string]string `json:"geo_info_urls"`        // download urls for geoip and getosite
 	AssetDir            string            `json:"asset_dir"`            // XRAY_LOCATION_ASSET, env for xray-core, where to store geoip&geosite files
+	NeoBoxKeeperCron    string            `json:"neobox_keeper_cron"`   // crontab for neobox keeper
 }
 
 func GetDefaultConf() (n *NeoBoxConf) {
@@ -54,5 +55,6 @@ func GetDefaultConf() (n *NeoBoxConf) {
 		"geoip.db":    "https://gitlab.com/moqsien/xtray_resources/-/raw/main/geoip.db",
 		"geosite.db":  "https://gitlab.com/moqsien/xtray_resources/-/raw/main/geosite.db",
 	}
+	n.NeoBoxKeeperCron = "@every 3m"
 	return
 }

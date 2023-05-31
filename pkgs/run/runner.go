@@ -22,11 +22,10 @@ import (
 )
 
 const (
-	ExtraSockName     = "neobox_ping.sock"
-	KtrlShellSockName = "neobox_ktrl.sock"
-	OkStr             = "ok"
-	runnerPingRoute   = "pingRunner"
-	winRunScriptName  = "neobox_runner.bat"
+	ExtraSockName    = "neobox_ping.sock"
+	OkStr            = "ok"
+	runnerPingRoute  = "/pingRunner"
+	winRunScriptName = "neobox_runner.bat"
 )
 
 var StopChan chan struct{} = make(chan struct{})
@@ -39,6 +38,7 @@ type Runner struct {
 	pingClient *socks.UClient
 	daemon     *futils.Daemon
 	cron       *cron.Cron
+	shell      *Shell
 }
 
 func NewRunner(cnf *conf.NeoBoxConf) *Runner {
@@ -49,7 +49,10 @@ func NewRunner(cnf *conf.NeoBoxConf) *Runner {
 		extraSocks: ExtraSockName,
 		daemon:     futils.NewDaemon(),
 		cron:       cron.New(),
+		shell:      NewShell(cnf),
 	}
+	r.shell.SetRunner(r)
+	r.shell.InitKtrl()
 	r.daemon.SetWorkdir(cnf.NeoWorkDir)
 	r.daemon.SetScriptName(winRunScriptName)
 	return r
@@ -84,7 +87,7 @@ func (that *Runner) Start() {
 	// that.daemon.Run()
 
 	go that.startRunnerPingServer()
-	go that.KtrlServer()
+	go that.shell.StartServer()
 
 	if !that.verifier.IsRunning() {
 		that.verifier.SetUseExtraOrNot(true)
@@ -132,12 +135,8 @@ func (that *Runner) Exit() {
 	StopChan <- struct{}{}
 }
 
-func (that *Runner) KtrlShell() {
-
-}
-
-func (that *Runner) KtrlServer() {
-
+func (that *Runner) OpenShell() {
+	that.shell.StartShell()
 }
 
 /*

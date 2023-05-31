@@ -13,8 +13,8 @@ import (
 )
 
 type Proxy struct {
-	RawUri string `json,koanf:"uri"`
-	RTT    int64  `json,koanf:"rtt"`
+	RawUri string `gorm:"<-;index" json,koanf:"uri"`
+	RTT    int64  `gorm:"<-" json,koanf:"rtt"`
 	p      iface.IOutboundParser
 	scheme string
 }
@@ -175,6 +175,9 @@ func (that *ProxyList) Len() int {
 func (that *ProxyList) Save() {
 	if err := that.koanfer.Save(that.Proxies); err != nil {
 		log.PrintError("save file failed: ", err)
+	}
+	for _, p := range that.Proxies.List {
+		AddProxyToDB(p)
 	}
 }
 

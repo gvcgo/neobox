@@ -52,6 +52,7 @@ type Verifier struct {
 	sendSSRChan  chan *Proxy
 	originList   *ProxyList
 	wg           *sync.WaitGroup
+	useExtra     bool
 }
 
 func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
@@ -65,8 +66,21 @@ func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
 	return v
 }
 
+func (that *Verifier) SetUseExtraOrNot(useOrNot bool) {
+	that.useExtra = useOrNot
+}
+
 func (that *Verifier) send(cType clients.ClientType, force ...bool) {
 	that.originList = that.pinger.Run(force...)
+	// use history vpn list and manually set vpn list.
+	if that.useExtra {
+		if l, err := GetHistoryVpnsFromDB(); err == nil {
+			that.originList.AddProxies(l...)
+		}
+		if l, err := GetManualVpnsFromDB(); err == nil {
+			that.originList.AddProxies(l...)
+		}
+	}
 	if cType == clients.TypeXray {
 		that.sendChan = make(chan *Proxy, 30)
 		for _, p := range that.originList.Proxies.List {

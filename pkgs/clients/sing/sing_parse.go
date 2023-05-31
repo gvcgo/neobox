@@ -2,12 +2,15 @@ package sing
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/moqsien/neobox/pkgs/iface"
 	"github.com/moqsien/neobox/pkgs/parser"
+	"github.com/moqsien/neobox/pkgs/utils"
 )
 
 /*
@@ -189,6 +192,12 @@ func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte) {
 	}
 	if logPath != "" && j != nil {
 		j.Set("log.output", logPath)
+	}
+	if assetDir := os.Getenv(utils.XrayLocationAssetDirEnv); assetDir != "" {
+		geoipPath := filepath.Join(assetDir, utils.SingboxGeoIPName)
+		j.Set("route.geoip.path", geoipPath)
+		geositePath := filepath.Join(assetDir, utils.SingboxGeoSiteName)
+		j.Set("route.geosite.path", geositePath)
 	}
 	r = j.MustToJsonIndent()
 	return

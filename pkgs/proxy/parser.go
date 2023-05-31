@@ -26,10 +26,12 @@ type Parser struct {
 	fetcher    *Fetcher
 	conf       *conf.NeoBoxConf
 	ParsedList *ParsedResult `json,koanf:"parsed_proxies"`
+	pPath      string
 }
 
 func NewParser(cnf *conf.NeoBoxConf) *Parser {
-	k, err := koanfer.NewKoanfer(filepath.Join(cnf.NeoWorkDir, cnf.ParsedFileName))
+	fPath := filepath.Join(cnf.NeoWorkDir, cnf.ParsedFileName)
+	k, err := koanfer.NewKoanfer(fPath)
 	if err != nil {
 		log.PrintError("new koanfer failed: ", err)
 		return nil
@@ -45,6 +47,7 @@ func NewParser(cnf *conf.NeoBoxConf) *Parser {
 			SS:     []string{},
 			SSR:    []string{},
 		},
+		pPath: fPath,
 	}
 }
 
@@ -85,4 +88,9 @@ func (that *Parser) Parse() {
 	if err := that.koanfer.Save(that.ParsedList); err != nil {
 		log.PrintError("save file failed: ", err)
 	}
+}
+
+func (that *Parser) Info() (string, any) {
+	that.koanfer.Load(that.ParsedList)
+	return that.pPath, that.ParsedList
 }

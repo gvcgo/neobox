@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -58,7 +57,7 @@ type Verifier struct {
 }
 
 func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
-	os.Setenv("XRAY_LOCATION_ASSET", cnf.NeoWorkDir)
+	// os.Setenv("XRAY_LOCATION_ASSET", cnf.NeoWorkDir)
 	vPath := filepath.Join(cnf.NeoWorkDir, cnf.VerifiedFileName)
 	v := &Verifier{
 		conf:         cnf,
@@ -101,7 +100,7 @@ func (that *Verifier) send(cType clients.ClientType, force ...bool) {
 	if cType == clients.TypeXray {
 		that.sendChan = make(chan *Proxy, 30)
 		for _, p := range that.originList.Proxies.List {
-			if p.Scheme() != parser.SSRScheme {
+			if p.Scheme() != parser.SSRScheme && p.Scheme() != parser.SSScheme {
 				that.sendChan <- &p
 			}
 		}
@@ -109,7 +108,7 @@ func (that *Verifier) send(cType clients.ClientType, force ...bool) {
 	} else {
 		that.sendSSRChan = make(chan *Proxy, 30)
 		for _, p := range that.originList.Proxies.List {
-			if p.Scheme() == parser.SSRScheme {
+			if p.Scheme() == parser.SSRScheme || p.Scheme() == parser.SSScheme {
 				that.sendSSRChan <- &p
 			}
 		}
@@ -232,4 +231,11 @@ func (that *Verifier) Run(force ...bool) {
 
 func (that *Verifier) IsRunning() bool {
 	return that.isRunning
+}
+
+func (that *Verifier) Info() (string, any) {
+	if that.verifiedList == nil {
+		return "", nil
+	}
+	return that.vPath, that.verifiedList
 }

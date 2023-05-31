@@ -1,9 +1,12 @@
 package run
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -13,6 +16,7 @@ import (
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/iface"
 	"github.com/moqsien/neobox/pkgs/proxy"
+	"github.com/moqsien/neobox/pkgs/utils"
 	"github.com/moqsien/neobox/pkgs/utils/log"
 	cron "github.com/robfig/cron/v3"
 )
@@ -38,6 +42,7 @@ type Runner struct {
 }
 
 func NewRunner(cnf *conf.NeoBoxConf) *Runner {
+	os.Setenv(utils.XrayLocationAssetDirEnv, cnf.AssetDir)
 	r := &Runner{
 		verifier:   proxy.NewVerifier(cnf),
 		conf:       cnf,
@@ -79,7 +84,8 @@ func (that *Runner) Start() {
 	// that.daemon.Run()
 
 	go that.startRunnerPingServer()
-	// go that.CtrlServer()
+	go that.KtrlServer()
+
 	if !that.verifier.IsRunning() {
 		that.verifier.SetUseExtraOrNot(true)
 		that.verifier.Run(true)
@@ -107,7 +113,11 @@ func (that *Runner) Restart(pIdx int) (result string) {
 	pxy := that.verifier.GetProxyByIndex(pIdx)
 	if pxy != nil {
 		that.client.SetProxy(pxy)
-		that.client.SetInPortAndLogFile(that.conf.NeoBoxClientInPort, "")
+		if that.conf.NeoLogFileDir != "" {
+			futils.MakeDirs(that.conf.NeoLogFileDir)
+		}
+		logPath := filepath.Join(that.conf.NeoLogFileDir, that.conf.XLogFileName)
+		that.client.SetInPortAndLogFile(that.conf.NeoBoxClientInPort, logPath)
 		err := that.client.Start()
 		if err == nil {
 			result = fmt.Sprintf("%d.%s", pIdx, pxy.String())
@@ -120,4 +130,45 @@ func (that *Runner) Restart(pIdx int) (result string) {
 
 func (that *Runner) Exit() {
 	StopChan <- struct{}{}
+}
+
+func (that *Runner) KtrlShell() {
+
+}
+
+func (that *Runner) KtrlServer() {
+
+}
+
+/*
+Download files needed by sing-box and xray-core.
+*/
+func (that *Runner) DownloadGeoInfo() {
+	futils.MakeDirs(that.conf.AssetDir)
+	for name, dUrl := range that.conf.GeoInfoUrls {
+		fPath := filepath.Join(that.conf.AssetDir, name)
+		if ok, _ := futils.PathIsExist(fPath); ok {
+			os.RemoveAll(fPath)
+		}
+		res, err := http.Get(dUrl)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		defer res.Body.Close()
+		reader := bufio.NewReaderSize(res.Body, 32*1024)
+		os.RemoveAll(fPath)
+		file, err := os.Create(fPath)
+		if err != nil {
+			continue
+		}
+		writer := bufio.NewWriter(file)
+		written, err := io.Copy(writer, reader)
+		if err != nil {
+			os.RemoveAll(name)
+		} else {
+			// TODO: color
+			fmt.Println("dowloaded", written)
+		}
+	}
 }

@@ -137,9 +137,9 @@ func (that *Shell) add() {
 					}
 				}
 				if flag {
-					tui.SPrintSuccess("Add Proxy[%s] succeeded.", p.String())
+					tui.PrintSuccessf("Add Proxy[%s] succeeded.", p.String())
 				} else {
-					tui.SPrintWarningf("Add Proxy[%s] failed.", p.String())
+					tui.PrintWarningf("Add Proxy[%s] failed.", p.String())
 				}
 			}
 		},
@@ -155,7 +155,7 @@ func (that *Shell) parse() {
 		Func: func(c *goktrl.Context) {
 			par := proxy.NewParser(that.conf)
 			par.Parse()
-			tui.SPrintInfof("Parsed File Path: %s", par.Path())
+			tui.PrintInfof("Parsed File Path: %s", par.Path())
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
 		SocketName:  that.ktrlSocks,

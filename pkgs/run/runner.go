@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	d "github.com/moqsien/goutils/pkgs/daemon"
+	tui "github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	log "github.com/moqsien/goutils/pkgs/logs"
 	socks "github.com/moqsien/goutils/pkgs/socks"
@@ -189,7 +190,7 @@ func (that *Runner) DownloadGeoInfo() (aDir string) {
 		}
 		res, err := http.Get(dUrl)
 		if err != nil {
-			fmt.Println(err)
+			tui.PrintErrorf("Download [%s] failed: %+v", name, err)
 			continue
 		}
 		defer res.Body.Close()
@@ -197,15 +198,16 @@ func (that *Runner) DownloadGeoInfo() (aDir string) {
 		os.RemoveAll(fPath)
 		file, err := os.Create(fPath)
 		if err != nil {
+			tui.PrintErrorf("Download [%s] failed: %+v", name, err)
 			continue
 		}
 		writer := bufio.NewWriter(file)
 		written, err := io.Copy(writer, reader)
 		if err != nil {
+			tui.PrintErrorf("Download [%s] failed: %+v", name, err)
 			os.RemoveAll(name)
 		} else {
-			// TODO: color
-			fmt.Println("dowloaded", written)
+			tui.PrintSuccessf("Download succeeded. %s[%v].", name, written)
 		}
 	}
 	aDir = that.conf.AssetDir

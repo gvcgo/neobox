@@ -126,16 +126,16 @@ func (that *Verifier) sendReq(inPort int, p *Proxy) {
 	}
 	collector := DefaultCollyPool.Get(inPort, that.conf.VerificationTimeout)
 	collector.OnError(func(r *colly.Response, err error) {
-		tui.SPrintWarningf("Proxy[%s] verification faild. Error: %+v", p.String(), err)
+		tui.PrintWarningf("Proxy[%s] verification faild. Error: %+v", p.String(), err)
 	})
 	startTime := time.Now()
 	collector.OnResponse(func(r *colly.Response) {
 		if strings.Contains(string(r.Body), "</html>") {
 			p.RTT = time.Since(startTime).Milliseconds()
 			that.verifiedList.AddProxies(*p)
-			tui.SPrintSuccess("Proxy[%s] verification succeeded.", p.String())
+			tui.PrintSuccessf("Proxy[%s] verification succeeded.", p.String())
 		} else {
-			tui.SPrintWarningf("Proxy[%s] verification faild.", p.String())
+			tui.PrintWarningf("Proxy[%s] verification faild.", p.String())
 		}
 	})
 	collector.Visit(that.conf.VerificationUri)
@@ -170,11 +170,11 @@ func (that *Verifier) StartClient(inPort int, cType clients.ClientType) {
 			client.SetProxy(p)
 			start := time.Now()
 			if err := client.Start(); err != nil {
-				tui.SPrintErrorf("Client[%s] start failed. Error: %+v", p.String(), err)
+				tui.PrintErrorf("Client[%s] start failed. Error: %+v", p.String(), err)
 				client.Close()
 				return
 			}
-			tui.SPrintInfof("Proxy[%s] time consumed: %vs\n", p.String(), time.Since(start).Seconds())
+			tui.PrintInfof("Proxy[%s] time consumed: %vs\n", p.String(), time.Since(start).Seconds())
 			that.sendReq(inPort, p)
 			client.Close()
 		default:
@@ -217,12 +217,7 @@ func (that *Verifier) Run(force ...bool) {
 	tui.PrintInfo("filters for [ssr] started.")
 	that.wg.Wait()
 	tui.PrintInfo("filters for [ssr] stopped.")
-
-	if that.verifiedList.Len() > 0 {
-		that.verifiedList.Save()
-	}
-
-	tui.SPrintInfof("[info] Find %d available proxies.\n", that.verifiedList.Len())
+	tui.PrintInfof("Find %d available proxies.\n", that.verifiedList.Len())
 	if that.verifiedList.Len() > 0 {
 		that.verifiedList.Save()
 	}

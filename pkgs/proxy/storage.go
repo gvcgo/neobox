@@ -9,10 +9,12 @@ import (
 	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/hackbrowser/utils/hsqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 const (
 	DBPathEnvName = "NEOBOX_DB_PATH"
+	dbFileName    = "neobox_proxies.db"
 )
 
 var (
@@ -21,6 +23,10 @@ var (
 	once          sync.Once
 	dbPath        string
 )
+
+func SetDBPathEnv(dirPath string) {
+	os.Setenv(DBPathEnvName, dirPath)
+}
 
 func getDBPath() string {
 	if dbPath != "" {
@@ -31,7 +37,7 @@ func getDBPath() string {
 		exePath, _ := os.Executable()
 		dbPath = filepath.Dir(exePath)
 	}
-	return dbPath
+	return filepath.Join(dbPath, dbFileName)
 }
 
 // singleton pattern for db.
@@ -53,9 +59,12 @@ func NewDB(dbPath string) (r *Database) {
 	if ok, _ := gutils.PathIsExist(dbPath); !ok {
 		toMigrateFlag = true
 	}
-	if db, err := gorm.Open(hsqlite.Open(dbPath), &gorm.Config{}); err == nil {
+	if db, err := gorm.Open(hsqlite.Open(dbPath), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Error),
+	}); err == nil {
 		r.DB = db
 		if toMigrateFlag {
+			// TODO: migrate two tables.
 			r.DB.AutoMigrate(&Proxy{})
 		}
 	} else {

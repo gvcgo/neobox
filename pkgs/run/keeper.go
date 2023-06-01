@@ -54,7 +54,7 @@ func (that *Keeper) runKeeperServer() {
 		c.String(http.StatusOK, OkStr)
 	})
 	if err := server.Start(); err != nil {
-		tui.SPrintErrorf("[start server failed] %+v", err)
+		tui.PrintErrorf("[start server failed] %+v", err)
 	}
 }
 

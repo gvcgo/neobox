@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -9,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	tui "github.com/moqsien/goutils/pkgs/gtui"
 	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/conf"
 	probing "github.com/prometheus-community/pro-bing"
@@ -39,7 +39,7 @@ func NewNeoPinger(cnf *conf.NeoBoxConf) *NeoPinger {
 func (that *NeoPinger) send(force ...bool) {
 	that.sendChan = make(chan *Proxy, 30)
 	r := that.fetcher.GetRawProxyList(force...)
-	fmt.Printf("find %v raw proxies.\n", len(r))
+	tui.PrintInfof("Find %v raw proxies.\n", len(r))
 	for _, rawUri := range r {
 		p := DefaultProxyPool.Get(rawUri)
 		if p != nil {
@@ -66,7 +66,6 @@ func (that *NeoPinger) ping(p *Proxy) {
 						return
 					}
 				}
-				DefaultProxyPool.Put(p)
 			}
 			if err := pinger.Run(); err != nil {
 				log.Error(err)

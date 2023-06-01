@@ -24,7 +24,6 @@ type NeoPinger struct {
 	fetcher    *Fetcher
 	sendChan   chan *Proxy
 	wg         sync.WaitGroup
-	pPath      string
 }
 
 func NewNeoPinger(cnf *conf.NeoBoxConf) *NeoPinger {
@@ -34,7 +33,6 @@ func NewNeoPinger(cnf *conf.NeoBoxConf) *NeoPinger {
 		pingedList: NewProxyList(fPath),
 		fetcher:    NewFetcher(cnf),
 		wg:         sync.WaitGroup{},
-		pPath:      fPath,
 	}
 }
 
@@ -107,12 +105,12 @@ func (that *NeoPinger) Run(force ...bool) *ProxyList {
 	return that.pingedList
 }
 
-func (that *NeoPinger) Info() (string, any) {
+func (that *NeoPinger) Info() *ProxyList {
 	if that.pingedList == nil {
-		return that.pPath, nil
+		return nil
 	}
 	that.pingedList.Load()
-	return that.pPath, that.pingedList
+	return that.pingedList
 }
 
 /*

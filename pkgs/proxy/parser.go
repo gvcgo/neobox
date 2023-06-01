@@ -26,7 +26,7 @@ type Parser struct {
 	fetcher    *Fetcher
 	conf       *conf.NeoBoxConf
 	ParsedList *ParsedResult `json,koanf:"parsed_proxies"`
-	pPath      string
+	path       string
 }
 
 func NewParser(cnf *conf.NeoBoxConf) *Parser {
@@ -47,7 +47,7 @@ func NewParser(cnf *conf.NeoBoxConf) *Parser {
 			SS:     []string{},
 			SSR:    []string{},
 		},
-		pPath: fPath,
+		path: fPath,
 	}
 }
 
@@ -90,7 +90,11 @@ func (that *Parser) Parse() {
 	}
 }
 
-func (that *Parser) Info() (string, any) {
+func (that *Parser) Info() *ParsedResult {
 	that.koanfer.Load(that.ParsedList)
-	return that.pPath, that.ParsedList
+	return that.ParsedList
+}
+
+func (that *Parser) Path() string {
+	return that.path
 }

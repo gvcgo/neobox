@@ -53,7 +53,6 @@ type Verifier struct {
 	wg           *sync.WaitGroup
 	useExtra     bool
 	isRunning    bool
-	vPath        string
 }
 
 func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
@@ -64,7 +63,6 @@ func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
 		pinger:       NewNeoPinger(cnf),
 		verifiedList: NewProxyList(vPath),
 		wg:           &sync.WaitGroup{},
-		vPath:        vPath,
 	}
 	return v
 }
@@ -73,17 +71,17 @@ func (that *Verifier) SetUseExtraOrNot(useOrNot bool) {
 	that.useExtra = useOrNot
 }
 
-func (that *Verifier) GetProxyByIndex(pIdx int) *Proxy {
+func (that *Verifier) GetProxyByIndex(pIdx int) (*Proxy, int) {
 	if that.verifiedList == nil || that.verifiedList.Len() == 0 {
-		return nil
+		return nil, 0
 	}
 	if that.verifiedList != nil {
 		that.verifiedList.Load()
 	}
 	if pIdx >= that.verifiedList.Len() {
-		return &that.verifiedList.Proxies.List[0]
+		return &that.verifiedList.Proxies.List[0], 0
 	}
-	return &that.verifiedList.Proxies.List[pIdx]
+	return &that.verifiedList.Proxies.List[pIdx], pIdx
 }
 
 func (that *Verifier) send(cType clients.ClientType, force ...bool) {
@@ -233,9 +231,10 @@ func (that *Verifier) IsRunning() bool {
 	return that.isRunning
 }
 
-func (that *Verifier) Info() (string, any) {
+func (that *Verifier) Info() *ProxyList {
 	if that.verifiedList == nil {
-		return "", nil
+		return nil
 	}
-	return that.vPath, that.verifiedList
+	that.verifiedList.Load()
+	return that.verifiedList
 }

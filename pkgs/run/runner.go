@@ -22,23 +22,26 @@ import (
 )
 
 const (
-	ExtraSockName    = "neobox_ping.sock"
-	OkStr            = "ok"
-	runnerPingRoute  = "/pingRunner"
-	winRunScriptName = "neobox_runner.bat"
+	ExtraSockName       = "neobox_ping.sock"
+	OkStr               = "ok"
+	runnerPingRoute     = "/pingRunner"
+	runnerVerifierRoute = "/pingVerifier"
+	winRunScriptName    = "neobox_runner.bat"
 )
 
 var StopChan chan struct{} = make(chan struct{})
 
 type Runner struct {
-	verifier   *proxy.Verifier
-	conf       *conf.NeoBoxConf
-	client     iface.IClient
-	extraSocks string
-	pingClient *socks.UClient
-	daemon     *futils.Daemon
-	cron       *cron.Cron
-	shell      *Shell
+	verifier     *proxy.Verifier
+	conf         *conf.NeoBoxConf
+	client       iface.IClient
+	currentPIdx  int
+	currentProxy *proxy.Proxy
+	extraSocks   string
+	pingClient   *socks.UClient
+	daemon       *futils.Daemon
+	cron         *cron.Cron
+	shell        *Shell
 }
 
 func NewRunner(cnf *conf.NeoBoxConf) *Runner {
@@ -67,6 +70,13 @@ func (that *Runner) startRunnerPingServer() {
 	server.AddHandler(runnerPingRoute, func(c *gin.Context) {
 		c.String(http.StatusOK, OkStr)
 	})
+	server.AddHandler(runnerVerifierRoute, func(c *gin.Context) {
+		if that.VerifierIsRunning() {
+			c.String(http.StatusOK, OkStr)
+		} else {
+			c.String(http.StatusOK, "false")
+		}
+	})
 	if err := server.Start(); err != nil {
 		log.PrintError("[start ping server failed] ", err)
 	}
@@ -77,6 +87,16 @@ func (that *Runner) Ping() bool {
 		that.pingClient = socks.NewUClient(that.extraSocks)
 	}
 	if resp, err := that.pingClient.GetResp(runnerPingRoute, map[string]string{}); err == nil {
+		return strings.Contains(resp, OkStr)
+	}
+	return false
+}
+
+func (that *Runner) PingVerifier() bool {
+	if that.pingClient == nil {
+		that.pingClient = socks.NewUClient(that.extraSocks)
+	}
+	if resp, err := that.pingClient.GetResp(runnerVerifierRoute, map[string]string{}); err == nil {
 		return strings.Contains(resp, OkStr)
 	}
 	return false
@@ -117,9 +137,9 @@ func (that *Runner) Restart(pIdx int) (result string) {
 		that.client = clients.NewLocalClient(clients.TypeSing)
 	}
 	that.client.Close()
-	pxy := that.verifier.GetProxyByIndex(pIdx)
-	if pxy != nil {
-		that.client.SetProxy(pxy)
+	that.currentProxy, that.currentPIdx = that.verifier.GetProxyByIndex(pIdx)
+	if that.currentProxy != nil {
+		that.client.SetProxy(that.currentProxy)
 		if that.conf.NeoLogFileDir != "" {
 			futils.MakeDirs(that.conf.NeoLogFileDir)
 		}
@@ -127,12 +147,24 @@ func (that *Runner) Restart(pIdx int) (result string) {
 		that.client.SetInPortAndLogFile(that.conf.NeoBoxClientInPort, logPath)
 		err := that.client.Start()
 		if err == nil {
-			result = fmt.Sprintf("%d.%s", pIdx, pxy.String())
+			result = fmt.Sprintf("%d.%s", pIdx, that.currentProxy.String())
 		} else {
 			result = err.Error()
 		}
 	}
 	return
+}
+
+func (that *Runner) Current() (result string) {
+	result = "none"
+	if that.currentProxy != nil {
+		result = fmt.Sprintf("[%d] %s", that.currentPIdx, that.currentProxy.String())
+	}
+	return
+}
+
+func (that *Runner) GetVerifier() *proxy.Verifier {
+	return that.verifier
 }
 
 func (that *Runner) Exit() {
@@ -146,7 +178,7 @@ func (that *Runner) OpenShell() {
 /*
 Download files needed by sing-box and xray-core.
 */
-func (that *Runner) DownloadGeoInfo() {
+func (that *Runner) DownloadGeoInfo() (aDir string) {
 	futils.MakeDirs(that.conf.AssetDir)
 	for name, dUrl := range that.conf.GeoInfoUrls {
 		fPath := filepath.Join(that.conf.AssetDir, name)
@@ -174,4 +206,6 @@ func (that *Runner) DownloadGeoInfo() {
 			fmt.Println("dowloaded", written)
 		}
 	}
+	aDir = that.conf.AssetDir
+	return
 }

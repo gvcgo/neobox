@@ -158,6 +158,10 @@ func NewProxyList(fPath string) *ProxyList {
 	return pl
 }
 
+func (that *ProxyList) Path() string {
+	return that.path
+}
+
 func (that *ProxyList) AddProxies(p ...Proxy) {
 	if len(p) > 0 {
 		that.lock.Lock()

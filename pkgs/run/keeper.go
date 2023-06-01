@@ -77,6 +77,9 @@ func (that *Keeper) StopRequest() string {
 }
 
 func (that *Keeper) checkRunner() {
+	if that.runner == nil {
+		that.runner = NewRunner(that.conf)
+	}
 	if !that.runner.Ping() {
 		that.runner.Start()
 	}

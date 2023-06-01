@@ -94,3 +94,24 @@ func (that *Fetcher) GetRawProxyList(force ...bool) (r []string) {
 	r = append(r, result.SSRList.List...)
 	return
 }
+
+type RawStatistics struct {
+	Vmess  int `json:"vmess"`
+	SSR    int `json:"ssr"`
+	Vless  int `json:"vless"`
+	SS     int `json:"ss"`
+	Trojan int `json:"trojan"`
+	Other  int `json:"other"`
+}
+
+func (that *Fetcher) GetStatistics() *RawStatistics {
+	result := that.GetRawProxies()
+	return &RawStatistics{
+		Vmess:  len(result.VmessList.List),
+		Vless:  len(result.VlessList.List),
+		SSR:    len(result.SSRList.List),
+		SS:     len(result.SSList.List),
+		Trojan: len(result.Trojan.List),
+		Other:  len(result.Other.List),
+	}
+}

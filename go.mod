@@ -11,6 +11,7 @@ require (
 	github.com/moqsien/goutils v0.0.4
 	github.com/moqsien/hackbrowser v1.0.3
 	github.com/prometheus-community/pro-bing v0.1.0
+	github.com/pterm/pterm v0.12.62
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sagernet/sing-box v1.2.7
 	github.com/xtls/xray-core v1.8.1
@@ -18,6 +19,9 @@ require (
 )
 
 require (
+	atomicgo.dev/cursor v0.1.1 // indirect
+	atomicgo.dev/keyboard v0.2.9 // indirect
+	atomicgo.dev/schedule v0.0.2 // indirect
 	berty.tech/go-libtor v1.0.385 // indirect
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/Dreamacro/clash v1.15.1 // indirect
@@ -36,6 +40,7 @@ require (
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/clbanning/mxj v1.8.5-0.20200714211355-ff02cfb8ea28 // indirect
 	github.com/cloudflare/circl v1.2.1-0.20221019164342-6ab4dfed8f3c // indirect
+	github.com/containerd/console v1.0.3 // indirect
 	github.com/cretz/bine v0.2.0 // indirect
 	github.com/dgryski/go-metro v0.0.0-20211217172704-adc40b04c140 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -67,6 +72,7 @@ require (
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/pprof v0.0.0-20230406165453-00490a63f317 // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/gookit/color v1.5.3 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/grokify/html-strip-tags-go v0.0.1 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
@@ -82,6 +88,7 @@ require (
 	github.com/knadh/koanf v1.5.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/libdns/libdns v0.2.1 // indirect
+	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/mattn/go-colorable v0.1.9 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
@@ -138,6 +145,7 @@ require (
 	github.com/ugorji/go/codec v1.2.9 // indirect
 	github.com/v2fly/ss-bloomring v0.0.0-20210312155135-28617310f63e // indirect
 	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74 // indirect
+	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/xtls/reality v0.0.0-20230331223127-176a94313eda // indirect
 	go.etcd.io/bbolt v1.3.7 // indirect
 	go.opentelemetry.io/otel v1.7.0 // indirect

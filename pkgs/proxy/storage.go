@@ -12,6 +12,11 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+/*
+Restore history vpn list and
+manually added vpn list to sqlite.
+*/
+
 const (
 	DBPathEnvName = "NEOBOX_DB_PATH"
 	dbFileName    = "neobox_proxies.db"
@@ -59,6 +64,8 @@ func NewDB(dbPath string) (r *Database) {
 	if ok, _ := gutils.PathIsExist(dbPath); !ok {
 		toMigrateFlag = true
 	}
+	// logger.Default.LogMode(logger.Error)
+	// TODO: write log info to glog.Logger
 	if db, err := gorm.Open(hsqlite.Open(dbPath), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Error),
 	}); err == nil {

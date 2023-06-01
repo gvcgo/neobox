@@ -83,7 +83,6 @@ func (that *Parser) Parse() {
 			DefaultProxyPool.Put(iob)
 		}
 	}
-
 	that.ParsedList.UpdatedAt = gtime.Now().String()
 	if err := that.koanfer.Save(that.ParsedList); err != nil {
 		log.Error("save file failed: ", err)

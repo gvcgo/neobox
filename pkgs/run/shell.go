@@ -57,8 +57,12 @@ func (that *Shell) SetKeeper(keeper *Keeper) {
 func (that *Shell) start() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "start",
-		Help: "Start an sing-box client.",
+		Help: "Start an sing-box client/keeper.",
 		Func: func(c *goktrl.Context) {
+			if !that.runner.IsGeoInfoInstalled() {
+				// automatically download geoip and geosite
+				that.runner.DownloadGeoInfo()
+			}
 			that.runner.Start()
 			time.Sleep(2 * time.Second)
 			if that.runner.Ping() {
@@ -83,7 +87,7 @@ func (that *Shell) start() {
 func (that *Shell) stop() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "stop",
-		Help: "Stop the running sing-box client.",
+		Help: "Stop the running sing-box client/keeper.",
 		Func: func(c *goktrl.Context) {
 			res, _ := c.GetResult()
 			tui.PrintWarning(res)
@@ -122,7 +126,7 @@ func (that *Shell) restart() {
 func (that *Shell) add() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "add",
-		Help: "manually add proxies to neobox.",
+		Help: "Add proxies to neobox mannually.",
 		Func: func(c *goktrl.Context) {
 			for _, rawUri := range os.Args {
 				p := proxy.DefaultProxyPool.Get(rawUri)
@@ -147,7 +151,7 @@ func (that *Shell) add() {
 func (that *Shell) parse() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "parse",
-		Help: "parse raw proxy URIs to human readable ones.",
+		Help: "Parse raw proxy URIs to human readable ones.",
 		Func: func(c *goktrl.Context) {
 			par := proxy.NewParser(that.conf)
 			par.Parse()
@@ -292,7 +296,7 @@ func (that *Shell) current() {
 func (that *Shell) geoinfo() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "geoinfo",
-		Help: "Download geoip&geosite for sing-box.",
+		Help: "Install/Update geoip&geosite for sing-box.",
 		Func: func(c *goktrl.Context) {
 			aDir := that.runner.DownloadGeoInfo()
 			if dList, err := os.ReadDir(aDir); err == nil {

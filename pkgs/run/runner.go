@@ -211,3 +211,13 @@ func (that *Runner) DownloadGeoInfo() (aDir string) {
 	aDir = that.conf.AssetDir
 	return
 }
+
+func (that *Runner) IsGeoInfoInstalled() bool {
+	for name := range that.conf.GeoInfoUrls {
+		fPath := filepath.Join(that.conf.AssetDir, name)
+		if ok, _ := gutils.PathIsExist(fPath); !ok {
+			return false
+		}
+	}
+	return true
+}

@@ -58,6 +58,10 @@ func NewRunner(cnf *conf.NeoBoxConf) *Runner {
 	return r
 }
 
+func (that *Runner) VerifierIsRunning() bool {
+	return that.verifier.IsRunning()
+}
+
 func (that *Runner) startRunnerPingServer() {
 	server := socks.NewUServer(that.extraSocks)
 	server.AddHandler(runnerPingRoute, func(c *gin.Context) {

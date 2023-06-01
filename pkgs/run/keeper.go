@@ -82,7 +82,7 @@ func (that *Keeper) checkRunner() {
 	}
 }
 
-func (that *Keeper) Run() {
+func (that *Keeper) Start() {
 	// that.daemon.Run()
 	go that.runKeeperServer()
 	cronTime := that.conf.NeoBoxKeeperCron

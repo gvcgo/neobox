@@ -7,9 +7,9 @@ import (
 
 	"github.com/gocolly/colly/v2"
 	crypt "github.com/moqsien/goutils/pkgs/crypt"
-	futils "github.com/moqsien/goutils/pkgs/utils"
+	"github.com/moqsien/goutils/pkgs/gutils"
+	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/neobox/pkgs/utils/log"
 )
 
 type RawList struct {
@@ -38,7 +38,7 @@ type Fetcher struct {
 }
 
 func NewFetcher(c *conf.NeoBoxConf) *Fetcher {
-	log.SetLogger(c)
+	log.SetLogger(c.NeoLogFileDir)
 	return &Fetcher{
 		collector: colly.NewCollector(),
 		Conf:      c,
@@ -59,7 +59,7 @@ func (that *Fetcher) DownloadFile() (success bool) {
 			os.WriteFile(that.path, result, os.ModePerm)
 			success = true
 		} else {
-			log.PrintError("[Parse rawFile failed] ", err)
+			log.Error("[Parse rawFile failed] ", err)
 		}
 	})
 	that.collector.Visit(that.Conf.RawUriURL)
@@ -72,7 +72,7 @@ func (that *Fetcher) GetRawProxies(force ...bool) *RawResult {
 	if len(force) > 0 {
 		flag = force[0]
 	}
-	if ok, _ := futils.PathIsExist(that.path); !ok || flag {
+	if ok, _ := gutils.PathIsExist(that.path); !ok || flag {
 		flag = that.DownloadFile()
 	} else {
 		flag = true

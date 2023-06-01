@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
+	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/neobox/pkgs/utils/log"
 	probing "github.com/prometheus-community/pro-bing"
 )
 
@@ -69,7 +69,7 @@ func (that *NeoPinger) ping(p *Proxy) {
 				DefaultProxyPool.Put(p)
 			}
 			if err := pinger.Run(); err != nil {
-				log.PrintError(err)
+				log.Error(err)
 			}
 		}
 	}
@@ -124,6 +124,6 @@ func SetPingWithoutRootForUnix() {
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	if err := cmd.Run(); err != nil {
-		log.PrintError(err)
+		log.Error(err)
 	}
 }

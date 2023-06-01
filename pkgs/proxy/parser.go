@@ -5,8 +5,8 @@ import (
 
 	"github.com/gogf/gf/v2/os/gtime"
 	koanfer "github.com/moqsien/goutils/pkgs/koanfer"
+	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/neobox/pkgs/utils/log"
 )
 
 /*
@@ -33,7 +33,7 @@ func NewParser(cnf *conf.NeoBoxConf) *Parser {
 	fPath := filepath.Join(cnf.NeoWorkDir, cnf.ParsedFileName)
 	k, err := koanfer.NewKoanfer(fPath)
 	if err != nil {
-		log.PrintError("new koanfer failed: ", err)
+		log.Error("new koanfer failed: ", err)
 		return nil
 	}
 	return &Parser{
@@ -86,7 +86,7 @@ func (that *Parser) Parse() {
 
 	that.ParsedList.UpdatedAt = gtime.Now().String()
 	if err := that.koanfer.Save(that.ParsedList); err != nil {
-		log.PrintError("save file failed: ", err)
+		log.Error("save file failed: ", err)
 	}
 }
 

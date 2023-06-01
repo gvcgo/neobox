@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"sync"
 
-	futils "github.com/moqsien/goutils/pkgs/utils"
+	"github.com/moqsien/goutils/pkgs/gutils"
+	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/hackbrowser/utils/hsqlite"
-	"github.com/moqsien/neobox/pkgs/utils/log"
 	"gorm.io/gorm"
 )
 
@@ -50,7 +50,7 @@ type Database struct {
 
 func NewDB(dbPath string) (r *Database) {
 	r = &Database{}
-	if ok, _ := futils.PathIsExist(dbPath); !ok {
+	if ok, _ := gutils.PathIsExist(dbPath); !ok {
 		toMigrateFlag = true
 	}
 	if db, err := gorm.Open(hsqlite.Open(dbPath), &gorm.Config{}); err == nil {
@@ -59,7 +59,7 @@ func NewDB(dbPath string) (r *Database) {
 			r.DB.AutoMigrate(&Proxy{})
 		}
 	} else {
-		log.PrintError("[Open db failed]", err)
+		log.Error("[Open db failed]", err)
 		panic("Init storage.db failed")
 	}
 	return
@@ -73,25 +73,27 @@ const (
 func GetHistoryVpnsFromDB() (pList []Proxy, err error) {
 	result := StorageDB().DB.Table(HistoryVpnsTableName).Find(&pList)
 	err = result.Error
+	log.Error(err)
 	return
 }
 
 func AddProxyToDB(p Proxy) (r Proxy, err error) {
 	result := StorageDB().DB.Table(HistoryVpnsTableName).Where(&Proxy{RawUri: p.RawUri}).FirstOrCreate(&r)
 	err = result.Error
-	log.PrintError(err)
+	log.Error(err)
 	return
 }
 
 func GetManualVpnsFromDB() (pList []Proxy, err error) {
 	result := StorageDB().DB.Table(ManualVpnsTableName).Find(&pList)
 	err = result.Error
+	log.Error(err)
 	return
 }
 
 func AddExtraProxyToDB(p Proxy) (r Proxy, err error) {
 	result := StorageDB().DB.Table(ManualVpnsTableName).Where(&Proxy{RawUri: p.RawUri}).FirstOrCreate(&r)
 	err = result.Error
-	log.PrintError(err)
+	log.Error(err)
 	return
 }

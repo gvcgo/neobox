@@ -5,11 +5,12 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/moqsien/goktrl"
+	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/koanfer"
-	futils "github.com/moqsien/goutils/pkgs/utils"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/proxy"
 	"github.com/pterm/pterm"
@@ -51,30 +52,46 @@ func (that *Shell) SetKeeper(keeper *Keeper) {
 	that.keeper = keeper
 }
 
+// start sing-box client and keeper.
 func (that *Shell) start() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "start",
 		Help: "Start an sing-box client.",
 		Func: func(c *goktrl.Context) {
 			that.runner.Start()
+			time.Sleep(2 * time.Second)
+			if that.runner.Ping() {
+				pterm.Println(pterm.Green("start sing-box succeeded."))
+			} else {
+				pterm.Println(pterm.Red("start sing-box failed"))
+			}
 			that.keeper.Start()
+			time.Sleep(2 * time.Second)
+			if that.keeper.Ping() {
+				pterm.Println(pterm.Green("start keeper succeeded."))
+			} else {
+				pterm.Println(pterm.Red("start keeper failed"))
+			}
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
 		SocketName:  that.ktrlSocks,
 	})
 }
 
+// stop sing-box client and keeper.
 func (that *Shell) stop() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "stop",
 		Help: "Stop the running sing-box client.",
 		Func: func(c *goktrl.Context) {
-			c.GetResult()
-			that.keeper.StopRequest()
+			res, _ := c.GetResult()
+			pterm.Println(pterm.Red(string(res)))
+			r := that.keeper.StopRequest()
+			pterm.Println(pterm.Red(r))
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			that.runner.Exit()
-			c.Send("xtray client stopped.", 200)
+			c.Send("sing-box client stopped.", 200)
 		},
 		SocketName: that.ktrlSocks,
 	})
@@ -85,7 +102,8 @@ func (that *Shell) restart() {
 		Name: "restart",
 		Help: "Restart the running sing-box client.",
 		Func: func(c *goktrl.Context) {
-			c.GetResult()
+			res, _ := c.GetResult()
+			pterm.Println(pterm.Green(string(res)))
 		},
 		ArgsDescription: "choose a specified proxy by index.",
 		KtrlHandler: func(c *goktrl.Context) {
@@ -109,7 +127,7 @@ func (that *Shell) add() {
 				p := proxy.DefaultProxyPool.Get(rawUri)
 				if p.Scheme() != "" {
 					if _, err := proxy.AddExtraProxyToDB(*p); err == nil {
-						fmt.Println("Add ", p.String(), "succeeded.")
+						pterm.Println(pterm.Green("Add ", p.String(), "succeeded."))
 					}
 				}
 			}
@@ -125,7 +143,7 @@ func (that *Shell) show() {
 		Help: "Show vpn list info.",
 		Func: func(c *goktrl.Context) {
 			rawStatistics := proxy.NewFetcher(that.conf).GetStatistics()
-			str := pterm.Green(fmt.Sprintf("RawList: vmess[%d] vless[%d] trojan[%d] ss[%d] ssr[%d] others[%d]",
+			str := pterm.Green(fmt.Sprintf("RawList: vmess[%d] vless[%d] trojan[%d] ss[%d] ssr[%d] others[%d].",
 				rawStatistics.Vmess,
 				rawStatistics.Vless,
 				rawStatistics.Trojan,
@@ -151,7 +169,7 @@ func (that *Shell) show() {
 				pinCount = pinList.Len()
 			}
 
-			pterm.Println(pterm.Green(fmt.Sprintf("ManuallyAdded[%d] History[%d] PingSucceeded[%d]", manCount, hisCount, pinCount)))
+			pterm.Println(pterm.Green(fmt.Sprintf("VPNList: ManuallyAdded[%d] History[%d] PingSucceeded[%d].", manCount, hisCount, pinCount)))
 			pterm.Println(pterm.Cyan("========================================================================"))
 			pterm.Println(pterm.Green("Currently available list: "))
 			v := that.runner.GetVerifier()
@@ -180,7 +198,7 @@ func (that *Shell) filter() {
 		Func: func(c *goktrl.Context) {
 			result, _ := c.GetResult()
 			if len(result) > 0 {
-				fmt.Println(result)
+				pterm.Println(pterm.Green(result))
 			}
 		},
 		KtrlHandler: func(c *goktrl.Context) {
@@ -206,7 +224,7 @@ func (that *Shell) export() {
 		Help: "Export vpn history list.",
 		Func: func(c *goktrl.Context) {
 			that.ExportHistoryVpns()
-			fmt.Println(filepath.Join(that.conf.HistoryVpnsFileDir, HistoryVpnsFileName))
+			pterm.Println(pterm.Yellow(filepath.Join(that.conf.HistoryVpnsFileDir, HistoryVpnsFileName)))
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
 		SocketName:  that.ktrlSocks,
@@ -219,19 +237,19 @@ func (that *Shell) status() {
 		Help: "Show sing-box client/keeper/verifier running status.",
 		Func: func(c *goktrl.Context) {
 			if that.runner.Ping() {
-				fmt.Println("sing-box is running.")
+				pterm.Println(pterm.Green("sing-box is running."))
 			} else {
-				fmt.Println("sing-box is stopped.")
+				pterm.Println(pterm.Red("sing-box is stopped."))
 			}
 			if that.runner.PingVerifier() {
-				fmt.Println("verifier is running.")
+				pterm.Println(pterm.Green("verifier is running."))
 			} else {
-				fmt.Println("verifier is stopped.")
+				pterm.Println(pterm.Red("verifier is stopped."))
 			}
 			if that.keeper.Ping() {
-				fmt.Println("keeper is running.")
+				pterm.Println(pterm.Green("keeper is running."))
 			} else {
-				fmt.Println("keeper is stopped.")
+				pterm.Println(pterm.Red("keeper is stopped."))
 			}
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
@@ -244,7 +262,8 @@ func (that *Shell) current() {
 		Name: "current",
 		Help: "Show current vpn.",
 		Func: func(c *goktrl.Context) {
-			c.GetResult()
+			res, _ := c.GetResult()
+			pterm.Println(pterm.Green(string(res)))
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			c.Send(that.runner.Current(), 200)
@@ -261,7 +280,7 @@ func (that *Shell) geoinfo() {
 			aDir := that.runner.DownloadGeoInfo()
 			if dList, err := os.ReadDir(aDir); err == nil {
 				for _, d := range dList {
-					fmt.Println(filepath.Join(aDir, d.Name()))
+					pterm.Println(pterm.Green(filepath.Join(aDir, d.Name())))
 				}
 			}
 		},
@@ -270,7 +289,17 @@ func (that *Shell) geoinfo() {
 	})
 }
 
-func (that *Shell) showlog() {}
+func (that *Shell) showlog() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "log",
+		Help: "Show log file dir.",
+		Func: func(c *goktrl.Context) {
+			pterm.Println(pterm.Green(that.conf.NeoLogFileDir))
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
 
 func (that *Shell) InitKtrl() {
 	that.start()
@@ -295,7 +324,7 @@ func (that *Shell) StartServer() {
 }
 
 func (that *Shell) ExportHistoryVpns() {
-	if ok, _ := futils.PathIsExist(that.conf.HistoryVpnsFileDir); ok && that.conf.HistoryVpnsFileDir != "" {
+	if ok, _ := gutils.PathIsExist(that.conf.HistoryVpnsFileDir); ok && that.conf.HistoryVpnsFileDir != "" {
 		if k, err := koanfer.NewKoanfer(filepath.Join(that.conf.HistoryVpnsFileDir, HistoryVpnsFileName)); err == nil {
 			if pList, err := proxy.GetHistoryVpnsFromDB(); err == nil {
 				hs := &HistoryVpnList{

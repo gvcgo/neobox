@@ -5,11 +5,11 @@ import (
 	"sync"
 
 	"github.com/gogf/gf/os/gtime"
+	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/koanfer"
-	futils "github.com/moqsien/goutils/pkgs/utils"
+	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/iface"
 	"github.com/moqsien/neobox/pkgs/parser"
-	"github.com/moqsien/neobox/pkgs/utils/log"
 )
 
 type Proxy struct {
@@ -143,7 +143,7 @@ type ProxyList struct {
 func NewProxyList(fPath string) *ProxyList {
 	k, err := koanfer.NewKoanfer(fPath)
 	if err != nil {
-		log.PrintError("new koanfer failed: ", err)
+		log.Error("new koanfer failed: ", err)
 		return nil
 	}
 	pl := &ProxyList{
@@ -152,7 +152,7 @@ func NewProxyList(fPath string) *ProxyList {
 		path:    fPath,
 		lock:    &sync.RWMutex{},
 	}
-	if ok, _ := futils.PathIsExist(fPath); ok {
+	if ok, _ := gutils.PathIsExist(fPath); ok {
 		pl.Load()
 	}
 	return pl
@@ -181,7 +181,7 @@ func (that *ProxyList) Len() int {
 
 func (that *ProxyList) Save() {
 	if err := that.koanfer.Save(that.Proxies); err != nil {
-		log.PrintError("save file failed: ", err)
+		log.Error("save file failed: ", err)
 	}
 	for _, p := range that.Proxies.List {
 		AddProxyToDB(p)
@@ -190,7 +190,7 @@ func (that *ProxyList) Save() {
 
 func (that *ProxyList) Load() {
 	if err := that.koanfer.Load(that.Proxies); err != nil {
-		log.PrintError("load file failed: ", err)
+		log.Error("load file failed: ", err)
 	}
 }
 

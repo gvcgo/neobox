@@ -1,13 +1,13 @@
 package run
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	d "github.com/moqsien/goutils/pkgs/daemon"
+	tui "github.com/moqsien/goutils/pkgs/gtui"
 	socks "github.com/moqsien/goutils/pkgs/socks"
-	futils "github.com/moqsien/goutils/pkgs/utils"
 	"github.com/moqsien/neobox/pkgs/conf"
 	cron "github.com/robfig/cron/v3"
 )
@@ -25,7 +25,7 @@ type Keeper struct {
 	cron      *cron.Cron
 	kSockName string
 	kClient   *socks.UClient
-	daemon    *futils.Daemon
+	daemon    *d.Daemon
 }
 
 func NewKeeper(cnf *conf.NeoBoxConf) *Keeper {
@@ -33,7 +33,7 @@ func NewKeeper(cnf *conf.NeoBoxConf) *Keeper {
 		conf:      cnf,
 		cron:      cron.New(),
 		kSockName: NeoKeeperSockName,
-		daemon:    futils.NewDaemon(),
+		daemon:    d.NewDaemon(),
 	}
 	k.daemon.SetWorkdir(cnf.NeoWorkDir)
 	k.daemon.SetScriptName(winKeeperScriptName)
@@ -54,7 +54,7 @@ func (that *Keeper) runKeeperServer() {
 		c.String(http.StatusOK, OkStr)
 	})
 	if err := server.Start(); err != nil {
-		fmt.Println("[start server failed] ", err)
+		tui.SPrintErrorf("[start server failed] %+v", err)
 	}
 }
 

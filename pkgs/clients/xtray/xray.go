@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"runtime"
 
+	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/iface"
-	"github.com/moqsien/neobox/pkgs/utils/log"
 	"github.com/xtls/xray-core/core"
 	"github.com/xtls/xray-core/infra/conf/serial"
 	_ "github.com/xtls/xray-core/main/confloader/external"
@@ -36,28 +36,28 @@ func (that *Client) SetProxy(p iface.IProxy) {
 func (that *Client) Start() error {
 	var err error
 	if that.conf, err = GetConfStr(that.proxy, that.inPort, that.logPath); err != nil {
-		log.PrintError(err)
+		log.Error(err)
 		return err
 	}
 	if config, err := serial.DecodeJSONConfig(bytes.NewReader(that.conf)); err == nil {
 		var f *core.Config
 		f, err = config.Build()
 		if err != nil {
-			log.PrintError("[Build config for Xray failed] ", err)
+			log.Error("[Build config for Xray failed] ", err)
 			return err
 		}
 		that.Instance, err = core.New(f)
 		if err != nil {
-			log.PrintError("[Init Xray Instance Failed] ", err)
+			log.Error("[Init Xray Instance Failed] ", err)
 			return err
 		}
 		err = that.Instance.Start()
 		if err != nil {
-			log.PrintError("[Start Xray Instance Failed] ", err)
+			log.Error("[Start Xray Instance Failed] ", err)
 			return err
 		}
 	} else {
-		log.PrintError("[Parse config file failed] ", err)
+		log.Error("[Parse config file failed] ", err)
 		return err
 	}
 	return nil

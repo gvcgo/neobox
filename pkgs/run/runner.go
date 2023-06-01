@@ -10,14 +10,15 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	d "github.com/moqsien/goutils/pkgs/daemon"
+	"github.com/moqsien/goutils/pkgs/gutils"
+	log "github.com/moqsien/goutils/pkgs/logs"
 	socks "github.com/moqsien/goutils/pkgs/socks"
-	futils "github.com/moqsien/goutils/pkgs/utils"
 	"github.com/moqsien/neobox/pkgs/clients"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/iface"
 	"github.com/moqsien/neobox/pkgs/proxy"
 	"github.com/moqsien/neobox/pkgs/utils"
-	"github.com/moqsien/neobox/pkgs/utils/log"
 	cron "github.com/robfig/cron/v3"
 )
 
@@ -39,7 +40,7 @@ type Runner struct {
 	currentProxy *proxy.Proxy
 	extraSocks   string
 	pingClient   *socks.UClient
-	daemon       *futils.Daemon
+	daemon       *d.Daemon
 	cron         *cron.Cron
 	shell        *Shell
 }
@@ -50,7 +51,7 @@ func NewRunner(cnf *conf.NeoBoxConf) *Runner {
 		verifier:   proxy.NewVerifier(cnf),
 		conf:       cnf,
 		extraSocks: ExtraSockName,
-		daemon:     futils.NewDaemon(),
+		daemon:     d.NewDaemon(),
 		cron:       cron.New(),
 		shell:      NewShell(cnf),
 	}
@@ -78,7 +79,7 @@ func (that *Runner) startRunnerPingServer() {
 		}
 	})
 	if err := server.Start(); err != nil {
-		log.PrintError("[start ping server failed] ", err)
+		log.Error("[start ping server failed] ", err)
 	}
 }
 
@@ -141,7 +142,7 @@ func (that *Runner) Restart(pIdx int) (result string) {
 	if that.currentProxy != nil {
 		that.client.SetProxy(that.currentProxy)
 		if that.conf.NeoLogFileDir != "" {
-			futils.MakeDirs(that.conf.NeoLogFileDir)
+			gutils.MakeDirs(that.conf.NeoLogFileDir)
 		}
 		logPath := filepath.Join(that.conf.NeoLogFileDir, that.conf.XLogFileName)
 		that.client.SetInPortAndLogFile(that.conf.NeoBoxClientInPort, logPath)
@@ -149,7 +150,8 @@ func (that *Runner) Restart(pIdx int) (result string) {
 		if err == nil {
 			result = fmt.Sprintf("%d.%s", pIdx, that.currentProxy.String())
 		} else {
-			result = err.Error()
+			that.client.Close()
+			result = "none"
 		}
 	}
 	return
@@ -179,10 +181,10 @@ func (that *Runner) OpenShell() {
 Download files needed by sing-box and xray-core.
 */
 func (that *Runner) DownloadGeoInfo() (aDir string) {
-	futils.MakeDirs(that.conf.AssetDir)
+	gutils.MakeDirs(that.conf.AssetDir)
 	for name, dUrl := range that.conf.GeoInfoUrls {
 		fPath := filepath.Join(that.conf.AssetDir, name)
-		if ok, _ := futils.PathIsExist(fPath); ok {
+		if ok, _ := gutils.PathIsExist(fPath); ok {
 			os.RemoveAll(fPath)
 		}
 		res, err := http.Get(dUrl)

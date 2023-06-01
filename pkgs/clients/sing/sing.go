@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/iface"
-	"github.com/moqsien/neobox/pkgs/utils/log"
 	box "github.com/sagernet/sing-box"
 	"github.com/sagernet/sing-box/option"
 )
@@ -37,7 +37,7 @@ func (that *Client) Start() (err error) {
 	if len(that.conf) > 0 {
 		opt := &option.Options{}
 		if err = opt.UnmarshalJSON(that.conf); err != nil {
-			log.PrintError("[Build config for Sing-Box failed] ", err)
+			log.Error("[Build config for Sing-Box failed] ", err)
 			return err
 		}
 
@@ -49,18 +49,18 @@ func (that *Client) Start() (err error) {
 		})
 		if err != nil {
 			that.Close()
-			log.PrintError("[Init Sing-Box Failed] ", err)
+			log.Error("[Init Sing-Box Failed] ", err)
 			return
 		}
 
 		err = that.Box.Start()
 		if err != nil {
 			that.Close()
-			log.PrintError("[Start Sing-Box Failed] ", err)
+			log.Error("[Start Sing-Box Failed] ", err)
 		}
 		return
 	} else {
-		log.PrintError("[Parse config file failed]")
+		log.Error("[Parse config file failed]")
 		return fmt.Errorf("cannot parse proxy")
 	}
 }

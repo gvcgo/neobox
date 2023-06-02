@@ -9,11 +9,15 @@ type PortRange struct {
 	Max int `json:"max"`
 }
 
+/*
+Configurations of neobox
+*/
 type NeoBoxConf struct {
 	NeoWorkDir          string            `json:"neo_work_dir"`          // dir to store files
 	NeoLogFileDir       string            `json:"neo_log_dir"`           // dir to store log files
 	XLogFileName        string            `json:"log_file_name"`         // log file name of sing-box/xray
 	RawUriURL           string            `json:"download_url"`          // where to download raw proxies
+	SockFilesDir        string            `json:"sock_files_dir"`        // where to restore unix socket files
 	RawUriFileName      string            `json:"download_file_name"`    // file name of raw proxies
 	ParsedFileName      string            `json:"parse_file_name"`       // file name of parsed proxies
 	PingedFileName      string            `json:"pinged_file_name"`      // file name of ping succeeded proxies
@@ -37,6 +41,7 @@ func GetDefaultConf() (n *NeoBoxConf) {
 	n.NeoLogFileDir = n.NeoWorkDir
 	n.AssetDir = n.NeoWorkDir
 	n.XLogFileName = "neobox_xlog.log"
+	n.SockFilesDir = n.NeoWorkDir
 	n.RawUriURL = "https://gitlab.com/moqsien/xtray_resources/-/raw/main/conf.txt"
 	n.RawUriFileName = "neobox_raw_proxies.json"
 	n.ParsedFileName = "neobox_parsed_proxies.json"

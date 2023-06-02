@@ -12,6 +12,9 @@ import (
 	_ "github.com/xtls/xray-core/main/distro/all"
 )
 
+/*
+Xray-core client
+*/
 type Client struct {
 	inPort  int
 	proxy   iface.IProxy

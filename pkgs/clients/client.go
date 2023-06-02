@@ -9,8 +9,8 @@ import (
 type ClientType int
 
 const (
-	TypeXray ClientType = iota
-	TypeSing
+	TypeXray ClientType = iota // Xray-core
+	TypeSing                   // Sing-box
 )
 
 func NewLocalClient(ct ClientType) (client iface.IClient) {

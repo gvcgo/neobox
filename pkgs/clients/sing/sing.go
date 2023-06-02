@@ -10,6 +10,9 @@ import (
 	"github.com/sagernet/sing-box/option"
 )
 
+/*
+Sing-box client
+*/
 type Client struct {
 	inPort  int
 	proxy   iface.IProxy

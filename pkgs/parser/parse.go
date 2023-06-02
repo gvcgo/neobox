@@ -6,6 +6,10 @@ import (
 	"github.com/moqsien/neobox/pkgs/iface"
 )
 
+/*
+Parse raw proxy URIs
+*/
+
 const (
 	VmessScheme  string = "vmess://"
 	VlessScheme  string = "vless://"

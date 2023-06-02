@@ -154,10 +154,10 @@ func (that *Runner) Restart(pIdx int) (result string) {
 		that.client.SetInPortAndLogFile(that.conf.NeoBoxClientInPort, logPath)
 		err := that.client.Start()
 		if err == nil {
-			result = fmt.Sprintf("%d.%s", pIdx, that.currentProxy.String())
+			result = fmt.Sprintf("client restarted use: %d.%s", pIdx, that.currentProxy.String())
 		} else {
 			that.client.Close()
-			result = "none"
+			result = fmt.Sprintf("restart client failed: %+v", err)
 		}
 	}
 	return

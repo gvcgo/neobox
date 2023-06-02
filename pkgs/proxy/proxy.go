@@ -201,6 +201,8 @@ func (that *ProxyList) Clear() {
 	for _, p := range that.Proxies.List {
 		DefaultProxyPool.Put(&p)
 	}
+	that.lock.Lock()
 	that.Proxies.List = []Proxy{}
 	that.Proxies.Total = 0
+	that.lock.Unlock()
 }

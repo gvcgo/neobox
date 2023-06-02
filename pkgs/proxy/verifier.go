@@ -54,6 +54,7 @@ type Verifier struct {
 	wg           *sync.WaitGroup
 	useExtra     bool
 	isRunning    bool
+	tempList     *sync.Map
 }
 
 func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
@@ -76,7 +77,10 @@ func (that *Verifier) GetProxyByIndex(pIdx int) (*Proxy, int) {
 	if that.verifiedList == nil {
 		return nil, 0
 	}
-	that.verifiedList.Load()
+	if that.verifiedList.Len() == 0 {
+		that.verifiedList.Load()
+		defer that.verifiedList.Clear()
+	}
 	if that.verifiedList.Len() == 0 {
 		return nil, 0
 	}
@@ -132,8 +136,12 @@ func (that *Verifier) sendReq(inPort int, p *Proxy) {
 	collector.OnResponse(func(r *colly.Response) {
 		if strings.Contains(string(r.Body), "</html>") {
 			p.RTT = time.Since(startTime).Milliseconds()
-			that.verifiedList.AddProxies(*p)
-			tui.PrintSuccessf("Proxy[%s] verification succeeded.", p.String())
+			// only save once for a proxy.
+			if _, ok := that.tempList.Load(p.RawUri); !ok {
+				that.verifiedList.AddProxies(*p)
+				that.tempList.Store(p.RawUri, struct{}{})
+				tui.PrintSuccessf("Proxy[%s] verification succeeded.", p.String())
+			}
 		} else {
 			tui.PrintWarningf("Proxy[%s] verification faild.", p.String())
 		}
@@ -190,6 +198,7 @@ func (that *Verifier) Run(force ...bool) {
 	if that.verifiedList != nil {
 		that.verifiedList.Clear()
 	}
+	that.tempList = &sync.Map{}
 
 	start, end := that.conf.VerifierPortRange.Min, that.conf.VerifierPortRange.Max
 	if start > end {
@@ -223,6 +232,7 @@ func (that *Verifier) Run(force ...bool) {
 		that.verifiedList.SaveToDB()
 	}
 	that.isRunning = false
+	that.tempList = nil
 }
 
 func (that *Verifier) IsRunning() bool {

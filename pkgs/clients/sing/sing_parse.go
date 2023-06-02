@@ -18,7 +18,7 @@ http://sing-box.sagernet.org/zh/configuration/outbound/vmess/
 https://github.com/FranzKafkaYu/sing-box-yes
 */
 var VmessStr string = `{
-	"alter_id": 0,
+	"alter_id": 1,
 	"server": "142.4.119.207",
 	"server_port": 53986,
 	"tag": "vmess-out",
@@ -32,7 +32,7 @@ func getVmessConfStr(ob *parser.VmessOutbound) *gjson.Json {
 	if ob != nil {
 		aid, _ := strconv.Atoi(ob.Aid)
 		if aid > 1 {
-			aid = 0
+			aid = 1
 		}
 		j := gjson.New(VmessStr)
 		j.Set("tag", vTag)
@@ -137,6 +137,10 @@ var ShadowsocksRStr string = `{
 	"server_port": 1080,
 	"method": "aes-128-cfb",
 	"password": "8JCsPssfgS8tiRwiMlhARg=="
+	"obfs": "plain",
+  	"obfs_param": "",
+	"protocol": "origin",
+	"protocol_param": ""
 }`
 
 func getSsrStr(ob *parser.SSROutbound) *gjson.Json {
@@ -148,6 +152,10 @@ func getSsrStr(ob *parser.SSROutbound) *gjson.Json {
 		j.Set("server_port", ob.Port)
 		j.Set("method", ob.Method)
 		j.Set("password", ob.Password)
+		j.Set("obfs", ob.Obfs)
+		j.Set("obfs_param", ob.ObfsParam)
+		j.Set("protocol", ob.Proto)
+		j.Set("protocol_param", ob.ProtoParam)
 		outboundStr := j.MustToJsonIndentString()
 		confStr := fmt.Sprintf(ConfStr, outboundStr)
 		j = gjson.New(confStr)

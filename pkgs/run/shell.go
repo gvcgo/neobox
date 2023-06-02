@@ -103,6 +103,7 @@ func (that *Shell) stop() {
 		Name: "stop",
 		Help: "Stop the running sing-box client/keeper.",
 		Func: func(c *goktrl.Context) {
+			// TODO: show
 			res, _ := c.GetResult()
 			tui.PrintWarning(string(res))
 			r := that.keeper.StopRequest()
@@ -131,7 +132,7 @@ func (that *Shell) restart() {
 				idx, _ = strconv.Atoi(c.Args[0])
 			}
 			r := that.runner.Restart(idx)
-			c.Send(fmt.Sprintf("Restart client using [%s]", r), 200)
+			c.Send(r, 200)
 		},
 		SocketName: that.ktrlSocks,
 	})

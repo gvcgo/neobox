@@ -2,64 +2,77 @@ package parser
 
 import (
 	"fmt"
-	"strconv"
+	"net/url"
 	"strings"
 
+	"github.com/gogf/gf/v2/util/gconv"
 	crypt "github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/neobox/pkgs/utils"
 )
 
 type SSROutbound struct {
-	Email    string
-	Address  string
-	Port     int
-	Method   string
-	Password string
-	Raw      string
+	Email      string
+	Address    string
+	Port       int
+	Method     string
+	Password   string
+	Obfs       string
+	ObfsParam  string
+	Proto      string
+	ProtoParam string
+	Raw        string
 }
 
 /*
-ssr://MTg4LjExOS42NS4xNDM6MTIzMzc6b3JpZ2luOnJjNDpwbGFpbjpiRzVqYmk1dmNtY2diamgwLz9vYmZzcGFyYW09JnJlbWFya3M9NUwtRTU3Mlg1cGF2VHcmZ3JvdXA9VEc1amJpNXZjbWM
+ssr://MTYuMTYuMTc3LjE0NTo0MjgzMzpvcmlnaW46YWVzLTI1Ni1jZmI6aHR0cF9zaW1wbGU6V1hCWU1tOXdRbUp5Wm5GS2VucE5jdz09Lz9vYmZzcGFyYW09JnJlbWFya3M9VTBWZk1UWXVNVFl1TVRjM0xqRTBOVjh3TmpBeU1qQXlNekZrTXprdE56WXhjM055JnByb3RvcGFyYW09VG05dVpRJTNEJTNE
 
-ssr://188.119.65.143:12337:origin:rc4:plain:bG5jbi5vcmcgbjh0/?obfsparam=&remarks=5L-E572X5pavTw&group=TG5jbi5vcmc
+ssr://16.16.177.145:42833:origin:aes-256-cfb:http_simple:WXBYMm9wQmJyZnFKenpNcw==/?obfsparam=&remarks=U0VfMTYuMTYuMTc3LjE0NV8wNjAyMjAyMzFkMzktNzYxc3Ny&protoparam=Tm9uZQ%3D%3D
 
 plain:lncn.org n8t
 remarks=俄罗斯
 group=Lncn.org
 */
-func (that *SSROutbound) parseMethodPassword(str string) {
-	count := 4
-	vList := strings.SplitN(str, ":", count)
-	if len(vList) == count {
-		if strings.Contains(vList[0], "origin") {
-			that.Method = vList[1]
+func (that *SSROutbound) parseParams(s string) {
+	testUrl := fmt.Sprintf("https://www.test.com/?%s", s)
+	if u, err := url.Parse(testUrl); err == nil {
+		that.ObfsParam = u.Query().Get("obfsparam")
+		protoParam, _ := url.QueryUnescape(u.Query().Get("protoparam"))
+		if protoParam != "" {
+			that.ProtoParam = crypt.DecodeBase64(protoParam)
 		}
-		that.parsePassword(vList[3])
 	}
 }
 
-func (that *SSROutbound) parsePassword(str string) {
-	vlist := strings.Split(str, "?")
-	if len(vlist) == 2 {
-		r := utils.NormalizeSSR(vlist[0])
-		that.Password = crypt.DecodeBase64(r)
+func (that *SSROutbound) parseMethod(s string) {
+	vList := strings.Split(s, ":")
+	if len(vList) == 6 {
+		that.Address = vList[0]
+		that.Port = gconv.Int(vList[1])
+		that.Proto = vList[2]
+		that.Method = vList[3]
+		that.Obfs = vList[4]
+		that.Password = crypt.DecodeBase64(strings.TrimSuffix(vList[5], "/"))
+	}
+}
+
+func (that *SSROutbound) parse(rawUri string) {
+	that.Raw = rawUri
+	if strings.HasPrefix(rawUri, SSRScheme) {
+		r := strings.ReplaceAll(rawUri, SSRScheme, "")
+		r = crypt.DecodeBase64(utils.NormalizeSSR(r))
+		vList := strings.Split(r, "?")
+		if len(vList) == 2 {
+			that.parseMethod(vList[0])
+			that.parseParams(vList[1])
+		}
 	}
 }
 
 func (that *SSROutbound) Parse(rawUri string) {
 	that.Raw = rawUri
-	if strings.HasPrefix(rawUri, "ssr://") {
-		r := strings.ReplaceAll(rawUri, "ssr://", "")
-		r = crypt.DecodeBase64(utils.NormalizeSSR(r))
-		vlist := strings.SplitN(r, ":", 3)
-		if len(vlist) == 3 {
-			that.Address = vlist[0]
-			that.Port, _ = strconv.Atoi(vlist[1])
-			that.parseMethodPassword(vlist[2])
-		}
-		if that.Method == "rc4" {
-			that.Method = "rc4-md5"
-		}
+	that.parse(rawUri)
+	if that.Method == "rc4" {
+		that.Method = "rc4-md5"
 	}
 }
 
@@ -85,8 +98,7 @@ func (that *SSROutbound) Scheme() string {
 }
 
 func TestSSR() {
-	rawUri := "ssr://anAtYW00OC02LmVxbm9kZS5uZXQ6ODA4MTpvcmlnaW46YWVzLTI1Ni1jZmI6dGxzMS4yX3RpY2tldF9hdXRoOlpVRnZhMkpoUkU0Mi8/b2Jmc3BhcmFtPSZyZW1hcmtzPThKJTJCSHIlMkZDZmg3WG5tYjNscTVZdE5EUTImcHJvdG9wYXJhbT0="
+	rawUri := "ssr://aGs1LnZmdW4uaWN1OjQ0MzphdXRoX2FlczEyOF9zaGExOmFlcy0yNTYtY2ZiOnBsYWluOmRubDFibTFsLz9vYmZzcGFyYW09WXpNd05qRXhOamsxTWk1cVpDNW9KU1h2djcwJTNEJnJlbWFya3M9U2xCZk5UUXVPVFV1TVRJekxqZ3dYekEyTURFeU1ESXpZMkZtTmkwME5EZHpjM0klM0QmcHJvdG9wYXJhbT1NVFk1TlRJNk9XSnBhemhK"
 	p := &SSROutbound{}
-	p.Parse(rawUri)
 	fmt.Println(p.Decode(rawUri))
 }

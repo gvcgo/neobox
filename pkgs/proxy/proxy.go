@@ -183,6 +183,9 @@ func (that *ProxyList) Save() {
 	if err := that.koanfer.Save(that.Proxies); err != nil {
 		log.Error("save file failed: ", err)
 	}
+}
+
+func (that *ProxyList) SaveToDB() {
 	for _, p := range that.Proxies.List {
 		AddProxyToDB(p)
 	}

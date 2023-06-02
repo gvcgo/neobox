@@ -220,6 +220,7 @@ func (that *Verifier) Run(force ...bool) {
 	tui.PrintInfof("Find %d available proxies.\n", that.verifiedList.Len())
 	if that.verifiedList.Len() > 0 {
 		that.verifiedList.Save()
+		that.verifiedList.SaveToDB()
 	}
 	that.isRunning = false
 }

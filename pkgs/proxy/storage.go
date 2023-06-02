@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/moqsien/goutils/pkgs/gutils"
 	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/hackbrowser/utils/hsqlite"
 	"gorm.io/gorm"
@@ -18,15 +17,16 @@ manually added vpn list to sqlite.
 */
 
 const (
-	DBPathEnvName = "NEOBOX_DB_PATH"
-	dbFileName    = "neobox_proxies.db"
+	DBPathEnvName        = "NEOBOX_DB_PATH"
+	dbFileName           = "storage.db"
+	HistoryVpnsTableName = "history_vpns"
+	ManualVpnsTableName  = "manual_vpns" // you can add your own vpns manually.
 )
 
 var (
-	storageDB     *Database
-	toMigrateFlag bool
-	once          sync.Once
-	dbPath        string
+	storageDB *Database
+	once      sync.Once
+	dbPath    string
 )
 
 func SetDBPathEnv(dirPath string) {
@@ -61,18 +61,18 @@ type Database struct {
 
 func NewDB(dbPath string) (r *Database) {
 	r = &Database{}
-	if ok, _ := gutils.PathIsExist(dbPath); !ok {
-		toMigrateFlag = true
-	}
-	// logger.Default.LogMode(logger.Error)
-	// TODO: write log info to glog.Logger
 	if db, err := gorm.Open(hsqlite.Open(dbPath), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Error),
 	}); err == nil {
 		r.DB = db
-		if toMigrateFlag {
-			// TODO: migrate two tables.
-			r.DB.AutoMigrate(&Proxy{})
+		migrator := r.DB.Migrator()
+		if !migrator.HasTable(ManualVpnsTableName) {
+			migrator.CreateTable(&Proxy{})
+			migrator.RenameTable(&Proxy{}, ManualVpnsTableName)
+		}
+		if !migrator.HasTable(HistoryVpnsTableName) {
+			migrator.CreateTable(&Proxy{})
+			migrator.RenameTable(&Proxy{}, HistoryVpnsTableName)
 		}
 	} else {
 		log.Error("[Open db failed]", err)
@@ -80,11 +80,6 @@ func NewDB(dbPath string) (r *Database) {
 	}
 	return
 }
-
-const (
-	HistoryVpnsTableName = "history_vpns"
-	ManualVpnsTableName  = "manual_vpns" // you can add your own vpn manually.
-)
 
 func GetHistoryVpnsFromDB() (pList []Proxy, err error) {
 	result := StorageDB().DB.Table(HistoryVpnsTableName).Find(&pList)

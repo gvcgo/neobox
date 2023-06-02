@@ -71,7 +71,7 @@ func (that *SSROutbound) parse(rawUri string) {
 func (that *SSROutbound) Parse(rawUri string) {
 	that.Raw = rawUri
 	that.parse(rawUri)
-	if that.Method == "rc4" {
+	if that.Method == "rc4" || that.Method == "none" {
 		that.Method = "rc4-md5"
 	}
 }

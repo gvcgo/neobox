@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	d "github.com/moqsien/goutils/pkgs/daemon"
@@ -115,7 +116,7 @@ func (that *Runner) Start(args ...string) {
 	if len(os.Args) > 1 {
 		args = os.Args
 	}
-	that.daemon.Run(args...)
+	// that.daemon.Run(args...)
 
 	go that.startRunnerPingServer()
 	go that.shell.StartServer()
@@ -144,6 +145,7 @@ func (that *Runner) Restart(pIdx int) (result string) {
 		that.client = clients.NewLocalClient(clients.TypeSing)
 	}
 	that.client.Close()
+	time.Sleep(2 * time.Second)
 	that.currentProxy, that.currentPIdx = that.verifier.GetProxyByIndex(pIdx)
 	if that.currentProxy != nil {
 		that.client.SetProxy(that.currentProxy)
@@ -156,8 +158,8 @@ func (that *Runner) Restart(pIdx int) (result string) {
 		if err == nil {
 			result = fmt.Sprintf("client restarted use: %d.%s", pIdx, that.currentProxy.String())
 		} else {
+			result = fmt.Sprintf("restart client failed: %+v\n%s", err, string(that.client.GetConf()))
 			that.client.Close()
-			result = fmt.Sprintf("restart client failed: %+v", err)
 		}
 	}
 	return

@@ -3,6 +3,7 @@ package sing
 import (
 	"context"
 	"fmt"
+	"runtime"
 
 	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/iface"
@@ -80,6 +81,7 @@ func (that *Client) Close() {
 	if that.Box != nil {
 		that.Box.Close()
 		that.Box = nil
+		runtime.GC()
 	}
 }
 

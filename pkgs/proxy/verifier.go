@@ -2,46 +2,40 @@ package proxy
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/gocolly/colly/v2"
 	tui "github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/neobox/pkgs/clients"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/parser"
 )
 
-type CollectorPool struct {
-	pool *sync.Pool
-}
+const (
+	LocalProxyPattern string = "http://127.0.0.1:%d"
+)
 
-func NewCollyPool() *CollectorPool {
-	return &CollectorPool{
-		pool: &sync.Pool{
-			New: func() any {
-				return colly.NewCollector()
-			},
+func GetHttpClient(inPort int, cnf *conf.NeoBoxConf) (c *http.Client, err error) {
+	var uri *url.URL
+	uri, err = url.Parse(fmt.Sprintf(LocalProxyPattern, inPort))
+	if err != nil {
+		return
+	}
+	if cnf.VerificationTimeout == 0 {
+		cnf.VerificationTimeout = 3
+	}
+	c = &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(uri),
 		},
+		Timeout: cnf.VerificationTimeout * time.Second,
 	}
-}
-
-var DefaultCollyPool = NewCollyPool()
-
-func (that *CollectorPool) Get(inPort int, timeout time.Duration) *colly.Collector {
-	c := that.pool.Get()
-	if co, ok := c.(*colly.Collector); ok {
-		co.SetProxy(fmt.Sprintf("http://localhost:%d", inPort))
-		co.SetRequestTimeout(timeout * time.Second)
-		return co
-	}
-	return nil
-}
-
-func (that *CollectorPool) Put(c *colly.Collector) {
-	that.pool.Put(c)
+	return
 }
 
 type Verifier struct {
@@ -90,8 +84,8 @@ func (that *Verifier) GetProxyByIndex(pIdx int) (*Proxy, int) {
 	return &that.verifiedList.Proxies.List[pIdx], pIdx
 }
 
+// TODO: dispatching bugs
 func (that *Verifier) send(cType clients.ClientType, force ...bool) {
-	that.originList = that.pinger.Run(force...)
 	// use history vpn list and manually set vpn list.
 	if that.useExtra {
 		if l, err := GetHistoryVpnsFromDB(); err == nil {
@@ -120,35 +114,16 @@ func (that *Verifier) send(cType clients.ClientType, force ...bool) {
 	}
 }
 
-func (that *Verifier) sendReq(inPort int, p *Proxy) {
-	if that.conf.VerificationTimeout <= 0 {
-		that.conf.VerificationTimeout = 3
+func (that *Verifier) verify(httpClient *http.Client) bool {
+	resp, err := httpClient.Get(that.conf.VerificationUri)
+	if err != nil {
+		return false
 	}
-
-	if that.conf.VerificationUri == "" {
-		that.conf.VerificationUri = "https://www.google.com"
+	if resp.StatusCode == 200 {
+		r, _ := io.ReadAll(resp.Body)
+		return strings.Contains(string(r), "</html>")
 	}
-	collector := DefaultCollyPool.Get(inPort, that.conf.VerificationTimeout)
-	collector.OnError(func(r *colly.Response, err error) {
-		tui.PrintWarningf("Proxy[%s] verification faild. Error: %+v", p.String(), err)
-	})
-	startTime := time.Now()
-	collector.OnResponse(func(r *colly.Response) {
-		if strings.Contains(string(r.Body), "</html>") {
-			p.RTT = time.Since(startTime).Milliseconds()
-			// only save once for a proxy.
-			if _, ok := that.tempList.Load(p.RawUri); !ok {
-				that.verifiedList.AddProxies(*p)
-				that.tempList.Store(p.RawUri, struct{}{})
-				tui.PrintSuccessf("Proxy[%s] verification succeeded.", p.String())
-			}
-		} else {
-			tui.PrintWarningf("Proxy[%s] verification faild.", p.String())
-		}
-	})
-	collector.Visit(that.conf.VerificationUri)
-	collector.Wait()
-	DefaultCollyPool.Put(collector)
+	return false
 }
 
 /*
@@ -159,7 +134,14 @@ func (that *Verifier) StartClient(inPort int, cType clients.ClientType) {
 	client.SetInPortAndLogFile(inPort, "")
 	that.wg.Add(1)
 	defer that.wg.Done()
-	var recChan chan *Proxy
+	var (
+		recChan    chan *Proxy
+		httpClient *http.Client
+	)
+	if that.conf.VerificationUri == "" {
+		that.conf.VerificationUri = "https://www.google.com/"
+	}
+	httpClient, _ = GetHttpClient(inPort, that.conf)
 	for {
 		if recChan == nil {
 			switch cType {
@@ -178,12 +160,26 @@ func (that *Verifier) StartClient(inPort int, cType clients.ClientType) {
 			client.SetProxy(p)
 			start := time.Now()
 			if err := client.Start(); err != nil {
-				tui.PrintErrorf("Client[%s] start failed. Error: %+v", p.String(), err)
+				tui.PrintErrorf("Client[%s] start failed. Error: %+v\n", p.String(), err)
 				client.Close()
 				return
 			}
-			tui.PrintInfof("Proxy[%s] time consumed: %vs\n", p.String(), time.Since(start).Seconds())
-			that.sendReq(inPort, p)
+			tui.PrintInfof("Proxy[%s] time consumed: %vs", p.String(), time.Since(start).Seconds())
+
+			startTime := time.Now()
+			ok = that.verify(httpClient)
+			if ok {
+				p.RTT = time.Since(startTime).Milliseconds()
+				// only save once for a proxy.
+				if _, ok := that.tempList.Load(p.RawUri); !ok {
+					that.verifiedList.AddProxies(*p)
+					that.tempList.Store(p.RawUri, struct{}{})
+					tui.PrintSuccessf("Proxy[%s] verification succeeded.", p.String())
+				} else {
+					tui.PrintWarningf("Proxy[%s] verification faild.", p.String())
+				}
+			}
+			// close current client.
 			client.Close()
 		default:
 			time.Sleep(time.Millisecond * 100)
@@ -198,6 +194,7 @@ func (that *Verifier) Run(force ...bool) {
 	if that.verifiedList != nil {
 		that.verifiedList.Clear()
 	}
+	that.originList = that.pinger.Run(force...)
 	that.tempList = &sync.Map{}
 
 	start, end := that.conf.VerifierPortRange.Min, that.conf.VerifierPortRange.Max
@@ -227,10 +224,12 @@ func (that *Verifier) Run(force ...bool) {
 	that.wg.Wait()
 	tui.PrintInfo("filters for [ssr] stopped.")
 	tui.PrintInfof("Find %d available proxies.\n", that.verifiedList.Len())
+
+	that.verifiedList.Save()
 	if that.verifiedList.Len() > 0 {
-		that.verifiedList.Save()
 		that.verifiedList.SaveToDB()
 	}
+
 	that.isRunning = false
 	that.tempList = nil
 }

@@ -94,6 +94,9 @@ func (that *Proxy) GetParser() iface.IOutboundParser {
 Proxy Pool
 */
 
+/*
+TODO: when to put.
+*/
 type ProxyPool struct {
 	pool *sync.Pool
 }

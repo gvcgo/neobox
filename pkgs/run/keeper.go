@@ -100,7 +100,7 @@ func (that *Keeper) Start(args ...string) {
 	if len(os.Args) > 1 {
 		args = os.Args
 	}
-	that.daemon.Run(args...)
+	// that.daemon.Run(args...)
 
 	go that.runKeeperServer()
 	cronTime := that.conf.NeoBoxKeeperCron

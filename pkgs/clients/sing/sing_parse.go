@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/moqsien/neobox/pkgs/iface"
@@ -36,6 +35,7 @@ func getVmessConfStr(ob *parser.VmessOutbound) *gjson.Json {
 		}
 		j := gjson.New(VmessStr)
 		j.Set("tag", vTag)
+		j.Set("type", "vmess")
 		j.Set("server", ob.Address)
 		j.Set("server_port", ob.Port)
 		j.Set("uuid", ob.UserId)
@@ -63,6 +63,7 @@ func getVlessConfStr(ob *parser.VlessOutbound) *gjson.Json {
 	if ob != nil {
 		j := gjson.New(VlessStr)
 		j.Set("tag", vTag)
+		j.Set("type", "vless")
 		j.Set("server", ob.Address)
 		j.Set("server_port", ob.Port)
 		j.Set("uuid", ob.UserId)
@@ -91,6 +92,7 @@ func getTrojanConfStr(ob *parser.TrojanOutbound) *gjson.Json {
 	if ob != nil {
 		j := gjson.New(TrojanStr)
 		j.Set("tag", vTag)
+		j.Set("type", "trojan")
 		j.Set("server", ob.Address)
 		j.Set("server_port", ob.Port)
 		j.Set("password", ob.Password)
@@ -117,6 +119,7 @@ func getSsStr(ob *parser.SSOutbound) *gjson.Json {
 	if ob != nil {
 		j := gjson.New(ShadowsocksStr)
 		j.Set("tag", vTag)
+		j.Set("type", "shadowsocks")
 		j.Set("server", ob.Address)
 		j.Set("server_port", ob.Port)
 		j.Set("method", ob.Method)
@@ -143,11 +146,12 @@ var ShadowsocksRStr string = `{
 	"protocol_param": ""
 }`
 
-func getSsrStr(ob *parser.SSROutbound) *gjson.Json {
+func getShadowsocksRStr(ob *parser.SSROutbound) *gjson.Json {
 	vTag := "ssr-out"
 	if ob != nil {
 		j := gjson.New(ShadowsocksRStr)
 		j.Set("tag", vTag)
+		j.Set("type", "shadowsocksr")
 		j.Set("server", ob.Address)
 		j.Set("server_port", ob.Port)
 		j.Set("method", ob.Method)
@@ -169,36 +173,41 @@ func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte) {
 	if p == nil {
 		return
 	}
-	rawUri := p.GetRawUri()
 	iob := p.GetParser()
 	var j *gjson.Json
-	if strings.HasPrefix(rawUri, parser.VmessScheme) {
+
+	switch p.Scheme() {
+	case parser.VmessScheme:
 		if ob, ok := iob.(*parser.VmessOutbound); ok {
 			j = getVmessConfStr(ob)
 		}
-	} else if strings.HasPrefix(rawUri, parser.VlessScheme) {
-		if ob, ok := iob.(*parser.VlessOutbound); ok {
-			j = getVlessConfStr(ob)
-		}
-	} else if strings.HasPrefix(rawUri, parser.TrojanScheme) {
+	case parser.TrojanScheme:
 		if ob, ok := iob.(*parser.TrojanOutbound); ok {
 			j = getTrojanConfStr(ob)
 		}
-	} else if strings.HasPrefix(rawUri, parser.SSScheme) {
+	case parser.SSScheme:
 		if ob, ok := iob.(*parser.SSOutbound); ok {
 			j = getSsStr(ob)
 		}
-	} else if strings.HasPrefix(rawUri, parser.SSRScheme) {
+	case parser.SSRScheme:
 		if ob, ok := iob.(*parser.SSROutbound); ok {
-			j = getSsrStr(ob)
+			j = getShadowsocksRStr(ob)
 		}
-	} else {
+	case parser.VlessScheme:
+		if ob, ok := iob.(*parser.VlessOutbound); ok {
+			j = getVlessConfStr(ob)
+		}
+	default:
 		return
 	}
-	if inPort > 0 && j != nil {
+	if j == nil {
+		return
+	}
+
+	if inPort > 0 {
 		j.Set("inbounds.0.listen_port", inPort)
 	}
-	if logPath != "" && j != nil {
+	if logPath != "" {
 		j.Set("log.output", logPath)
 	}
 	if assetDir := os.Getenv(utils.XrayLocationAssetDirEnv); assetDir != "" {

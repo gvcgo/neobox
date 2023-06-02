@@ -2,6 +2,8 @@ package run
 
 import (
 	"net/http"
+	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +28,7 @@ type Keeper struct {
 	kSockName string
 	kClient   *socks.UClient
 	daemon    *d.Daemon
+	starter   *exec.Cmd
 }
 
 func NewKeeper(cnf *conf.NeoBoxConf) *Keeper {
@@ -42,6 +45,14 @@ func NewKeeper(cnf *conf.NeoBoxConf) *Keeper {
 
 func (that *Keeper) SetRunner(runner *Runner) {
 	that.runner = runner
+}
+
+func (that *Keeper) SetStarter(starter *exec.Cmd) {
+	that.starter = starter
+}
+
+func (that *Keeper) GetStarter() *exec.Cmd {
+	return that.starter
 }
 
 func (that *Keeper) runKeeperServer() {
@@ -85,8 +96,12 @@ func (that *Keeper) checkRunner() {
 	}
 }
 
-func (that *Keeper) Start() {
-	// that.daemon.Run()
+func (that *Keeper) Start(args ...string) {
+	if len(os.Args) > 1 {
+		args = os.Args
+	}
+	that.daemon.Run(args...)
+
 	go that.runKeeperServer()
 	cronTime := that.conf.NeoBoxKeeperCron
 	if !strings.HasPrefix(cronTime, "@every") {

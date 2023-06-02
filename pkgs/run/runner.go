@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -19,7 +20,6 @@ import (
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/iface"
 	"github.com/moqsien/neobox/pkgs/proxy"
-	"github.com/moqsien/neobox/pkgs/utils"
 	cron "github.com/robfig/cron/v3"
 )
 
@@ -44,10 +44,10 @@ type Runner struct {
 	daemon       *d.Daemon
 	cron         *cron.Cron
 	shell        *Shell
+	starter      *exec.Cmd
 }
 
 func NewRunner(cnf *conf.NeoBoxConf) *Runner {
-	os.Setenv(utils.XrayLocationAssetDirEnv, cnf.AssetDir)
 	r := &Runner{
 		verifier:   proxy.NewVerifier(cnf),
 		conf:       cnf,
@@ -57,6 +57,9 @@ func NewRunner(cnf *conf.NeoBoxConf) *Runner {
 		shell:      NewShell(cnf),
 	}
 	r.shell.SetRunner(r)
+	k := NewKeeper(cnf)
+	k.SetRunner(r)
+	r.shell.SetKeeper(k)
 	r.shell.InitKtrl()
 	r.daemon.SetWorkdir(cnf.NeoWorkDir)
 	r.daemon.SetScriptName(winRunScriptName)
@@ -104,13 +107,15 @@ func (that *Runner) PingVerifier() bool {
 	return false
 }
 
-func (that *Runner) Start() {
+func (that *Runner) Start(args ...string) {
 	if that.Ping() {
 		fmt.Println("xtray is already running.")
 		return
 	}
-
-	// that.daemon.Run()
+	if len(os.Args) > 1 {
+		args = os.Args
+	}
+	that.daemon.Run(args...)
 
 	go that.startRunnerPingServer()
 	go that.shell.StartServer()
@@ -158,6 +163,10 @@ func (that *Runner) Restart(pIdx int) (result string) {
 	return
 }
 
+func (that *Runner) StartKeeper() {
+	that.shell.StartKeeper()
+}
+
 func (that *Runner) Current() (result string) {
 	result = "none"
 	if that.currentProxy != nil {
@@ -176,6 +185,22 @@ func (that *Runner) Exit() {
 
 func (that *Runner) OpenShell() {
 	that.shell.StartShell()
+}
+
+func (that *Runner) SetStarter(starter *exec.Cmd) {
+	that.starter = starter
+}
+
+func (that *Runner) GetStarter() *exec.Cmd {
+	return that.starter
+}
+
+func (that *Runner) SetKeeperStarter(starter *exec.Cmd) {
+	that.shell.SetKeeperStarter(starter)
+}
+
+func (that *Runner) GetKeeperStarter() *exec.Cmd {
+	return that.shell.GetKeeperStarter()
 }
 
 /*

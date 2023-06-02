@@ -4,3 +4,6 @@
 .vscode
 *.txt
 *.log
+neobox*.bat
+neobox
+neobox.exe

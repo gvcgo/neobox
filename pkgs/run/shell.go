@@ -3,6 +3,7 @@ package run
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -14,7 +15,6 @@ import (
 	"github.com/moqsien/goutils/pkgs/koanfer"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/proxy"
-	"github.com/pterm/pterm"
 )
 
 type HistoryVpnList struct {
@@ -53,6 +53,18 @@ func (that *Shell) SetKeeper(keeper *Keeper) {
 	that.keeper = keeper
 }
 
+func (that *Shell) SetKeeperStarter(starter *exec.Cmd) {
+	that.keeper.SetStarter(starter)
+}
+
+func (that *Shell) GetKeeperStarter() *exec.Cmd {
+	return that.keeper.GetStarter()
+}
+
+func (that *Shell) StartKeeper(args ...string) {
+	that.keeper.Start(args...)
+}
+
 // start sing-box client and keeper.
 func (that *Shell) start() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
@@ -63,14 +75,16 @@ func (that *Shell) start() {
 				// automatically download geoip and geosite
 				that.runner.DownloadGeoInfo()
 			}
-			that.runner.Start()
+			starter := that.runner.GetStarter()
+			starter.Run()
 			time.Sleep(2 * time.Second)
 			if that.runner.Ping() {
 				tui.PrintSuccess("start sing-box succeeded.")
 			} else {
 				tui.PrintError("start sing-box failed")
 			}
-			that.keeper.Start()
+			starter = that.runner.GetKeeperStarter()
+			starter.Run()
 			time.Sleep(2 * time.Second)
 			if that.keeper.Ping() {
 				tui.PrintSuccess("start keeper succeeded.")
@@ -90,7 +104,7 @@ func (that *Shell) stop() {
 		Help: "Stop the running sing-box client/keeper.",
 		Func: func(c *goktrl.Context) {
 			res, _ := c.GetResult()
-			tui.PrintWarning(res)
+			tui.PrintWarning(string(res))
 			r := that.keeper.StopRequest()
 			tui.PrintWarning(r)
 		},
@@ -108,7 +122,7 @@ func (that *Shell) restart() {
 		Help: "Restart the running sing-box client.",
 		Func: func(c *goktrl.Context) {
 			res, _ := c.GetResult()
-			pterm.Println(pterm.Green(string(res)))
+			tui.PrintInfo(string(res))
 		},
 		ArgsDescription: "choose a specified proxy by index.",
 		KtrlHandler: func(c *goktrl.Context) {
@@ -199,7 +213,7 @@ func (that *Shell) show() {
 			v := that.runner.GetVerifier()
 			if pList := v.Info(); pList != nil {
 				for idx, p := range pList.Proxies.List {
-					tui.Yellow(fmt.Sprintf("%d. %s", idx, p.String()))
+					tui.Yellow(fmt.Sprintf("%d. %s | RTT %v ms", idx, p.String(), p.RTT))
 				}
 			}
 		},
@@ -220,7 +234,7 @@ func (that *Shell) filter() {
 		Opts: &filterOpts{},
 		Func: func(c *goktrl.Context) {
 			result, _ := c.GetResult()
-			tui.Green(result)
+			tui.Green(string(result))
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			if that.runner.VerifierIsRunning() {
@@ -262,15 +276,15 @@ func (that *Shell) status() {
 			} else {
 				tui.PrintError("sing-box is stopped.")
 			}
-			if that.runner.PingVerifier() {
-				tui.PrintSuccess("verifier is running.")
-			} else {
-				tui.PrintInfo("verifier is not runnig for now.")
-			}
 			if that.keeper.Ping() {
 				tui.PrintSuccess("keeper is running.")
 			} else {
 				tui.PrintError("keeper is stopped.")
+			}
+			if that.runner.PingVerifier() {
+				tui.PrintSuccess("verifier is running.")
+			} else {
+				tui.PrintInfo("verifier is not runnig for now.")
 			}
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
@@ -284,7 +298,7 @@ func (that *Shell) current() {
 		Help: "Show current vpn.",
 		Func: func(c *goktrl.Context) {
 			res, _ := c.GetResult()
-			tui.PrintInfo(res)
+			tui.PrintInfo(string(res))
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			c.Send(that.runner.Current(), 200)

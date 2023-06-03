@@ -81,12 +81,12 @@ func (that *SSROutbound) GetRawUri() string {
 }
 
 func (that *SSROutbound) String() string {
-	return fmt.Sprintf("ssr://%s:%d", that.Address, that.Port)
+	return fmt.Sprintf("%s%s:%d", SSRScheme, that.Address, that.Port)
 }
 
 func (that *SSROutbound) Decode(rawUri string) string {
 	that.Parse(rawUri)
-	return fmt.Sprintf("ssr://%s:%s@%s:%d", that.Password, that.Method, that.Address, that.Port)
+	return fmt.Sprintf("%s%s:%s@%s:%d", SSRScheme, that.Password, that.Method, that.Address, that.Port)
 }
 
 func (that *SSROutbound) GetAddr() string {

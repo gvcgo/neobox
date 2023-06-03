@@ -2,7 +2,6 @@ package xtray
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -80,7 +79,11 @@ var VmessSettingsStr string = `{
     ]
 }`
 
-func getVmessConfStr(ob *parser.VmessOutbound, inPort int, logPath string) (r []byte) {
+func getVmessConfStr(iob iface.IOutboundParser, inPort int, logPath string) (r []byte) {
+	ob, ok := iob.(*parser.VmessOutbound)
+	if !ok {
+		return
+	}
 	if ob != nil {
 		j := gjson.New(VmessSettingsStr)
 		j.Set("vnext.0.address", ob.Address)
@@ -89,20 +92,20 @@ func getVmessConfStr(ob *parser.VmessOutbound, inPort int, logPath string) (r []
 		j.Set("vnext.0.users.0.alterId", gconv.Int(ob.Aid))
 		j.Set("vnext.0.users.0.security", ob.UserSecurity)
 		settings := j.MustToJsonIndentString()
-		streamStr := BlankStreamStr
-		if ob.Security != "" && ob.Path != "" && ob.Network != "" {
-			j = gjson.New(DefaulStreamStr)
-			j.Set("network", ob.Network)
-			j.Set("security", ob.Security)
-			if ob.Network == "ws" {
-				j.Set("wsSettings.path", ob.Path)
-			} else if ob.Network == "tcp" {
-				j.Set("tcpSettings.header.request.path.1", ob.Path)
-				j.Set("tcpSettings.header.request.headers.Host.0", ob.Host)
-			}
-			streamStr = j.MustToJsonIndentString()
-		}
-		cnf := fmt.Sprintf(ConfStr, settings, streamStr)
+		// streamStr := BlankStreamStr
+		// if ob.Security != "" && ob.Path != "" && ob.Network != "" {
+		// 	j = gjson.New(DefaulStreamStr)
+		// 	j.Set("network", ob.Network)
+		// 	j.Set("security", ob.Security)
+		// 	if ob.Network == "ws" {
+		// 		j.Set("wsSettings.path", ob.Path)
+		// 	} else if ob.Network == "tcp" {
+		// 		j.Set("tcpSettings.header.request.path.1", ob.Path)
+		// 		j.Set("tcpSettings.header.request.headers.Host.0", ob.Host)
+		// 	}
+		// 	streamStr = j.MustToJsonIndentString()
+		// }
+		cnf := fmt.Sprintf(ConfStr, settings, BlankStreamStr)
 		j = gjson.New(cnf)
 		if inPort > 0 {
 			j.Set("inbounds.0.port", inPort)
@@ -133,7 +136,11 @@ var VlessSettingsStr string = `{
 	]
 }`
 
-func getVlessConfStr(ob *parser.VlessOutbound, inPort int, logPath string) (r []byte) {
+func getVlessConfStr(iob iface.IOutboundParser, inPort int, logPath string) (r []byte) {
+	ob, ok := iob.(*parser.VlessOutbound)
+	if !ok {
+		return
+	}
 	if ob != nil {
 		j := gjson.New(VlessSettingsStr)
 		j.Set("vnext.0.address", ob.Address)
@@ -141,20 +148,20 @@ func getVlessConfStr(ob *parser.VlessOutbound, inPort int, logPath string) (r []
 		j.Set("vnext.0.users.0.id", ob.UserId)
 		j.Set("vnext.0.users.0.encryption", ob.Encryption)
 		settings := j.MustToJsonString()
-		streamStr := BlankStreamStr
-		if ob.Security != "" && ob.Path != "" && ob.Type != "" {
-			j = gjson.New(DefaulStreamStr)
-			j.Set("network", ob.Type)
-			j.Set("security", ob.Security)
-			if ob.Type == "ws" {
-				j.Set("wsSettings.path", ob.Path)
-			} else if ob.Type == "tcp" {
-				j.Set("tcpSettings.header.request.path.1", ob.Path)
-				j.Set("tcpSettings.header.request.headers.Host.0", ob.Address)
-			}
-			streamStr = j.MustToJsonString()
-		}
-		cnf := fmt.Sprintf(ConfStr, settings, streamStr)
+		// streamStr := BlankStreamStr
+		// if ob.Security != "" && ob.Path != "" && ob.Type != "" {
+		// 	j = gjson.New(DefaulStreamStr)
+		// 	j.Set("network", ob.Type)
+		// 	j.Set("security", ob.Security)
+		// 	if ob.Type == "ws" {
+		// 		j.Set("wsSettings.path", ob.Path)
+		// 	} else if ob.Type == "tcp" {
+		// 		j.Set("tcpSettings.header.request.path.1", ob.Path)
+		// 		j.Set("tcpSettings.header.request.headers.Host.0", ob.Address)
+		// 	}
+		// 	streamStr = j.MustToJsonString()
+		// }
+		cnf := fmt.Sprintf(ConfStr, settings, BlankStreamStr)
 		j = gjson.New(cnf)
 		if inPort > 0 {
 			j.Set("inbounds.0.port", inPort)
@@ -180,7 +187,11 @@ var TrojanSettingsStr string = `{
     ]
 }`
 
-func getTrojanConfStr(ob *parser.TrojanOutbound, inPort int, logPath string) (r []byte) {
+func getTrojanConfStr(iob iface.IOutboundParser, inPort int, logPath string) (r []byte) {
+	ob, ok := iob.(*parser.TrojanOutbound)
+	if !ok {
+		return
+	}
 	if ob != nil {
 		j := gjson.New(TrojanSettingsStr)
 		j.Set("servers.0.address", ob.Address)
@@ -215,7 +226,11 @@ var SSSettingsStr string = `{
     ]
 }`
 
-func getSsStr(ob *parser.SSOutbound, inPort int, logPath string) (r []byte) {
+func getSSConfStr(iob iface.IOutboundParser, inPort int, logPath string) (r []byte) {
+	ob, ok := iob.(*parser.SSOutbound)
+	if !ok {
+		return
+	}
 	if ob != nil {
 		j := gjson.New(SSSettingsStr)
 		j.Set("servers.0.address", ob.Address)
@@ -240,7 +255,7 @@ func getSsStr(ob *parser.SSOutbound, inPort int, logPath string) (r []byte) {
 /*
 xray-core does not support SSR.
 */
-func getSsrStr(ob *parser.SSROutbound, inPort int, logPath string) (r []byte) {
+func getSSRConfStr(iob iface.IOutboundParser, inPort int, logPath string) (r []byte) {
 	return
 }
 
@@ -248,29 +263,18 @@ func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte, err error
 	if p == nil {
 		return
 	}
-	rawUri := p.GetRawUri()
-	iob := p.GetParser()
-	if strings.HasPrefix(rawUri, parser.VmessScheme) {
-		if ob, ok := iob.(*parser.VmessOutbound); ok {
-			return getVmessConfStr(ob, inPort, logPath), nil
-		}
-	} else if strings.HasPrefix(rawUri, parser.VlessScheme) {
-		if ob, ok := iob.(*parser.VlessOutbound); ok {
-			return getVlessConfStr(ob, inPort, logPath), nil
-		}
-	} else if strings.HasPrefix(rawUri, parser.TrojanScheme) {
-		if ob, ok := iob.(*parser.TrojanOutbound); ok {
-			return getTrojanConfStr(ob, inPort, logPath), nil
-		}
-	} else if strings.HasPrefix(rawUri, parser.SSScheme) {
-		if ob, ok := iob.(*parser.SSOutbound); ok {
-			return getSsStr(ob, inPort, logPath), nil
-		}
-	} else if strings.HasPrefix(rawUri, parser.SSRScheme) {
-		if ob, ok := iob.(*parser.SSROutbound); ok {
-			return getSsrStr(ob, inPort, logPath), nil
-		}
-	} else {
+	switch p.Scheme() {
+	case parser.VmessScheme:
+		r = getVmessConfStr(p.GetParser(), inPort, logPath)
+	case parser.TrojanScheme:
+		r = getTrojanConfStr(p.GetParser(), inPort, logPath)
+	case parser.Shadowsockscheme:
+		r = getSSConfStr(p.GetParser(), inPort, logPath)
+	case parser.SSRScheme:
+		r = getSSRConfStr(p.GetParser(), inPort, logPath)
+	case parser.VlessScheme:
+		r = getVlessConfStr(p.GetParser(), inPort, logPath)
+	default:
 		err = fmt.Errorf("unsupported proxy scheme")
 	}
 	return

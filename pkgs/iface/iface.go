@@ -10,7 +10,6 @@ type IOutboundParser interface {
 }
 
 type IProxy interface {
-	SetRawUri(string)
 	GetRawUri() string
 	String() string
 	Decode() string

@@ -113,9 +113,9 @@ func (that *Runner) Start(args ...string) {
 		fmt.Println("xtray is already running.")
 		return
 	}
-	if len(os.Args) > 1 {
-		args = os.Args
-	}
+	// if len(os.Args) > 1 {
+	// 	args = os.Args
+	// }
 	// that.daemon.Run(args...)
 
 	go that.startRunnerPingServer()
@@ -131,7 +131,8 @@ func (that *Runner) Start(args ...string) {
 	}
 	that.cron.AddFunc(cronTime, func() {
 		if !that.verifier.IsRunning() {
-			that.verifier.Run(false, false)
+			that.verifier.SetUseExtraOrNot(true)
+			that.verifier.Run(false)
 		}
 	})
 	that.cron.Start()

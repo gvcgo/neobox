@@ -26,8 +26,9 @@ var VmessStr string = `{
 	"tls":{}
 }`
 
-func getVmessConfStr(ob *parser.VmessOutbound) *gjson.Json {
+func getVmessConfStr(iob iface.IOutboundParser) *gjson.Json {
 	vTag := "vmess-out"
+	ob, _ := iob.(*parser.VmessOutbound)
 	if ob != nil {
 		aid, _ := strconv.Atoi(ob.Aid)
 		if aid > 1 {
@@ -58,8 +59,9 @@ var VlessStr string = `{
 	"tls": {}
 }`
 
-func getVlessConfStr(ob *parser.VlessOutbound) *gjson.Json {
+func getVlessConfStr(iob iface.IOutboundParser) *gjson.Json {
 	vTag := "vless-out"
+	ob, _ := iob.(*parser.VlessOutbound)
 	if ob != nil {
 		j := gjson.New(VlessStr)
 		j.Set("tag", vTag)
@@ -87,8 +89,9 @@ var TrojanStr string = `{
 	"tls": {}
 }`
 
-func getTrojanConfStr(ob *parser.TrojanOutbound) *gjson.Json {
+func getTrojanConfStr(iob iface.IOutboundParser) *gjson.Json {
 	vTag := "trojan-out"
+	ob, _ := iob.(*parser.TrojanOutbound)
 	if ob != nil {
 		j := gjson.New(TrojanStr)
 		j.Set("tag", vTag)
@@ -114,8 +117,9 @@ var ShadowsocksStr string = `{
 	"password": "8JCsPssfgS8tiRwiMlhARg=="
 }`
 
-func getSsStr(ob *parser.SSOutbound) *gjson.Json {
+func getSsStr(iob iface.IOutboundParser) *gjson.Json {
 	vTag := "ss-out"
+	ob, _ := iob.(*parser.SSOutbound)
 	if ob != nil {
 		j := gjson.New(ShadowsocksStr)
 		j.Set("tag", vTag)
@@ -146,8 +150,9 @@ var ShadowsocksRStr string = `{
 	"protocol_param": ""
 }`
 
-func getShadowsocksRStr(ob *parser.SSROutbound) *gjson.Json {
+func getShadowsocksRStr(iob iface.IOutboundParser) *gjson.Json {
 	vTag := "ssr-out"
+	ob, _ := iob.(*parser.SSROutbound)
 	if ob != nil {
 		j := gjson.New(ShadowsocksRStr)
 		j.Set("tag", vTag)
@@ -173,30 +178,19 @@ func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte) {
 	if p == nil {
 		return
 	}
-	iob := p.GetParser()
 	var j *gjson.Json
 
 	switch p.Scheme() {
 	case parser.VmessScheme:
-		if ob, ok := iob.(*parser.VmessOutbound); ok {
-			j = getVmessConfStr(ob)
-		}
+		j = getVmessConfStr(p.GetParser())
 	case parser.TrojanScheme:
-		if ob, ok := iob.(*parser.TrojanOutbound); ok {
-			j = getTrojanConfStr(ob)
-		}
-	case parser.SSScheme:
-		if ob, ok := iob.(*parser.SSOutbound); ok {
-			j = getSsStr(ob)
-		}
+		j = getTrojanConfStr(p.GetParser())
+	case parser.Shadowsockscheme:
+		j = getSsStr(p.GetParser())
 	case parser.SSRScheme:
-		if ob, ok := iob.(*parser.SSROutbound); ok {
-			j = getShadowsocksRStr(ob)
-		}
+		j = getShadowsocksRStr(p.GetParser())
 	case parser.VlessScheme:
-		if ob, ok := iob.(*parser.VlessOutbound); ok {
-			j = getVlessConfStr(ob)
-		}
+		j = getVlessConfStr(p.GetParser())
 	default:
 		return
 	}

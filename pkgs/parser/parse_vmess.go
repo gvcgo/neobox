@@ -35,8 +35,8 @@ vmess://eyJ2IjogIjIiLCAicHMiOiAiZ2l0aHViLmNvbS9mcmVlZnEgLSBcdTdmOGVcdTU2ZmRDbG91
 
 func (that *VmessOutbound) Parse(rawUri string) {
 	that.Raw = rawUri
-	if strings.HasPrefix(rawUri, "vmess://") {
-		rawUri = strings.ReplaceAll(rawUri, "vmess://", "")
+	if strings.HasPrefix(rawUri, VmessScheme) {
+		rawUri = strings.ReplaceAll(rawUri, VmessScheme, "")
 	}
 	rawUri = crypt.DecodeBase64(rawUri)
 	j := gjson.New(rawUri)
@@ -76,15 +76,16 @@ func (that *VmessOutbound) GetRawUri() string {
 }
 
 func (that *VmessOutbound) String() string {
-	return fmt.Sprintf("vmess://%s:%d", that.Address, that.Port)
+	return fmt.Sprintf("%s%s:%d", VmessScheme, that.Address, that.Port)
 }
 
 func (that *VmessOutbound) Decode(rawUri string) string {
 	that.Raw = rawUri
-	if strings.HasPrefix(rawUri, "vmess://") {
-		rawUri = strings.ReplaceAll(rawUri, "vmess://", "")
+	if strings.HasPrefix(rawUri, VmessScheme) {
+		rawUri = strings.ReplaceAll(rawUri, VmessScheme, "")
 	}
-	return crypt.DecodeBase64(rawUri)
+	r := crypt.DecodeBase64(rawUri)
+	return r
 }
 
 func (that *VmessOutbound) GetAddr() string {

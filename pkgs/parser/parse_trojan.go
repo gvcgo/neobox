@@ -23,7 +23,7 @@ trojan://b5e4e360-5946-470b-aad0-db98f50faa57@frontend.yijianlian.app:54430?secu
 */
 func (that *TrojanOutbound) Parse(rawUri string) {
 	that.Raw = rawUri
-	if strings.HasPrefix(rawUri, "trojan://") {
+	if strings.HasPrefix(rawUri, TrojanScheme) {
 		if u, err := url.Parse(rawUri); err == nil {
 			that.Address = u.Hostname()
 			that.Port, _ = strconv.Atoi(u.Port())
@@ -40,7 +40,7 @@ func (that *TrojanOutbound) GetRawUri() string {
 }
 
 func (that *TrojanOutbound) String() string {
-	return fmt.Sprintf("trojan://%s:%d", that.Address, that.Port)
+	return fmt.Sprintf("%s%s:%d", TrojanScheme, that.Address, that.Port)
 }
 
 func (that *TrojanOutbound) Decode(rawUri string) string {

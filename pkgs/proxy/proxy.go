@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"strings"
 	"sync"
 
 	"github.com/gogf/gf/os/gtime"
@@ -19,34 +18,16 @@ type Proxy struct {
 	scheme string
 }
 
-func (that *Proxy) SetRawUri(rawUri string) {
-	that.RawUri = rawUri
-	that.parseScheme()
-	if that.p != nil {
-		parser.DefaultParserPool.Put(that.p)
-		that.p = nil
-	}
-}
-
-func (that *Proxy) parseScheme() {
-	if strings.HasPrefix(that.RawUri, parser.VmessScheme) {
-		that.scheme = parser.VmessScheme
-	} else if strings.HasPrefix(that.RawUri, parser.VlessScheme) {
-		that.scheme = parser.VlessScheme
-	} else if strings.HasPrefix(that.RawUri, parser.TrojanScheme) {
-		that.scheme = parser.TrojanScheme
-	} else if strings.HasPrefix(that.RawUri, parser.SSScheme) {
-		that.scheme = parser.SSScheme
-	} else if strings.HasPrefix(that.RawUri, parser.SSRScheme) {
-		that.scheme = parser.SSRScheme
-	} else {
-		that.scheme = ""
+func NewProxy(rawUri string) *Proxy {
+	return &Proxy{
+		RawUri: rawUri,
+		scheme: parser.ParseScheme(rawUri),
 	}
 }
 
 func (that *Proxy) newParser() {
 	if that.p == nil {
-		that.p = parser.DefaultParserPool.Get(that)
+		that.p = parser.GetParser(that)
 	}
 }
 
@@ -60,7 +41,7 @@ func (that *Proxy) Address() (a string) {
 
 func (that *Proxy) Scheme() string {
 	if that.scheme == "" {
-		that.parseScheme()
+		that.scheme = parser.ParseScheme(that.RawUri)
 	}
 	return that.scheme
 }
@@ -91,49 +72,12 @@ func (that *Proxy) GetParser() iface.IOutboundParser {
 }
 
 /*
-Proxy Pool
-*/
-
-/*
-TODO: when to put.
-*/
-type ProxyPool struct {
-	pool *sync.Pool
-}
-
-func NewProxyPool() *ProxyPool {
-	return &ProxyPool{
-		pool: &sync.Pool{
-			New: func() any {
-				return &Proxy{}
-			},
-		},
-	}
-}
-
-var DefaultProxyPool = NewProxyPool()
-
-func (that *ProxyPool) Get(rawUri string) *Proxy {
-	pr := that.pool.Get()
-	if p, ok := pr.(*Proxy); ok {
-		p.SetRawUri(rawUri)
-		return p
-	}
-	return nil
-}
-
-func (that *ProxyPool) Put(p *Proxy) {
-	p.SetRawUri("")
-	that.pool.Put(p)
-}
-
-/*
 Proxy list
 */
 type Proxies struct {
-	List      []Proxy `json,koanf:"proxy_list"`
-	UpdatedAt string  `json,koanf:"updated_time"`
-	Total     int     `json,koanf:"total"`
+	List      []*Proxy `json,koanf:"proxy_list"`
+	UpdatedAt string   `json,koanf:"updated_time"`
+	Total     int      `json,koanf:"total"`
 }
 
 type ProxyList struct {
@@ -150,7 +94,7 @@ func NewProxyList(fPath string) *ProxyList {
 		return nil
 	}
 	pl := &ProxyList{
-		Proxies: &Proxies{List: []Proxy{}},
+		Proxies: &Proxies{List: []*Proxy{}},
 		koanfer: k,
 		path:    fPath,
 		lock:    &sync.RWMutex{},
@@ -165,7 +109,7 @@ func (that *ProxyList) Path() string {
 	return that.path
 }
 
-func (that *ProxyList) AddProxies(p ...Proxy) {
+func (that *ProxyList) AddProxies(p ...*Proxy) {
 	if len(p) > 0 {
 		that.lock.Lock()
 		that.Proxies.List = append(that.Proxies.List, p...)
@@ -201,11 +145,8 @@ func (that *ProxyList) Load() {
 }
 
 func (that *ProxyList) Clear() {
-	for _, p := range that.Proxies.List {
-		DefaultProxyPool.Put(&p)
-	}
 	that.lock.Lock()
-	that.Proxies.List = []Proxy{}
+	that.Proxies.List = []*Proxy{}
 	that.Proxies.Total = 0
 	that.lock.Unlock()
 }

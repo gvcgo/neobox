@@ -41,7 +41,7 @@ func (that *NeoPinger) send(force ...bool) {
 	r := that.fetcher.GetRawProxyList(force...)
 	tui.PrintInfof("Find %v raw proxies.\n", len(r))
 	for _, rawUri := range r {
-		p := DefaultProxyPool.Get(rawUri)
+		p := NewProxy(rawUri)
 		if p != nil {
 			that.sendChan <- p
 		}
@@ -62,7 +62,7 @@ func (that *NeoPinger) ping(p *Proxy) {
 				if s.PacketLoss < 10.0 {
 					p.RTT = s.AvgRtt.Milliseconds()
 					if p.RTT <= that.conf.MaxAvgRTT {
-						that.pingedList.AddProxies(*p)
+						that.pingedList.AddProxies(p)
 						return
 					}
 				}

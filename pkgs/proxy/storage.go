@@ -107,7 +107,7 @@ func NewDB(dbPath string) (r *Database) {
 	return
 }
 
-func GetHistoryVpnsFromDB() (pList []Proxy, err error) {
+func GetHistoryVpnsFromDB() (pList []*Proxy, err error) {
 	result := StorageDB().DB.Table(historyVpns.TableName()).Find(&pList)
 	err = result.Error
 	if err != nil {
@@ -116,8 +116,8 @@ func GetHistoryVpnsFromDB() (pList []Proxy, err error) {
 	return
 }
 
-func AddProxyToDB(p Proxy) (r Proxy, err error) {
-	result := StorageDB().DB.Table(historyVpns.TableName()).Where(&HistoryVpns{RawUri: p.RawUri}).FirstOrCreate(&r)
+func AddProxyToDB(p *Proxy) (r *Proxy, err error) {
+	result := StorageDB().DB.Table(historyVpns.TableName()).Where(&HistoryVpns{RawUri: p.RawUri}).FirstOrCreate(r)
 	err = result.Error
 	if err != nil {
 		log.Error(err)
@@ -125,7 +125,7 @@ func AddProxyToDB(p Proxy) (r Proxy, err error) {
 	return
 }
 
-func GetManualVpnsFromDB() (pList []Proxy, err error) {
+func GetManualVpnsFromDB() (pList []*Proxy, err error) {
 	result := StorageDB().DB.Table(manualVpns.TableName()).Find(&pList)
 	err = result.Error
 	if err != nil {
@@ -134,8 +134,8 @@ func GetManualVpnsFromDB() (pList []Proxy, err error) {
 	return
 }
 
-func AddExtraProxyToDB(p Proxy) (r Proxy, err error) {
-	result := StorageDB().DB.Table(manualVpns.TableName()).Where(&ManualVpns{RawUri: p.RawUri}).FirstOrCreate(&r)
+func AddExtraProxyToDB(p *Proxy) (r *Proxy, err error) {
+	result := StorageDB().DB.Table(manualVpns.TableName()).Where(&ManualVpns{RawUri: p.RawUri}).FirstOrCreate(r)
 	err = result.Error
 	if err != nil {
 		log.Error(err)

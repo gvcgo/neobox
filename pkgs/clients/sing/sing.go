@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"runtime"
 
+	tui "github.com/moqsien/goutils/pkgs/gtui"
 	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/iface"
 	box "github.com/sagernet/sing-box"
@@ -61,7 +62,9 @@ func (that *Client) Start() (err error) {
 		if err != nil {
 			that.Close()
 			log.Error("[Start Sing-Box Failed] ", err)
+			return
 		}
+		tui.PrintInfof("Sing-box started successfully [%s]", that.proxy.Decode())
 		return
 	} else {
 		log.Error("[Parse config file failed]")

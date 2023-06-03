@@ -54,34 +54,24 @@ func NewParser(cnf *conf.NeoBoxConf) *Parser {
 func (that *Parser) Parse() {
 	rawProxies := that.fetcher.GetRawProxies(true)
 	for _, rawUri := range rawProxies.VmessList.List {
-		if iob := DefaultProxyPool.Get(rawUri); iob != nil {
-			that.ParsedList.Vmess = append(that.ParsedList.Vmess, iob.Decode())
-			DefaultProxyPool.Put(iob)
-		}
+		p := NewProxy(rawUri)
+		that.ParsedList.Vmess = append(that.ParsedList.Vmess, p.Decode())
 	}
 	for _, rawUri := range rawProxies.VlessList.List {
-		if iob := DefaultProxyPool.Get(rawUri); iob != nil {
-			that.ParsedList.Vless = append(that.ParsedList.Vless, iob.Decode())
-			DefaultProxyPool.Put(iob)
-		}
+		p := NewProxy(rawUri)
+		that.ParsedList.Vless = append(that.ParsedList.Vless, p.Decode())
 	}
 	for _, rawUri := range rawProxies.Trojan.List {
-		if iob := DefaultProxyPool.Get(rawUri); iob != nil {
-			that.ParsedList.Trojan = append(that.ParsedList.Trojan, iob.Decode())
-			DefaultProxyPool.Put(iob)
-		}
+		p := NewProxy(rawUri)
+		that.ParsedList.Trojan = append(that.ParsedList.Trojan, p.Decode())
 	}
 	for _, rawUri := range rawProxies.SSList.List {
-		if iob := DefaultProxyPool.Get(rawUri); iob != nil {
-			that.ParsedList.SS = append(that.ParsedList.SS, iob.Decode())
-			DefaultProxyPool.Put(iob)
-		}
+		p := NewProxy(rawUri)
+		that.ParsedList.SS = append(that.ParsedList.SS, p.Decode())
 	}
 	for _, rawUri := range rawProxies.SSRList.List {
-		if iob := DefaultProxyPool.Get(rawUri); iob != nil {
-			that.ParsedList.SSR = append(that.ParsedList.SSR, iob.Decode())
-			DefaultProxyPool.Put(iob)
-		}
+		p := NewProxy(rawUri)
+		that.ParsedList.SSR = append(that.ParsedList.SSR, p.Decode())
 	}
 	that.ParsedList.UpdatedAt = gtime.Now().String()
 	if err := that.koanfer.Save(that.ParsedList); err != nil {

@@ -18,7 +18,7 @@ import (
 )
 
 type HistoryVpnList struct {
-	Proxies    []proxy.Proxy
+	Proxies    []*proxy.Proxy
 	Total      int
 	ExportedAt string
 }
@@ -144,10 +144,10 @@ func (that *Shell) add() {
 		Help: "Add proxies to neobox mannually.",
 		Func: func(c *goktrl.Context) {
 			for _, rawUri := range os.Args {
-				p := proxy.DefaultProxyPool.Get(rawUri)
+				p := proxy.NewProxy(rawUri)
 				flag := false
 				if p.Scheme() != "" {
-					if _, err := proxy.AddExtraProxyToDB(*p); err == nil {
+					if _, err := proxy.AddExtraProxyToDB(p); err == nil {
 						flag = true
 					}
 				}
@@ -213,6 +213,7 @@ func (that *Shell) show() {
 			tui.Green("Currently available list: ")
 			v := that.runner.GetVerifier()
 			if pList := v.Info(); pList != nil {
+				pList.Load()
 				for idx, p := range pList.Proxies.List {
 					tui.Yellow(fmt.Sprintf("%d. %s | RTT %v ms", idx, p.String(), p.RTT))
 				}

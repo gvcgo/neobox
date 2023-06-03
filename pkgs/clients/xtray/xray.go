@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"runtime"
 
+	tui "github.com/moqsien/goutils/pkgs/gtui"
 	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/iface"
 	"github.com/xtls/xray-core/core"
@@ -59,6 +60,7 @@ func (that *Client) Start() error {
 			log.Error("[Start Xray Instance Failed] ", err)
 			return err
 		}
+		tui.PrintInfof("Xray-core started successfully [%s]", that.proxy.Decode())
 	} else {
 		log.Error("[Parse config file failed] ", err)
 		return err

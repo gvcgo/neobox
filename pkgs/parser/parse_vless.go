@@ -45,7 +45,7 @@ func (that *VlessOutbound) GetRawUri() string {
 }
 
 func (that *VlessOutbound) String() string {
-	return fmt.Sprintf("vless://%s:%d", that.Address, that.Port)
+	return fmt.Sprintf("%s%s:%d", VlessScheme, that.Address, that.Port)
 }
 
 func (that *VlessOutbound) Decode(rawUri string) string {

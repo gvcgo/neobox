@@ -9,7 +9,8 @@ func main() {
 	// v.Run(true)
 	// p, _ := proxy.GetHistoryVpnsFromDB()
 	// fmt.Println(p)
-
+	// par := proxy.NewParser(cnf)
+	// par.Parse()
 	// parser.TestSSR()
 	example.Start()
 }

@@ -79,9 +79,9 @@ func (that *Verifier) GetProxyByIndex(pIdx int) (*Proxy, int) {
 		return nil, 0
 	}
 	if pIdx >= that.verifiedList.Len() {
-		return &that.verifiedList.Proxies.List[0], 0
+		return that.verifiedList.Proxies.List[0], 0
 	}
-	return &that.verifiedList.Proxies.List[pIdx], pIdx
+	return that.verifiedList.Proxies.List[pIdx], pIdx
 }
 
 // TODO: dispatching bugs
@@ -98,16 +98,16 @@ func (that *Verifier) send(cType clients.ClientType, force ...bool) {
 	if cType == clients.TypeXray {
 		that.sendChan = make(chan *Proxy, 30)
 		for _, p := range that.originList.Proxies.List {
-			if p.Scheme() != parser.SSRScheme && p.Scheme() != parser.SSScheme {
-				that.sendChan <- &p
+			if p.Scheme() != parser.SSRScheme && p.Scheme() != parser.Shadowsockscheme {
+				that.sendChan <- p
 			}
 		}
 		close(that.sendChan)
 	} else {
 		that.sendSSRChan = make(chan *Proxy, 30)
 		for _, p := range that.originList.Proxies.List {
-			if p.Scheme() == parser.SSRScheme || p.Scheme() == parser.SSScheme {
-				that.sendSSRChan <- &p
+			if p.Scheme() == parser.SSRScheme || p.Scheme() == parser.Shadowsockscheme {
+				that.sendSSRChan <- p
 			}
 		}
 		close(that.sendSSRChan)
@@ -116,12 +116,14 @@ func (that *Verifier) send(cType clients.ClientType, force ...bool) {
 
 func (that *Verifier) verify(httpClient *http.Client) bool {
 	resp, err := httpClient.Get(that.conf.VerificationUri)
-	if err != nil {
+	if err != nil || resp == nil || resp.Body == nil {
 		return false
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
 		r, _ := io.ReadAll(resp.Body)
-		return strings.Contains(string(r), "</html>")
+		result := string(r)
+		return strings.Contains(result, "</html>") && strings.Contains(result, "google")
 	}
 	return false
 }
@@ -141,7 +143,6 @@ func (that *Verifier) StartClient(inPort int, cType clients.ClientType) {
 	if that.conf.VerificationUri == "" {
 		that.conf.VerificationUri = "https://www.google.com/"
 	}
-	httpClient, _ = GetHttpClient(inPort, that.conf)
 	for {
 		if recChan == nil {
 			switch cType {
@@ -151,6 +152,7 @@ func (that *Verifier) StartClient(inPort int, cType clients.ClientType) {
 				recChan = that.sendSSRChan
 			}
 		}
+		httpClient, _ = GetHttpClient(inPort, that.conf)
 		select {
 		case p, ok := <-recChan:
 			if p == nil && !ok {
@@ -172,7 +174,7 @@ func (that *Verifier) StartClient(inPort int, cType clients.ClientType) {
 				p.RTT = time.Since(startTime).Milliseconds()
 				// only save once for a proxy.
 				if _, ok := that.tempList.Load(p.RawUri); !ok {
-					that.verifiedList.AddProxies(*p)
+					that.verifiedList.AddProxies(p)
 					that.tempList.Store(p.RawUri, struct{}{})
 					tui.PrintSuccessf("Proxy[%s] verification succeeded.", p.String())
 				} else {
@@ -242,6 +244,5 @@ func (that *Verifier) Info() *ProxyList {
 	if that.verifiedList == nil {
 		return nil
 	}
-	that.verifiedList.Load()
 	return that.verifiedList
 }

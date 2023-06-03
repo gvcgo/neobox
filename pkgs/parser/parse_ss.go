@@ -25,12 +25,12 @@ ss://chacha20-ietf-poly1305:728229b9-164e-45cb-bfb3-896b3a056a18@node03.gde52px1
 */
 func (that *SSOutbound) Parse(rawUri string) {
 	that.Raw = rawUri
-	if strings.Contains(rawUri, "ss://") {
-		r := strings.ReplaceAll(rawUri, "ss://", "")
+	if strings.Contains(rawUri, Shadowsockscheme) {
+		r := strings.ReplaceAll(rawUri, Shadowsockscheme, "")
 		uList := strings.Split(r, "@")
 		if len(uList) == 2 {
 			userInfo := crypt.DecodeBase64(utils.NormalizeSSR(uList[0]))
-			_uri := fmt.Sprintf("ss://%s@%s", userInfo, uList[1])
+			_uri := fmt.Sprintf("%s%s@%s", Shadowsockscheme, userInfo, uList[1])
 			if u, err := url.Parse(_uri); err == nil {
 				that.Address = u.Hostname()
 				that.Port, _ = strconv.Atoi(u.Port())
@@ -46,7 +46,7 @@ func (that *SSOutbound) GetRawUri() string {
 }
 
 func (that *SSOutbound) String() string {
-	return fmt.Sprintf("ss://%s:%d", that.Address, that.Port)
+	return fmt.Sprintf("%s%s:%d", Shadowsockscheme, that.Address, that.Port)
 }
 
 func (that *SSOutbound) GetAddr() string {
@@ -55,11 +55,11 @@ func (that *SSOutbound) GetAddr() string {
 
 func (that *SSOutbound) Decode(rawUri string) string {
 	that.Parse(rawUri)
-	return fmt.Sprintf("ss://%s:%s@%s:%d", that.Password, that.Method, that.Address, that.Port)
+	return fmt.Sprintf("%s%s:%s@%s:%d", Shadowsockscheme, that.Password, that.Method, that.Address, that.Port)
 }
 
 func (that *SSOutbound) Scheme() string {
-	return SSScheme
+	return Shadowsockscheme
 }
 
 func TestSS() {

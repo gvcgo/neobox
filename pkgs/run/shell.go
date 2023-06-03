@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/moqsien/goutils/pkgs/koanfer"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/proxy"
+	"github.com/pterm/pterm"
 )
 
 type HistoryVpnList struct {
@@ -75,6 +77,11 @@ func (that *Shell) start() {
 				// automatically download geoip and geosite
 				that.runner.DownloadGeoInfo()
 			}
+
+			if that.runner.Ping() {
+				tui.PrintInfo("NeoBox is already running.")
+				return
+			}
 			starter := that.runner.GetStarter()
 			starter.Run()
 			time.Sleep(2 * time.Second)
@@ -82,6 +89,11 @@ func (that *Shell) start() {
 				tui.PrintSuccess("start sing-box succeeded.")
 			} else {
 				tui.PrintError("start sing-box failed")
+			}
+
+			if that.keeper.Ping() {
+				tui.PrintInfo("NeoBox keeper is already running.")
+				return
 			}
 			starter = that.runner.GetKeeperStarter()
 			starter.Run()
@@ -103,15 +115,22 @@ func (that *Shell) stop() {
 		Name: "stop",
 		Help: "Stop the running sing-box client/keeper.",
 		Func: func(c *goktrl.Context) {
-			// TODO: show
-			res, _ := c.GetResult()
-			tui.PrintWarning(string(res))
-			r := that.keeper.StopRequest()
-			tui.PrintWarning(r)
+			if that.runner.Ping() {
+				res, _ := c.GetResult()
+				tui.PrintWarning(string(res))
+			} else {
+				tui.PrintInfo("NeoBox is not running for now.")
+			}
+			if that.keeper.Ping() {
+				r := that.keeper.StopRequest()
+				tui.PrintWarning(r)
+			} else {
+				tui.PrintInfo("Keeper is not running for now.")
+			}
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			that.runner.Exit()
-			c.Send("sing-box client stopped.", 200)
+			c.Send("sing-box client exited.", 200)
 		},
 		SocketName: that.ktrlSocks,
 	})
@@ -120,19 +139,23 @@ func (that *Shell) stop() {
 func (that *Shell) restart() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "restart",
-		Help: "Restart the running sing-box client.",
+		Help: "Restart the running sing-box client with a chosen vpn. [restart vpn_index]",
 		Func: func(c *goktrl.Context) {
 			res, _ := c.GetResult()
 			tui.PrintInfo(string(res))
 		},
-		ArgsDescription: "choose a specified proxy by index.",
+		ArgsDescription: "choose a specified vpn by index.",
 		KtrlHandler: func(c *goktrl.Context) {
-			idx := 0
-			if len(c.Args) > 0 {
-				idx, _ = strconv.Atoi(c.Args[0])
+			if that.runner.Ping() {
+				idx := 0
+				if len(c.Args) > 0 {
+					idx, _ = strconv.Atoi(c.Args[0])
+				}
+				r := that.runner.Restart(idx)
+				c.Send(r, 200)
+			} else {
+				tui.PrintInfo("NeoBox is not running.")
 			}
-			r := that.runner.Restart(idx)
-			c.Send(r, 200)
 		},
 		SocketName: that.ktrlSocks,
 	})
@@ -177,19 +200,22 @@ func (that *Shell) parse() {
 	})
 }
 
+// TODO: merge current & status
 func (that *Shell) show() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "show",
-		Help: "Show vpn list info.",
+		Help: "Show neobox info.",
 		Func: func(c *goktrl.Context) {
 			rawStatistics := proxy.NewFetcher(that.conf).GetStatistics()
-			str := fmt.Sprintf("RawList: vmess[%d] vless[%d] trojan[%d] ss[%d] ssr[%d] others[%d].",
-				rawStatistics.Vmess,
-				rawStatistics.Vless,
-				rawStatistics.Trojan,
-				rawStatistics.SS,
-				rawStatistics.SSR,
-				rawStatistics.Other,
+			tui.Cyan("========================================================================")
+			tui.Green("VPN list statitics: ")
+			str := fmt.Sprintf("RawList: vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s] others[%s].",
+				pterm.Yellow(rawStatistics.Vmess),
+				pterm.Yellow(rawStatistics.Vless),
+				pterm.Yellow(rawStatistics.Trojan),
+				pterm.Yellow(rawStatistics.SS),
+				pterm.Yellow(rawStatistics.SSR),
+				pterm.Yellow(rawStatistics.Other),
 			)
 			tui.Green(str)
 			var (
@@ -208,19 +234,52 @@ func (that *Shell) show() {
 			if pinList := proxy.NewNeoPinger(that.conf).Info(); pinList != nil {
 				pinCount = pinList.Len()
 			}
-			tui.Green(fmt.Sprintf("VPNList: ManuallyAdded[%d] History[%d] PingSucceeded[%d].", manCount, hisCount, pinCount))
+			tui.Green(fmt.Sprintf(
+				"VPNList: PingSucceeded[%s] History[%s] ManuallyAdded[%s].",
+				pterm.Yellow(pinCount),
+				pterm.Yellow(hisCount),
+				pterm.Yellow(manCount),
+			))
 			tui.Cyan("========================================================================")
-			tui.Green("Currently available list: ")
+			tui.Green("Currently available vpn list: ")
 			v := that.runner.GetVerifier()
 			if pList := v.Info(); pList != nil {
 				pList.Load()
 				for idx, p := range pList.Proxies.List {
-					tui.Yellow(fmt.Sprintf("%d. %s | RTT %v ms", idx, p.String(), p.RTT))
+					tui.Cyan(fmt.Sprintf("%s. %s | RTT %s ms", pterm.Yellow(idx), pterm.LightMagenta(p.String()), pterm.Yellow(p.RTT)))
 				}
 			}
+			tui.Cyan("========================================================================")
+			tui.Green("Status for NeoBox: ")
+			var (
+				currenVpnInfo  string
+				neoboxStatus   string = pterm.Red("stopped")
+				keeperStatus   string = pterm.Red("stopped")
+				verifierStatus string = pterm.Red("stopped")
+			)
+			if that.runner.Ping() {
+				neoboxStatus = pterm.Cyan("running")
+				result, _ := c.GetResult()
+				currenVpnInfo = pterm.Yellow(string(result))
+			}
+			if that.keeper.Ping() {
+				keeperStatus = pterm.Cyan("running")
+			}
+			if that.runner.PingVerifier() {
+				verifierStatus = pterm.Cyan("running")
+			}
+			tui.Green(fmt.Sprintf("NeoBox[%s @%s] Verifier[%s] Keeper[%s]",
+				neoboxStatus,
+				currenVpnInfo,
+				verifierStatus,
+				keeperStatus,
+			))
+			tui.Green(fmt.Sprintf("LogFileDir: %s", pterm.LightGreen(that.conf.NeoLogFileDir)))
 		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
+		KtrlHandler: func(c *goktrl.Context) {
+			c.Send(that.runner.Current(), 200)
+		},
+		SocketName: that.ktrlSocks,
 	})
 }
 
@@ -268,47 +327,6 @@ func (that *Shell) export() {
 	})
 }
 
-func (that *Shell) status() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "status",
-		Help: "Show sing-box client/keeper/verifier running status.",
-		Func: func(c *goktrl.Context) {
-			if that.runner.Ping() {
-				tui.PrintSuccess("sing-box is running.")
-			} else {
-				tui.PrintError("sing-box is stopped.")
-			}
-			if that.keeper.Ping() {
-				tui.PrintSuccess("keeper is running.")
-			} else {
-				tui.PrintError("keeper is stopped.")
-			}
-			if that.runner.PingVerifier() {
-				tui.PrintSuccess("verifier is running.")
-			} else {
-				tui.PrintInfo("verifier is not runnig for now.")
-			}
-		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
-}
-
-func (that *Shell) current() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "current",
-		Help: "Show current vpn.",
-		Func: func(c *goktrl.Context) {
-			res, _ := c.GetResult()
-			tui.PrintInfo(string(res))
-		},
-		KtrlHandler: func(c *goktrl.Context) {
-			c.Send(that.runner.Current(), 200)
-		},
-		SocketName: that.ktrlSocks,
-	})
-}
-
 func (that *Shell) geoinfo() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "geoinfo",
@@ -326,15 +344,35 @@ func (that *Shell) geoinfo() {
 	})
 }
 
-func (that *Shell) showlog() {
+func (that *Shell) pingSet() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "log",
-		Help: "Show log file dir.",
+		Name: "pingunix",
+		Help: "Setup ping without root for unix.",
 		Func: func(c *goktrl.Context) {
-			tui.PrintInfo(that.conf.NeoLogFileDir)
+			proxy.SetPingWithoutRootForUnix()
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
 		SocketName:  that.ktrlSocks,
+	})
+}
+
+func (that *Shell) manualGC() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "gc",
+		Help: "Start GC manually.",
+		Func: func(c *goktrl.Context) {
+			if that.runner.Ping() {
+				result, _ := c.GetResult()
+				if len(result) > 0 {
+					tui.PrintInfo(string(result))
+				}
+			}
+		},
+		KtrlHandler: func(c *goktrl.Context) {
+			runtime.GC()
+			c.Send("GC started.", 200)
+		},
+		SocketName: that.ktrlSocks,
 	})
 }
 
@@ -347,10 +385,9 @@ func (that *Shell) InitKtrl() {
 	that.show()
 	that.filter()
 	that.export()
-	that.status()
-	that.current()
 	that.geoinfo()
-	that.showlog()
+	that.pingSet()
+	that.manualGC()
 }
 
 func (that *Shell) StartShell() {

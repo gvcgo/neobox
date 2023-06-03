@@ -13,4 +13,5 @@ func main() {
 	// par.Parse()
 	// parser.TestSSR()
 	example.Start()
+	// fmt.Println(strings.Replace("-dajfajf-dfafkf-", "-", "@", 1))
 }

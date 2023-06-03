@@ -255,7 +255,7 @@ func (that *Shell) show() {
 				currenVpnInfo  string
 				neoboxStatus   string = pterm.LightRed("stopped")
 				keeperStatus   string = pterm.LightRed("stopped")
-				verifierStatus string = pterm.LightYellow("stopped")
+				verifierStatus string = pterm.LightMagenta("completed")
 			)
 			if that.runner.Ping() {
 				neoboxStatus = pterm.LightGreen("running")
@@ -269,13 +269,13 @@ func (that *Shell) show() {
 			if that.runner.PingVerifier() {
 				verifierStatus = pterm.LightGreen("running")
 			}
-			tui.Green(fmt.Sprintf("NeoBox[%s @%s] Verifier[%s] Keeper[%s]",
+			tui.Cyan(fmt.Sprintf("NeoBox[%s @%s] Verifier[%s] Keeper[%s]",
 				neoboxStatus,
 				currenVpnInfo,
 				verifierStatus,
 				keeperStatus,
 			))
-			tui.Green(fmt.Sprintf("LogFileDir: %s", pterm.LightGreen(that.conf.NeoLogFileDir)))
+			tui.Magenta(fmt.Sprintf("LogFileDir: %s", pterm.LightGreen(that.conf.NeoLogFileDir)))
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			var m runtime.MemStats

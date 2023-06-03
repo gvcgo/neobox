@@ -2,6 +2,7 @@ package run
 
 import (
 	"net/http"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -96,10 +97,10 @@ func (that *Keeper) checkRunner() {
 }
 
 func (that *Keeper) Start(args ...string) {
-	// if len(os.Args) > 1 {
-	// 	args = os.Args
-	// }
-	// that.daemon.Run(args...)
+	if len(os.Args) > 1 {
+		args = os.Args
+	}
+	that.daemon.Run(args...)
 
 	go that.runKeeperServer()
 	cronTime := that.conf.NeoBoxKeeperCron

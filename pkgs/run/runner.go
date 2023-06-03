@@ -113,10 +113,10 @@ func (that *Runner) Start(args ...string) {
 		fmt.Println("xtray is already running.")
 		return
 	}
-	// if len(os.Args) > 1 {
-	// 	args = os.Args
-	// }
-	// that.daemon.Run(args...)
+	if len(os.Args) > 1 {
+		args = os.Args
+	}
+	that.daemon.Run(args...)
 
 	go that.startRunnerPingServer()
 	go that.shell.StartServer()

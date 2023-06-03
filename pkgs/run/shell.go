@@ -253,20 +253,21 @@ func (that *Shell) show() {
 			tui.Green("Status for NeoBox: ")
 			var (
 				currenVpnInfo  string
-				neoboxStatus   string = pterm.Red("stopped")
-				keeperStatus   string = pterm.Red("stopped")
-				verifierStatus string = pterm.Red("stopped")
+				neoboxStatus   string = pterm.LightRed("stopped")
+				keeperStatus   string = pterm.LightRed("stopped")
+				verifierStatus string = pterm.LightRed("stopped")
 			)
 			if that.runner.Ping() {
-				neoboxStatus = pterm.Cyan("running")
+				neoboxStatus = pterm.LightGreen("running")
 				result, _ := c.GetResult()
+
 				currenVpnInfo = pterm.Yellow(string(result))
 			}
 			if that.keeper.Ping() {
-				keeperStatus = pterm.Cyan("running")
+				keeperStatus = pterm.LightGreen("running")
 			}
 			if that.runner.PingVerifier() {
-				verifierStatus = pterm.Cyan("running")
+				verifierStatus = pterm.LightGreen("running")
 			}
 			tui.Green(fmt.Sprintf("NeoBox[%s @%s] Verifier[%s] Keeper[%s]",
 				neoboxStatus,
@@ -277,7 +278,10 @@ func (that *Shell) show() {
 			tui.Green(fmt.Sprintf("LogFileDir: %s", pterm.LightGreen(that.conf.NeoLogFileDir)))
 		},
 		KtrlHandler: func(c *goktrl.Context) {
-			c.Send(that.runner.Current(), 200)
+			var m runtime.MemStats
+			runtime.ReadMemStats(&m)
+			result := fmt.Sprintf("%s (Mem: %dMB)", that.runner.Current(), m.Sys/1048576)
+			c.Send(result, 200)
 		},
 		SocketName: that.ktrlSocks,
 	})
@@ -295,7 +299,7 @@ func (that *Shell) filter() {
 		Opts: &filterOpts{},
 		Func: func(c *goktrl.Context) {
 			result, _ := c.GetResult()
-			tui.Green(string(result))
+			tui.PrintInfo(string(result))
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			if that.runner.VerifierIsRunning() {
@@ -320,7 +324,7 @@ func (that *Shell) export() {
 		Help: "Export vpn history list.",
 		Func: func(c *goktrl.Context) {
 			that.ExportHistoryVpns()
-			tui.Yellow(filepath.Join(that.conf.HistoryVpnsFileDir, HistoryVpnsFileName))
+			tui.PrintInfo(filepath.Join(that.conf.HistoryVpnsFileDir, HistoryVpnsFileName))
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
 		SocketName:  that.ktrlSocks,
@@ -347,9 +351,11 @@ func (that *Shell) geoinfo() {
 func (that *Shell) pingSet() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "pingunix",
-		Help: "Setup ping without root for unix.",
+		Help: "Setup ping without root for Unix/Linux.",
 		Func: func(c *goktrl.Context) {
-			proxy.SetPingWithoutRootForUnix()
+			if runtime.GOOS != "windows" {
+				proxy.SetPingWithoutRootForUnix()
+			}
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
 		SocketName:  that.ktrlSocks,

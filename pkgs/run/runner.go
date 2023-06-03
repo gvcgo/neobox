@@ -173,7 +173,7 @@ func (that *Runner) StartKeeper() {
 func (that *Runner) Current() (result string) {
 	result = "none"
 	if that.currentProxy != nil {
-		result = fmt.Sprintf("[%d] %s", that.currentPIdx, that.currentProxy.String())
+		result = fmt.Sprintf("<%d>%s", that.currentPIdx, that.currentProxy.String())
 	}
 	return
 }

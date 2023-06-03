@@ -255,7 +255,7 @@ func (that *Shell) show() {
 				currenVpnInfo  string
 				neoboxStatus   string = pterm.LightRed("stopped")
 				keeperStatus   string = pterm.LightRed("stopped")
-				verifierStatus string = pterm.LightRed("stopped")
+				verifierStatus string = pterm.LightYellow("stopped")
 			)
 			if that.runner.Ping() {
 				neoboxStatus = pterm.LightGreen("running")
@@ -280,7 +280,7 @@ func (that *Shell) show() {
 		KtrlHandler: func(c *goktrl.Context) {
 			var m runtime.MemStats
 			runtime.ReadMemStats(&m)
-			result := fmt.Sprintf("%s (Mem: %dMB)", that.runner.Current(), m.Sys/1048576)
+			result := fmt.Sprintf("%s (Mem: %dMiB)", that.runner.Current(), m.Sys/1048576)
 			c.Send(result, 200)
 		},
 		SocketName: that.ktrlSocks,

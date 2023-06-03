@@ -5,34 +5,34 @@ import (
 )
 
 type PortRange struct {
-	Min int `json:"min"`
-	Max int `json:"max"`
+	Min int `json,koanf:"min"`
+	Max int `json,koanf:"max"`
 }
 
 /*
 Configurations of neobox
 */
 type NeoBoxConf struct {
-	NeoWorkDir          string            `json:"neo_work_dir"`          // dir to store files
-	NeoLogFileDir       string            `json:"neo_log_dir"`           // dir to store log files
-	XLogFileName        string            `json:"log_file_name"`         // log file name of sing-box/xray
-	RawUriURL           string            `json:"download_url"`          // where to download raw proxies
-	SockFilesDir        string            `json:"sock_files_dir"`        // where to restore unix socket files
-	RawUriFileName      string            `json:"download_file_name"`    // file name of raw proxies
-	ParsedFileName      string            `json:"parse_file_name"`       // file name of parsed proxies
-	PingedFileName      string            `json:"pinged_file_name"`      // file name of ping succeeded proxies
-	MaxPingers          int               `json:"max_pinger_count"`      // number of pingers
-	MaxAvgRTT           int64             `json:"max_pinger_avgrtt"`     // threshold of ping avg_rtt, in milliseconds
-	VerifiedFileName    string            `json:"verified_file_name"`    // file name of verification succeeded proxies
-	VerifierPortRange   *PortRange        `json:"verifier_port_range"`   // number of goroutines to verify the proxies
-	VerificationUri     string            `json:"verification_uri"`      // google url for verification
-	VerificationTimeout time.Duration     `json:"verification_timeout"`  // in seconds
-	VerificationCron    string            `json:"verification_cron"`     // crontab for verifier
-	HistoryVpnsFileDir  string            `json:"history_vpns_file_dir"` // path of history vpns to export
-	NeoBoxClientInPort  int               `json:"neobox_client_port"`    // local in port for client
-	GeoInfoUrls         map[string]string `json:"geo_info_urls"`         // download urls for geoip and getosite
-	AssetDir            string            `json:"asset_dir"`             // XRAY_LOCATION_ASSET, env for xray-core, where to store geoip&geosite files
-	NeoBoxKeeperCron    string            `json:"neobox_keeper_cron"`    // crontab for neobox keeper
+	NeoWorkDir          string            `json,koanf:"neo_work_dir"`          // dir to store files
+	NeoLogFileDir       string            `json,koanf:"neo_log_dir"`           // dir to store log files
+	XLogFileName        string            `json,koanf:"log_file_name"`         // log file name of sing-box/xray
+	RawUriURL           string            `json,koanf:"download_url"`          // where to download raw proxies
+	SockFilesDir        string            `json,koanf:"sock_files_dir"`        // where to restore unix socket files
+	RawUriFileName      string            `json,koanf:"download_file_name"`    // file name of raw proxies
+	ParsedFileName      string            `json,koanf:"parse_file_name"`       // file name of parsed proxies
+	PingedFileName      string            `json,koanf:"pinged_file_name"`      // file name of ping succeeded proxies
+	MaxPingers          int               `json,koanf:"max_pinger_count"`      // number of pingers
+	MaxAvgRTT           int64             `json,koanf:"max_pinger_avgrtt"`     // threshold of ping avg_rtt, in milliseconds
+	VerifiedFileName    string            `json,koanf:"verified_file_name"`    // file name of verification succeeded proxies
+	VerifierPortRange   *PortRange        `json,koanf:"verifier_port_range"`   // number of goroutines to verify the proxies
+	VerificationUri     string            `json,koanf:"verification_uri"`      // google url for verification
+	VerificationTimeout time.Duration     `json,koanf:"verification_timeout"`  // in seconds
+	VerificationCron    string            `json,koanf:"verification_cron"`     // crontab for verifier
+	HistoryVpnsFileDir  string            `json,koanf:"history_vpns_file_dir"` // path of history vpns to export
+	NeoBoxClientInPort  int               `json,koanf:"neobox_client_port"`    // local in port for client
+	GeoInfoUrls         map[string]string `json,koanf:"geo_info_urls"`         // download urls for geoip and getosite
+	AssetDir            string            `json,koanf:"asset_dir"`             // XRAY_LOCATION_ASSET, env for xray-core, where to store geoip&geosite files
+	NeoBoxKeeperCron    string            `json,koanf:"neobox_keeper_cron"`    // crontab for neobox keeper
 }
 
 func GetDefaultConf() (n *NeoBoxConf) {

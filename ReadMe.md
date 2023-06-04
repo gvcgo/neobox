@@ -35,5 +35,9 @@ Commands:
 - [sing-box](https://github.com/SagerNet/sing-box)
 - [xray-core](https://github.com/XTLS/Xray-core)
 
+## 特别申明
+本项目纯免费，主要处于学习研究和工作需要，无意触犯任何国家的法律法规。请任何使用者将本项目用于正规学习和工作需要途径。
+如有违反任何国家法律法规的行为，请自行担责。
+
 ## 送我一杯咖啡~~~
 [wechat](https://github.com/moqsien/moqsien/blob/main/imgs/wechat.jpeg)

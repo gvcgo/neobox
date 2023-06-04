@@ -28,7 +28,7 @@ Commands:
 - 如果是Linux环境，需要使用pingunix获取免root执行ping的权限；
 
 ## 效果展示
-![]()
+![neobox-shell](https://github.com/moqsien/neobox/blob/main/docs/neobox.png)
 
 ## 感谢
 - [sing-box](https://github.com/SagerNet/sing-box)

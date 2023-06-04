@@ -26,6 +26,7 @@ Commands:
 ## 注意事项
 - 如果geoinfo没有下载成功，需要手动下载，否则neobox不能成功运行；
 - 如果是Linux环境，需要使用pingunix获取免root执行ping的权限；
+- 如果只是使用，不做开发，建议使用[gvc](https://github.com/moqsien/gvc)；
 
 ## 效果展示
 ![neobox-shell](https://github.com/moqsien/neobox/blob/main/docs/neobox.png)

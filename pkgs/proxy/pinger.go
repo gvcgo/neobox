@@ -68,7 +68,7 @@ func (that *NeoPinger) ping(p *Proxy) {
 				}
 			}
 			if err := pinger.Run(); err != nil {
-				log.Error(err)
+				log.Error("[Ping failed]", err)
 			}
 		}
 	}
@@ -123,6 +123,6 @@ func SetPingWithoutRootForUnix() {
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	if err := cmd.Run(); err != nil {
-		log.Error(err)
+		log.Error("[execute cmd failed]", err)
 	}
 }

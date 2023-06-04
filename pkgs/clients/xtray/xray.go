@@ -40,7 +40,7 @@ func (that *Client) SetProxy(p iface.IProxy) {
 func (that *Client) Start() error {
 	var err error
 	if that.conf, err = GetConfStr(that.proxy, that.inPort, that.logPath); err != nil {
-		log.Error(err)
+		log.Error("[Get xray conf str failed]", err)
 		return err
 	}
 	if config, err := serial.DecodeJSONConfig(bytes.NewReader(that.conf)); err == nil {

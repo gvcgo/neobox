@@ -34,3 +34,6 @@ Commands:
 ## 感谢
 - [sing-box](https://github.com/SagerNet/sing-box)
 - [xray-core](https://github.com/XTLS/Xray-core)
+
+## 送我一杯咖啡~~~
+[wechat](https://github.com/moqsien/moqsien/blob/main/imgs/wechat.jpeg)

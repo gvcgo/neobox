@@ -255,13 +255,14 @@ func (that *Shell) show() {
 				currenVpnInfo  string
 				neoboxStatus   string = pterm.LightRed("stopped")
 				keeperStatus   string = pterm.LightRed("stopped")
-				verifierStatus string = pterm.LightMagenta("completed")
+				verifierStatus string = pterm.LightRed("stopped")
 			)
 			if that.runner.Ping() {
 				neoboxStatus = pterm.LightGreen("running")
 				result, _ := c.GetResult()
 
 				currenVpnInfo = pterm.Yellow(string(result))
+				verifierStatus = pterm.LightMagenta("completed")
 			}
 			if that.keeper.Ping() {
 				keeperStatus = pterm.LightGreen("running")

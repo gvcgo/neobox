@@ -27,6 +27,9 @@ Commands:
 - 如果geoinfo没有下载成功，需要手动下载，否则neobox不能成功运行；
 - 如果是Linux环境，需要使用pingunix获取免root执行ping的权限；
 
+## 效果展示
+![]()
+
 ## 感谢
 - [sing-box](https://github.com/SagerNet/sing-box)
 - [xray-core](https://github.com/XTLS/Xray-core)

@@ -196,6 +196,7 @@ func (that *Verifier) Run(force ...bool) {
 	if that.verifiedList != nil {
 		that.verifiedList.Clear()
 	}
+	that.isRunning = true
 	that.originList = that.pinger.Run(force...)
 	that.tempList = &sync.Map{}
 
@@ -203,7 +204,6 @@ func (that *Verifier) Run(force ...bool) {
 	if start > end {
 		start, end = end, start
 	}
-	that.isRunning = true
 	go that.send(clients.TypeXray, force...)
 	time.Sleep(time.Second * 2)
 	for i := start; i <= end; i++ {

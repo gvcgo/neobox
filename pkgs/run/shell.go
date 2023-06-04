@@ -289,15 +289,9 @@ func (that *Shell) show() {
 }
 
 func (that *Shell) filter() {
-	type filterOpts struct {
-		Force   bool `alias:"f" descr:"Force to get new raw vpn list."`
-		History bool `alias:"hs" descr:"Use history list and manually added list."`
-	}
-
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "filter",
 		Help: "Filter vpns by verifier.",
-		Opts: &filterOpts{},
 		Func: func(c *goktrl.Context) {
 			result, _ := c.GetResult()
 			tui.PrintInfo(string(result))
@@ -307,12 +301,9 @@ func (that *Shell) filter() {
 				c.Send("verifier is already running.", 200)
 				return
 			}
-			opts := c.Options.(*filterOpts)
 			v := that.runner.GetVerifier()
-			if v != nil {
-				v.SetUseExtraOrNot(opts.History)
-			}
-			go v.Run(opts.Force)
+			v.SetUseExtraOrNot(true)
+			go v.Run(true)
 			c.Send("verifier starts running.", 200)
 		},
 		SocketName: that.ktrlSocks,

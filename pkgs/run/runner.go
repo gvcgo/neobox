@@ -132,7 +132,11 @@ func (that *Runner) Start(args ...string) {
 	that.cron.AddFunc(cronTime, func() {
 		if !that.verifier.IsRunning() {
 			that.verifier.SetUseExtraOrNot(true)
-			that.verifier.Run(false)
+			force := true
+			if time.Now().Hour() < 5 {
+				force = false
+			}
+			that.verifier.Run(force)
 		}
 	})
 	that.cron.Start()

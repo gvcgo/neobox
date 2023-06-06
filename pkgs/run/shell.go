@@ -343,7 +343,7 @@ func (that *Shell) geoinfo() {
 func (that *Shell) pingSet() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "pingunix",
-		Help: "Setup ping without root for Unix/Linux.",
+		Help: "Setup ping without root for Unix-like OS.",
 		Func: func(c *goktrl.Context) {
 			if runtime.GOOS != "windows" {
 				proxy.SetPingWithoutRootForUnix()
@@ -374,6 +374,28 @@ func (that *Shell) manualGC() {
 	})
 }
 
+func (that *Shell) setKey() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "setkey",
+		Help: "Setup rawlist encrytion key for neobox. [With no args will set key to default value]",
+		Func: func(c *goktrl.Context) {
+			if len(c.Args) > 0 {
+				if len(c.Args[0]) == 16 {
+					k := conf.NewEncryptKey()
+					k.Set(c.Args[0])
+					k.Save()
+				}
+			} else {
+				k := conf.NewEncryptKey()
+				k.Set(conf.DefaultKey)
+				k.Save()
+			}
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
 func (that *Shell) InitKtrl() {
 	that.start()
 	that.stop()
@@ -386,6 +408,7 @@ func (that *Shell) InitKtrl() {
 	that.geoinfo()
 	that.pingSet()
 	that.manualGC()
+	that.setKey()
 }
 
 func (that *Shell) StartShell() {

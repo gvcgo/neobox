@@ -34,6 +34,7 @@ type Fetcher struct {
 	collector  *colly.Collector
 	Conf       *conf.NeoBoxConf
 	RawProxies *RawResult
+	key        *conf.RawListEncryptKey
 	path       string
 }
 
@@ -49,13 +50,15 @@ func NewFetcher(c *conf.NeoBoxConf) *Fetcher {
 			SSList:    &RawList{List: []string{}},
 			Trojan:    &RawList{List: []string{}},
 		},
+		key:  conf.NewEncryptKey(),
 		path: filepath.Join(c.NeoWorkDir, c.RawUriFileName),
 	}
 }
 
 func (that *Fetcher) DownloadFile() (success bool) {
 	that.collector.OnResponse(func(r *colly.Response) {
-		if result, err := crypt.DefaultCrypt.AesDecrypt(r.Body); err == nil {
+		dCrypt := crypt.NewCrypt(that.key.Get())
+		if result, err := dCrypt.AesDecrypt(r.Body); err == nil {
 			os.WriteFile(that.path, result, os.ModePerm)
 			success = true
 		} else {

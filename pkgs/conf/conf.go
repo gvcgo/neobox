@@ -1,7 +1,12 @@
 package conf
 
 import (
+	"os"
+	"path/filepath"
 	"time"
+
+	"github.com/moqsien/goutils/pkgs/gutils"
+	"github.com/moqsien/goutils/pkgs/koanfer"
 )
 
 type PortRange struct {
@@ -66,4 +71,50 @@ func GetDefaultConf() (n *NeoBoxConf) {
 	n.NeoBoxKeeperCron = "@every 3m"
 	n.HistoryVpnsFileDir = n.NeoWorkDir
 	return
+}
+
+const (
+	DefaultKey string = "x^)dixf&*1$free]"
+)
+
+type RawListEncryptKey struct {
+	Key     string `json,koanf:"key"`
+	koanfer *koanfer.JsonKoanfer
+	path    string
+}
+
+func NewEncryptKey() (rk *RawListEncryptKey) {
+	rk = &RawListEncryptKey{}
+	exePath, _ := os.Executable()
+	rk.path = filepath.Join(filepath.Dir(exePath), ".neobox_encrypt_key.json")
+	rk.koanfer, _ = koanfer.NewKoanfer(rk.path)
+	rk.initiate()
+	return
+}
+
+func (that *RawListEncryptKey) initiate() {
+	if ok, _ := gutils.PathIsExist(that.path); ok {
+		that.Load()
+	}
+	if that.Key == "" {
+		that.Key = DefaultKey
+		that.Save()
+	}
+}
+
+func (that *RawListEncryptKey) Load() {
+	that.koanfer.Load(that)
+}
+
+func (that *RawListEncryptKey) Save() {
+	that.koanfer.Save(that)
+}
+
+func (that *RawListEncryptKey) Set(key string) {
+	that.Key = key
+}
+
+func (that *RawListEncryptKey) Get() string {
+	that.Load()
+	return that.Key
 }

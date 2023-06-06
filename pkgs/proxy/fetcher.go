@@ -57,7 +57,7 @@ func NewFetcher(c *conf.NeoBoxConf) *Fetcher {
 
 func (that *Fetcher) DownloadFile() (success bool) {
 	that.collector.OnResponse(func(r *colly.Response) {
-		dCrypt := crypt.NewCrypt(that.key.Get())
+		dCrypt := crypt.NewCrptWithKey([]byte(that.key.Get()))
 		if result, err := dCrypt.AesDecrypt(r.Body); err == nil {
 			os.WriteFile(that.path, result, os.ModePerm)
 			success = true

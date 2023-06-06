@@ -8,7 +8,7 @@ require (
 	github.com/gogf/gf v1.16.9
 	github.com/gogf/gf/v2 v2.4.1
 	github.com/moqsien/goktrl v1.3.7
-	github.com/moqsien/goutils v0.1.2
+	github.com/moqsien/goutils v0.1.4
 	github.com/moqsien/hackbrowser v1.0.3
 	github.com/prometheus-community/pro-bing v0.1.0
 	github.com/pterm/pterm v0.12.62

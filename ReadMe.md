@@ -18,7 +18,7 @@ Commands:
   parse         Parse raw proxy URIs to human readable ones. # 将rawlist解析为人类能读懂的格式，主要用于发现proxy uri的规则。
   pingunix      Setup ping without root for Unix/Linux. # 在Linux下设置不需要root权限的ping操作。
   restart       Restart the running sing-box client with a chosen vpn. [restart vpn_index] # 从新启动一个client，使用指定的vpn_index。
-  setkey        Setup rawlist encrytion key for neobox. [With no args will set key to default value] # 设置解密原始vpn列表需要的AES KEY，进微信群
+  setkey        Setup rawlist encrytion key for neobox. [With no args will set key to default value] # 设置解密原始vpn列表需要的AES KEY，进QQ群
   show          Show neobox info. # 显示neobox相关的信息，例如vpn统计信息，vpn可用列表，neobox运行情况，当前正在使用的vpn等等。
   start         Start an sing-box client/keeper. # 开启一个client和一个keeper。
   stop          Stop the running sing-box client/keeper. # 停止已经开启的client和keeper。
@@ -27,8 +27,13 @@ Commands:
 ## 注意事项
 - 如果geoinfo没有下载成功，需要手动下载，否则neobox不能成功运行；
 - 如果是Linux环境，需要使用pingunix获取免root执行ping的权限；
-- **注意**，解密原始vpn列表时，需要设置AES KEY，否则无法获得最新的免费VPN列表。AES KEY可以通过加入微信群获得。
+- **注意**，解密原始vpn列表时，需要设置AES KEY，否则无法获得最新的免费VPN列表。AES KEY可以通过加入QQ群获得。
 - 如果只是使用，不做开发，建议使用[gvc](https://github.com/moqsien/gvc)；
+
+## 交流QQ群
+![519456121](https://github.com/moqsien/neobox/blob/main/docs/qq_group.png)
+
+**519456121**
 
 ## 为什么要有AES KEY？
 - 防止资源被滥用，从而让资源浪费掉；

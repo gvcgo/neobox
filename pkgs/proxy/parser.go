@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/gogf/gf/v2/os/gtime"
@@ -53,6 +54,10 @@ func NewParser(cnf *conf.NeoBoxConf) *Parser {
 
 func (that *Parser) Parse() {
 	rawProxies := that.fetcher.GetRawProxies(true)
+	if rawProxies == nil {
+		fmt.Println("no raw proxies found.")
+		return
+	}
 	for _, rawUri := range rawProxies.VmessList.List {
 		p := NewProxy(rawUri)
 		that.ParsedList.Vmess = append(that.ParsedList.Vmess, p.Decode())

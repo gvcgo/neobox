@@ -83,6 +83,9 @@ func (that *Fetcher) GetRawProxies(force ...bool) *RawResult {
 	if flag {
 		if rawProxy, err := os.ReadFile(that.path); err == nil {
 			json.Unmarshal(rawProxy, that.RawProxies)
+		} else {
+			log.Error("parse rawlist file failed. ", err.Error(), "AES_KEY: ", that.key.Get())
+			return nil
 		}
 	}
 	return that.RawProxies
@@ -90,6 +93,9 @@ func (that *Fetcher) GetRawProxies(force ...bool) *RawResult {
 
 func (that *Fetcher) GetRawProxyList(force ...bool) (r []string) {
 	result := that.GetRawProxies(force...)
+	if result == nil {
+		return
+	}
 	r = append(r, result.VmessList.List...)
 	r = append(r, result.VlessList.List...)
 	r = append(r, result.Trojan.List...)
@@ -109,6 +115,9 @@ type RawStatistics struct {
 
 func (that *Fetcher) GetStatistics() *RawStatistics {
 	result := that.GetRawProxies()
+	if result == nil {
+		return &RawStatistics{}
+	}
 	return &RawStatistics{
 		Vmess:  len(result.VmessList.List),
 		Vless:  len(result.VlessList.List),

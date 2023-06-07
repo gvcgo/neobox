@@ -11,6 +11,7 @@ import (
 	"time"
 
 	tui "github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/clients"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/parser"
@@ -49,6 +50,7 @@ type Verifier struct {
 	useExtra     bool
 	isRunning    bool
 	tempList     *sync.Map
+	vPath        string
 }
 
 func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
@@ -59,6 +61,7 @@ func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
 		pinger:       NewNeoPinger(cnf),
 		verifiedList: NewProxyList(vPath),
 		wg:           &sync.WaitGroup{},
+		vPath:        vPath,
 	}
 	return v
 }
@@ -69,22 +72,39 @@ func (that *Verifier) SetUseExtraOrNot(useOrNot bool) {
 
 func (that *Verifier) GetProxyByIndex(pIdx int) (*Proxy, int) {
 	if that.verifiedList == nil {
-		return nil, 0
+		return nil, -1
 	}
-	if that.verifiedList.Len() == 0 {
-		that.verifiedList.Load()
-		defer that.verifiedList.Clear()
+
+	if !that.isRunning {
+		if that.verifiedList.Len() == 0 {
+			that.verifiedList.Load()
+			defer that.verifiedList.Clear()
+		}
+		if that.verifiedList.Len() == 0 {
+			return nil, -1
+		}
+		if pIdx >= that.verifiedList.Len() {
+			return that.verifiedList.Proxies.List[0], 0
+		}
+		return that.verifiedList.Proxies.List[pIdx], pIdx
+	} else if ok, _ := gutils.PathIsExist(that.vPath); ok {
+		verifiedList := NewProxyList(that.vPath)
+		verifiedList.Load()
+		if verifiedList.Len() == 0 {
+			return nil, -1
+		}
+		if pIdx >= that.verifiedList.Len() {
+			pIdx = 0
+		}
+		pxy := verifiedList.Proxies.List[pIdx]
+		p := &Proxy{RawUri: pxy.RawUri, RTT: pxy.RTT}
+		verifiedList.Clear()
+		return p, pIdx
+	} else {
+		return nil, -1
 	}
-	if that.verifiedList.Len() == 0 {
-		return nil, 0
-	}
-	if pIdx >= that.verifiedList.Len() {
-		return that.verifiedList.Proxies.List[0], 0
-	}
-	return that.verifiedList.Proxies.List[pIdx], pIdx
 }
 
-// TODO: dispatching bugs
 func (that *Verifier) send(cType clients.ClientType, force ...bool) {
 	// use history vpn list and manually set vpn list.
 	if that.useExtra {

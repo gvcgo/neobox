@@ -93,7 +93,7 @@ func (that *Verifier) GetProxyByIndex(pIdx int) (*Proxy, int) {
 		if verifiedList.Len() == 0 {
 			return nil, -1
 		}
-		if pIdx >= that.verifiedList.Len() {
+		if pIdx >= verifiedList.Len() {
 			pIdx = 0
 		}
 		pxy := verifiedList.Proxies.List[pIdx]

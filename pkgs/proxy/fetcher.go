@@ -49,6 +49,7 @@ func NewFetcher(c *conf.NeoBoxConf) *Fetcher {
 			SSRList:   &RawList{List: []string{}},
 			SSList:    &RawList{List: []string{}},
 			Trojan:    &RawList{List: []string{}},
+			Other:     &RawList{List: []string{}},
 		},
 		key:  conf.NewEncryptKey(),
 		path: filepath.Join(c.NeoWorkDir, c.RawUriFileName),

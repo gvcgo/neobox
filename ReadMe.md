@@ -31,7 +31,7 @@ Commands:
 - 如果只是使用，不做开发，建议使用[gvc](https://github.com/moqsien/gvc)；
 
 ## 交流QQ群
-![519456121](https://github.com/moqsien/neobox/blob/main/docs/qq_group.png)
+![519456121](https://github.com/moqsien/neobox/blob/main/docs/qq_group.jpg)
 
 **519456121**
 

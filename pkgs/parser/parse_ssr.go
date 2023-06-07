@@ -23,6 +23,26 @@ type SSROutbound struct {
 	Raw        string
 }
 
+var SSRMethod map[string]struct{} = map[string]struct{}{
+	"aes-128-ctr":   {},
+	"aes-192-ctr":   {},
+	"aes-256-ctr":   {},
+	"aes-128-cfb":   {},
+	"aes-192-cfb":   {},
+	"aes-256-cfb":   {},
+	"rc4-md5":       {},
+	"chacha20-ietf": {},
+	"xchacha20":     {},
+}
+
+var SSROBFS map[string]struct{} = map[string]struct{}{
+	"plain":              {},
+	"http_simple":        {},
+	"http_post":          {},
+	"random_head":        {},
+	"tls1.2_ticket_auth": {},
+}
+
 /*
 ssr://MTYuMTYuMTc3LjE0NTo0MjgzMzpvcmlnaW46YWVzLTI1Ni1jZmI6aHR0cF9zaW1wbGU6V1hCWU1tOXdRbUp5Wm5GS2VucE5jdz09Lz9vYmZzcGFyYW09JnJlbWFya3M9VTBWZk1UWXVNVFl1TVRjM0xqRTBOVjh3TmpBeU1qQXlNekZrTXprdE56WXhjM055JnByb3RvcGFyYW09VG05dVpRJTNEJTNE
 
@@ -71,8 +91,11 @@ func (that *SSROutbound) parse(rawUri string) {
 func (that *SSROutbound) Parse(rawUri string) {
 	that.Raw = rawUri
 	that.parse(rawUri)
-	if that.Method == "rc4" || that.Method == "none" {
+	if _, ok := SSRMethod[that.Method]; !ok {
 		that.Method = "rc4-md5"
+	}
+	if _, ok := SSROBFS[that.Obfs]; !ok {
+		that.Obfs = "plain"
 	}
 }
 

@@ -10,6 +10,27 @@ import (
 	"github.com/moqsien/neobox/pkgs/utils"
 )
 
+var SSMethod map[string]struct{} = map[string]struct{}{
+	"2022-blake3-aes-128-gcm":       {},
+	"2022-blake3-aes-256-gcm":       {},
+	"2022-blake3-chacha20-poly1305": {},
+	"none":                          {},
+	"aes-128-gcm":                   {},
+	"aes-192-gcm":                   {},
+	"aes-256-gcm":                   {},
+	"chacha20-ietf-poly1305":        {},
+	"xchacha20-ietf-poly1305":       {},
+	"aes-128-ctr":                   {},
+	"aes-192-ctr":                   {},
+	"aes-256-ctr":                   {},
+	"aes-128-cfb":                   {},
+	"aes-192-cfb":                   {},
+	"aes-256-cfb":                   {},
+	"rc4-md5":                       {},
+	"chacha20-ietf":                 {},
+	"xchacha20":                     {},
+}
+
 type SSOutbound struct {
 	Address  string
 	Port     int
@@ -35,6 +56,12 @@ func (that *SSOutbound) Parse(rawUri string) {
 				that.Address = u.Hostname()
 				that.Port, _ = strconv.Atoi(u.Port())
 				that.Method = u.User.Username()
+				if that.Method == "rc4" {
+					that.Method = "rc4-md5"
+				}
+				if _, ok := SSMethod[that.Method]; !ok {
+					that.Method = "none"
+				}
 				that.Password, _ = u.User.Password()
 			}
 		}

@@ -47,7 +47,7 @@ func GetDefaultConf() (n *NeoBoxConf) {
 	n.AssetDir = n.NeoWorkDir
 	n.XLogFileName = "neobox_xlog.log"
 	n.SockFilesDir = n.NeoWorkDir
-	n.RawUriURL = "https://gitlab.com/moqsien/xtray_resources/-/raw/main/conf.txt"
+	n.RawUriURL = "https://gitlab.com/moqsien/neobox_resources/-/raw/main/conf.txt"
 	n.RawUriFileName = "neobox_raw_proxies.json"
 	n.ParsedFileName = "neobox_parsed_proxies.json"
 	n.PingedFileName = "neobox_pinged_proxies.json"
@@ -63,10 +63,10 @@ func GetDefaultConf() (n *NeoBoxConf) {
 	n.VerificationCron = "@every 2h"
 	n.NeoBoxClientInPort = 2019
 	n.GeoInfoUrls = map[string]string{
-		"geoip.dat":   "https://gitlab.com/moqsien/xtray_resources/-/raw/main/geoip.dat",
-		"geosite.dat": "https://gitlab.com/moqsien/xtray_resources/-/raw/main/geosite.dat",
-		"geoip.db":    "https://gitlab.com/moqsien/xtray_resources/-/raw/main/geoip.db",
-		"geosite.db":  "https://gitlab.com/moqsien/xtray_resources/-/raw/main/geosite.db",
+		"geoip.dat":   "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geoip.dat",
+		"geosite.dat": "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geosite.dat",
+		"geoip.db":    "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geoip.db",
+		"geosite.db":  "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geosite.db",
 	}
 	n.NeoBoxKeeperCron = "@every 3m"
 	n.HistoryVpnsFileDir = n.NeoWorkDir

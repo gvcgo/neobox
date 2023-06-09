@@ -7,9 +7,14 @@ import (
 	"strconv"
 
 	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/moqsien/neobox/pkgs/iface"
 	"github.com/moqsien/neobox/pkgs/parser"
 	"github.com/moqsien/neobox/pkgs/utils"
+)
+
+const (
+	SingBoxSystemProxyEnvName = "SINB_BOX_SYSTEM_PROXY_ENABLE"
 )
 
 /*
@@ -210,6 +215,8 @@ func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte) {
 		geositePath := filepath.Join(assetDir, utils.SingboxGeoSiteName)
 		j.Set("route.geosite.path", geositePath)
 	}
+	enableSys := gconv.Bool(os.Getenv(SingBoxSystemProxyEnvName))
+	j.Set("inbounds.0.set_system_proxy", enableSys)
 	r = j.MustToJsonIndent()
 	return
 }

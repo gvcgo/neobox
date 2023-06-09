@@ -18,6 +18,7 @@ import (
 	log "github.com/moqsien/goutils/pkgs/logs"
 	socks "github.com/moqsien/goutils/pkgs/socks"
 	"github.com/moqsien/neobox/pkgs/clients"
+	"github.com/moqsien/neobox/pkgs/clients/sing"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/iface"
 	"github.com/moqsien/neobox/pkgs/proxy"
@@ -168,6 +169,16 @@ func (that *Runner) Restart(pIdx int) (result string) {
 		}
 	}
 	return
+}
+
+// set system proxy.
+func (that *Runner) SetSystemProxy(enable bool) string {
+	value := "false"
+	if enable {
+		value = "true"
+	}
+	os.Setenv(sing.SingBoxSystemProxyEnvName, value)
+	return that.Restart(that.currentPIdx)
 }
 
 func (that *Runner) StartKeeper() {

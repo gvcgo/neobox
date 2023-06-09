@@ -141,21 +141,46 @@ func (that *Shell) restart() {
 		Name: "restart",
 		Help: "Restart the running sing-box client with a chosen vpn. [restart vpn_index]",
 		Func: func(c *goktrl.Context) {
-			res, _ := c.GetResult()
-			tui.PrintInfo(string(res))
-		},
-		ArgsDescription: "choose a specified vpn by index.",
-		KtrlHandler: func(c *goktrl.Context) {
 			if that.runner.Ping() {
-				idx := 0
-				if len(c.Args) > 0 {
-					idx, _ = strconv.Atoi(c.Args[0])
-				}
-				r := that.runner.Restart(idx)
-				c.Send(r, 200)
+				res, _ := c.GetResult()
+				tui.PrintInfo(string(res))
 			} else {
 				tui.PrintInfo("NeoBox is not running.")
 			}
+		},
+		ArgsDescription: "choose a specified vpn by index.",
+		KtrlHandler: func(c *goktrl.Context) {
+			idx := 0
+			if len(c.Args) > 0 {
+				idx, _ = strconv.Atoi(c.Args[0])
+			}
+			r := that.runner.Restart(idx)
+			c.Send(r, 200)
+		},
+		SocketName: that.ktrlSocks,
+	})
+}
+
+func (that *Shell) setSystemProxy() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "system",
+		Help: "enable current vpn as system proxy. [disable when an arg is provided]",
+		Func: func(c *goktrl.Context) {
+			if that.runner.Ping() {
+				res, _ := c.GetResult()
+				tui.PrintInfo(string(res))
+			} else {
+				tui.PrintInfo("NeoBox is not running.")
+			}
+		},
+		ArgsDescription: "choose a specified vpn by index.",
+		KtrlHandler: func(c *goktrl.Context) {
+			enable := true
+			if len(c.Args) > 0 {
+				enable = false
+			}
+			r := that.runner.SetSystemProxy(enable)
+			c.Send(r, 200)
 		},
 		SocketName: that.ktrlSocks,
 	})
@@ -400,6 +425,7 @@ func (that *Shell) InitKtrl() {
 	that.start()
 	that.stop()
 	that.restart()
+	that.setSystemProxy()
 	that.add()
 	that.parse()
 	that.show()

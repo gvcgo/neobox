@@ -81,6 +81,18 @@ func (that *ManualVpns) TableName() string {
 
 var manualVpns = &ManualVpns{}
 
+type WarpConfig struct {
+	RawUri string `gorm:"<-;index" json,koanf:"uri"`
+	RTT    int64  `gorm:"<-" json,koan:"rtt"`
+	Raw    string `gorm:"<-" json,koan:"raw"`
+}
+
+func (that *WarpConfig) TableName() string {
+	return "warp_config"
+}
+
+var warpConfig = &WarpConfig{}
+
 func NewDB(dbPath string) (r *Database) {
 	r = &Database{Path: dbPath}
 	var flag bool
@@ -98,6 +110,9 @@ func NewDB(dbPath string) (r *Database) {
 			}
 			if !m.HasTable(manualVpns) {
 				m.CreateTable(manualVpns)
+			}
+			if !m.HasTable(warpConfig) {
+				m.CreateTable(warpConfig)
 			}
 		}
 	} else {
@@ -139,6 +154,24 @@ func AddExtraProxyToDB(p *Proxy) (r Proxy, err error) {
 	err = result.Error
 	if err != nil {
 		log.Error("[Put proxy to db failed]", err)
+	}
+	return
+}
+
+func GetWarpConfigFromDB() (w WarpConfig, err error) {
+	result := StorageDB().DB.Table(warpConfig.TableName()).Find(&w)
+	err = result.Error
+	if err != nil {
+		log.Error("[Get warp config from db failed]", err)
+	}
+	return
+}
+
+func AddWarpConfigToDB(w *WarpConfig) (rw WarpConfig, err error) {
+	result := StorageDB().DB.Table(warpConfig.TableName()).Where(&WarpConfig{RawUri: w.RawUri}).FirstOrCreate(&rw)
+	err = result.Error
+	if err != nil {
+		log.Error("[Put warp config to db failed]", err)
 	}
 	return
 }

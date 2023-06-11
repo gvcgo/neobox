@@ -9,3 +9,4 @@ neobox
 neobox.exe
 *.sock
 build
+wireguard

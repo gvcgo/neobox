@@ -247,6 +247,7 @@ func (that *WGaurd) parseReserved() {
 func (that *WGaurd) Status() (err error) {
 	if !that.IsAccountValid() {
 		that.Register()
+		return
 	}
 	if !that.IsAccountValid() {
 		return fmt.Errorf("invalid account")

@@ -84,6 +84,7 @@ type WarpConf struct {
 }
 
 func NewWarpConf(fPath string) (wac *WarpConf) {
+	k, _ := koanfer.NewKoanfer(fPath)
 	wac = &WarpConf{
 		DNS: "1.1.1.1",
 		MTU: 1280,
@@ -91,7 +92,8 @@ func NewWarpConf(fPath string) (wac *WarpConf) {
 			"0.0.0.0/0",
 			"::/0",
 		},
-		path: fPath,
+		path:    fPath,
+		koanfer: k,
 	}
 	wac.Load()
 	return

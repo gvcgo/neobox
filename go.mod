@@ -10,6 +10,7 @@ require (
 	github.com/moqsien/goktrl v1.3.7
 	github.com/moqsien/goutils v0.1.4
 	github.com/moqsien/hackbrowser v1.0.3
+	github.com/moqsien/wgcf v0.0.0-20230611033011-c542434e2ad6
 	github.com/prometheus-community/pro-bing v0.1.0
 	github.com/pterm/pterm v0.12.62
 	github.com/robfig/cron/v3 v3.0.1
@@ -40,6 +41,7 @@ require (
 	github.com/bytedance/sonic v1.8.8 // indirect
 	github.com/caddyserver/certmagic v0.17.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/chzyer/test v1.0.0 // indirect
 	github.com/clbanning/mxj v1.8.5-0.20200714211355-ff02cfb8ea28 // indirect
 	github.com/cloudflare/circl v1.2.1-0.20221019164342-6ab4dfed8f3c // indirect
 	github.com/containerd/console v1.0.3 // indirect
@@ -112,6 +114,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.7 // indirect
 	github.com/pierrec/lz4/v4 v4.1.14 // indirect
 	github.com/pires/go-proxyproto v0.7.0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/quic-go/qtls-go1-18 v0.2.0 // indirect
 	github.com/quic-go/qtls-go1-19 v0.3.2 // indirect
@@ -166,6 +169,7 @@ require (
 	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/oauth2 v0.6.0 // indirect
 	golang.org/x/sync v0.2.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/term v0.8.0 // indirect

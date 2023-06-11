@@ -56,3 +56,8 @@ Commands:
 ## 送我一杯咖啡~~~
 [wechat](https://github.com/moqsien/moqsien/blob/main/imgs/wechat.jpeg)
 [alipay](https://github.com/moqsien/moqsien/blob/main/imgs/alipay.jpeg)
+
+## TODO
+- wireguard
+- deduplicate by host and port
+- trojan bugfix

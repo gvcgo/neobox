@@ -38,6 +38,7 @@ type NeoBoxConf struct {
 	GeoInfoUrls         map[string]string `json,koanf:"geo_info_urls"`         // download urls for geoip and getosite
 	AssetDir            string            `json,koanf:"asset_dir"`             // XRAY_LOCATION_ASSET, env for xray-core, where to store geoip&geosite files
 	NeoBoxKeeperCron    string            `json,koanf:"neobox_keeper_cron"`    // crontab for neobox keeper
+	WireGuardConfDir    string            `json,koanf:"wire_guard_conf_dir"`
 }
 
 func GetDefaultConf() (n *NeoBoxConf) {
@@ -70,6 +71,7 @@ func GetDefaultConf() (n *NeoBoxConf) {
 	}
 	n.NeoBoxKeeperCron = "@every 3m"
 	n.HistoryVpnsFileDir = n.NeoWorkDir
+	n.WireGuardConfDir = filepath.Join(n.NeoWorkDir, "wireguard")
 	return
 }
 

@@ -16,6 +16,7 @@ import (
 	"github.com/moqsien/goutils/pkgs/koanfer"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/proxy"
+	"github.com/moqsien/neobox/pkgs/wguard"
 	"github.com/pterm/pterm"
 )
 
@@ -225,7 +226,6 @@ func (that *Shell) parse() {
 	})
 }
 
-// TODO: merge current & status
 func (that *Shell) show() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "show",
@@ -421,6 +421,26 @@ func (that *Shell) setKey() {
 	})
 }
 
+func (that *Shell) wireguard() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "wireguard",
+		Help: "register wireguard account and update licenseKey to warp plus [if a licenseKey is specified].",
+		Func: func(c *goktrl.Context) {
+			if len(c.Args) > 0 {
+				if len(c.Args[0]) == 26 {
+					w := wguard.NewWGuard(that.conf)
+					w.Run(c.Args[0])
+				}
+			} else {
+				w := wguard.NewWGuard(that.conf)
+				w.Status()
+			}
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
 func (that *Shell) InitKtrl() {
 	that.start()
 	that.stop()
@@ -435,6 +455,7 @@ func (that *Shell) InitKtrl() {
 	that.pingSet()
 	that.manualGC()
 	that.setKey()
+	that.wireguard()
 }
 
 func (that *Shell) StartShell() {

@@ -4,10 +4,12 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 
 	tui "github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/wgcf/cloudflare"
 	"github.com/moqsien/wgcf/config"
@@ -38,7 +40,14 @@ func NewWGuard(cnf *conf.NeoBoxConf) (wg *WGaurd) {
 	}
 	wg.wguardConf = NewWGaurdConf(wg.wguardConfPath)
 	wg.warpConf = NewWarpConf(wg.wConfPath)
+	wg.initDir()
 	return
+}
+
+func (that *WGaurd) initDir() {
+	if ok, _ := gutils.PathIsExist(that.conf.WireGuardConfDir); !ok {
+		os.MkdirAll(that.conf.WireGuardConfDir, 0666)
+	}
 }
 
 func (that *WGaurd) Register() (err error) {
@@ -236,6 +245,9 @@ func (that *WGaurd) parseReserved() {
 }
 
 func (that *WGaurd) Status() (err error) {
+	if !that.IsAccountValid() {
+		that.Register()
+	}
 	if !that.IsAccountValid() {
 		return fmt.Errorf("invalid account")
 	}

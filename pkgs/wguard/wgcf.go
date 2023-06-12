@@ -25,7 +25,7 @@ const (
 type WGaurd struct {
 	conf             *conf.NeoBoxConf
 	wguardConf       *WGaurdConf
-	wguardConfPath   string
+	wAccountConfPath string
 	warpConf         *WarpConf
 	wConfPath        string
 	warpConfFilePath string
@@ -34,11 +34,11 @@ type WGaurd struct {
 func NewWGuard(cnf *conf.NeoBoxConf) (wg *WGaurd) {
 	wg = &WGaurd{
 		conf:             cnf,
-		wguardConfPath:   filepath.Join(cnf.WireGuardConfDir, WireGuardAccountConfigFileName),
+		wAccountConfPath: filepath.Join(cnf.WireGuardConfDir, WireGuardAccountConfigFileName),
 		wConfPath:        filepath.Join(cnf.WireGuardConfDir, WireGuardConfigFileName),
 		warpConfFilePath: filepath.Join(cnf.WireGuardConfDir, WarpConfigFileName),
 	}
-	wg.wguardConf = NewWGaurdConf(wg.wguardConfPath)
+	wg.wguardConf = NewWGaurdConf(wg.wAccountConfPath)
 	wg.warpConf = NewWarpConf(wg.wConfPath)
 	wg.initDir()
 	return
@@ -50,9 +50,13 @@ func (that *WGaurd) initDir() {
 	}
 }
 
+func (that *WGaurd) GetWarpConf() *WarpConf {
+	return that.warpConf
+}
+
 func (that *WGaurd) Register() (err error) {
 	if that.wguardConf.DeviceId != "" && that.wguardConf.AccessToken != "" && that.wguardConf.LicenseKey != "" {
-		tui.PrintInfof("wireguard account already exists: %s", that.wguardConfPath)
+		tui.PrintInfof("wireguard account already exists: %s", that.wAccountConfPath)
 		return
 	}
 	privateKey, err := wireguard.NewPrivateKey()
@@ -263,6 +267,9 @@ func (that *WGaurd) Status() (err error) {
 	}
 
 	PrintDevice(thisDevice, boundDevice)
+	if ok, _ := gutils.PathIsExist(that.wConfPath); !ok {
+		tui.PrintWarning("You need to update to a Warp+ license by providing license key.")
+	}
 	return nil
 }
 

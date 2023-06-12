@@ -12,6 +12,7 @@ const (
 	Shadowsockscheme string = "ss://"
 	SSRScheme        string = "ssr://"
 	TrojanScheme     string = "trojan://"
+	WireguardScheme  string = "wireguard://"
 )
 
 func ParseScheme(rawUri string) string {

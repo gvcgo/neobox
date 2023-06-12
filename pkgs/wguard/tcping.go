@@ -11,6 +11,7 @@ import (
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/koanfer"
 	"github.com/moqsien/neobox/pkgs/conf"
+	"golang.org/x/exp/rand"
 )
 
 const (
@@ -77,8 +78,18 @@ func (that *TCPinger) Load() {
 
 func (that *TCPinger) Save() {
 	if that.result.Len() > 0 {
+		that.result.Total = that.result.Len()
 		that.koanfer.Save(that.result)
 	}
+}
+
+func (that *TCPinger) ChooseEndpoint() *PingIP {
+	if that.result.Len() > 0 {
+		r := rand.New(rand.NewSource(uint64(time.Now().UnixNano())))
+		idx := r.Intn(that.result.Len())
+		return that.result.IPList[idx]
+	}
+	return nil
 }
 
 func (that *TCPinger) ping(ipaddr *net.IPAddr, port int) (timelag time.Duration, ok bool) {

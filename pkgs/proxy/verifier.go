@@ -15,6 +15,7 @@ import (
 	"github.com/moqsien/neobox/pkgs/clients"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/parser"
+	"github.com/moqsien/neobox/pkgs/wguard"
 )
 
 const (
@@ -247,6 +248,8 @@ func (that *Verifier) Run(force ...bool) {
 	tui.PrintInfo("filters for [ssr] stopped.")
 	tui.PrintInfof("Find %d available proxies.\n", that.verifiedList.Len())
 
+	that.GetWireguardInfo()
+
 	that.verifiedList.Save()
 	if that.verifiedList.Len() > 0 {
 		that.verifiedList.SaveToDB()
@@ -254,6 +257,19 @@ func (that *Verifier) Run(force ...bool) {
 
 	that.isRunning = false
 	that.tempList = nil
+}
+
+// add available wireguard proxies to verified list.
+func (that *Verifier) GetWireguardInfo() {
+	if that.conf != nil {
+		if _, endpoint := wguard.GetWireguardInfo(that.conf); endpoint != nil {
+			p := &Proxy{
+				RTT:    endpoint.RTT,
+				RawUri: fmt.Sprintf("wireguard://%s", endpoint.IP),
+			}
+			that.verifiedList.AddProxies(p)
+		}
+	}
 }
 
 func (that *Verifier) IsRunning() bool {

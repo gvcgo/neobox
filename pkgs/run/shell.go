@@ -441,6 +441,20 @@ func (that *Shell) wireguard() {
 	})
 }
 
+func (that *Shell) cloudflare() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "cloudflare",
+		Help: "test and restore cloudflare available CDN IPs.",
+		Func: func(c *goktrl.Context) {
+			pinger := wguard.NewTCPinger(that.conf)
+			// TODO: parameters
+			pinger.Run(wguard.IPV4)
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
 func (that *Shell) InitKtrl() {
 	that.start()
 	that.stop()
@@ -456,6 +470,7 @@ func (that *Shell) InitKtrl() {
 	that.manualGC()
 	that.setKey()
 	that.wireguard()
+	that.cloudflare()
 }
 
 func (that *Shell) StartShell() {

@@ -1,6 +1,8 @@
 package main
 
-import "github.com/moqsien/neobox/example"
+import (
+	"github.com/moqsien/neobox/pkgs/wguard"
+)
 
 func main() {
 	// cnf := conf.GetDefaultConf()
@@ -19,9 +21,10 @@ func main() {
 	// par := proxy.NewParser(cnf)
 	// par.Parse()
 	// parser.TestSSR()
-	example.Start()
+	// example.Start()
 	// fmt.Println(strings.Replace("-dajfajf-dfafkf-", "-", "@", 1))
 	// s, _ := base64.StdEncoding.DecodeString("1DiV")
 	// fmt.Println(s)
 	// wguard.TestIPrangeParser()
+	wguard.TestTCPinger()
 }

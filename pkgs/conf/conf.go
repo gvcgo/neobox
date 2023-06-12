@@ -38,7 +38,9 @@ type NeoBoxConf struct {
 	GeoInfoUrls         map[string]string `json,koanf:"geo_info_urls"`         // download urls for geoip and getosite
 	AssetDir            string            `json,koanf:"asset_dir"`             // XRAY_LOCATION_ASSET, env for xray-core, where to store geoip&geosite files
 	NeoBoxKeeperCron    string            `json,koanf:"neobox_keeper_cron"`    // crontab for neobox keeper
-	WireGuardConfDir    string            `json,koanf:"wire_guard_conf_dir"`
+	WireGuardConfDir    string            `json,koanf:"wire_guard_conf_dir"`   // Where to store wireguard configurations
+	WireGuardIPV4Url    string            `json,koanf:"wireguard_ipv4_url"`    // where to download wireguard ipv4 cdn ip list
+	WireGuardIPV6Url    string            `json,koanf:"wireguard_ipv6_url"`    // where to download wireguard ipv6 cdn ip list
 }
 
 func GetDefaultConf() (n *NeoBoxConf) {
@@ -72,6 +74,8 @@ func GetDefaultConf() (n *NeoBoxConf) {
 	n.NeoBoxKeeperCron = "@every 3m"
 	n.HistoryVpnsFileDir = n.NeoWorkDir
 	n.WireGuardConfDir = filepath.Join(n.NeoWorkDir, "wireguard")
+	n.WireGuardIPV4Url = "https://gitlab.com/moqsien/neobox_resources/-/raw/main/cloudflare_ipv4.txt"
+	n.WireGuardIPV6Url = "https://gitlab.com/moqsien/neobox_resources/-/raw/main/cloudflare_ipv6.txt"
 	return
 }
 
@@ -120,3 +124,11 @@ func (that *RawListEncryptKey) Get() string {
 	that.Load()
 	return that.Key
 }
+
+/*
+Cloudflare CDN list file names
+*/
+const (
+	CloudflareIPV4FileName = "ipv4.txt"
+	CloudflareIPV6FileName = "ipv6.txt"
+)

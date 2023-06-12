@@ -23,4 +23,5 @@ func main() {
 	// fmt.Println(strings.Replace("-dajfajf-dfafkf-", "-", "@", 1))
 	// s, _ := base64.StdEncoding.DecodeString("1DiV")
 	// fmt.Println(s)
+	// wguard.TestIPrangeParser()
 }

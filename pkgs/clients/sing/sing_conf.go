@@ -9,13 +9,17 @@ var ConfStr string = `{
     "dns": {
         "servers": [
             {
+                "tag": "goolge",
+                "address": "8.8.8.8"
+            },
+            {
                 "tag": "china",
                 "address": "local",
                 "detour": "direct"
             },
             {
-                "tag": "goolge",
-                "address": "8.8.8.8"
+                "tag": "cloudflare",
+                "address": "1.1.1.1"
             }
         ],
         "rules": [
@@ -55,13 +59,19 @@ var ConfStr string = `{
     "route": {
         "rules": [
             {
-                "geosite": "cn",
-                "geoip": "cn",
-                "outbound": "direct"
+                "protocol": [
+                    "quic"
+                ],
+                "outbound": "block"
             },
             {
                 "geosite": "category-ads-all",
                 "outbound": "block"
+            },
+            {
+                "geosite": "cn",
+                "geoip": "cn",
+                "outbound": "direct"
             }
         ],
         "auto_detect_interface": true,

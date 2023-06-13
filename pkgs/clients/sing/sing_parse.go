@@ -215,6 +215,7 @@ func getWireguardStr(iob iface.IOutboundParser) *gjson.Json {
 		confStr := fmt.Sprintf(ConfStr, outboundStr)
 		j = gjson.New(confStr)
 		j.Set("route.final", vTag)
+		j.Set("inbounds.0.sniff_override_destination", true)
 		return j
 	}
 	return nil

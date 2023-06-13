@@ -248,12 +248,11 @@ func (that *Verifier) Run(force ...bool) {
 	tui.PrintInfo("filters for [ssr] stopped.")
 	tui.PrintInfof("Find %d available proxies.\n", that.verifiedList.Len())
 
-	that.GetWireguardInfo()
-
 	that.verifiedList.Save()
 	if that.verifiedList.Len() > 0 {
 		that.verifiedList.SaveToDB()
 	}
+	that.GetWireguardInfo() // Do not save cloudflare IPs to history db.
 
 	that.isRunning = false
 	that.tempList = nil

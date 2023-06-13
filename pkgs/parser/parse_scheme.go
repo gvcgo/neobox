@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/moqsien/neobox/pkgs/iface"
+	"github.com/moqsien/neobox/pkgs/wguard"
 )
 
 const (
@@ -12,7 +13,7 @@ const (
 	Shadowsockscheme string = "ss://"
 	SSRScheme        string = "ssr://"
 	TrojanScheme     string = "trojan://"
-	WireguardScheme  string = "wireguard://"
+	WireguardScheme  string = wguard.WireguardScheme
 )
 
 func ParseScheme(rawUri string) string {
@@ -30,6 +31,9 @@ func ParseScheme(rawUri string) string {
 	}
 	if strings.HasPrefix(rawUri, VlessScheme) {
 		return VlessScheme
+	}
+	if strings.HasPrefix(rawUri, WireguardScheme) {
+		return WireguardScheme
 	}
 	return "unsupported"
 }
@@ -50,6 +54,9 @@ func GetParser(pxy iface.IProxy) (r iface.IOutboundParser) {
 		r.Parse(pxy.GetRawUri())
 	case VlessScheme:
 		r = &VlessOutbound{}
+		r.Parse(pxy.GetRawUri())
+	case WireguardScheme:
+		r = &WireguardOutbound{}
 		r.Parse(pxy.GetRawUri())
 	default:
 		return

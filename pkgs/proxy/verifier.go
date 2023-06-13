@@ -265,7 +265,7 @@ func (that *Verifier) GetWireguardInfo() {
 		if rawUri, endpoint := wguard.GetWireguardInfo(that.conf); rawUri != "" {
 			p := &Proxy{
 				RTT:    endpoint.RTT,
-				RawUri: fmt.Sprintf("wireguard://%s", rawUri),
+				RawUri: rawUri,
 			}
 			that.verifiedList.AddProxies(p)
 		}

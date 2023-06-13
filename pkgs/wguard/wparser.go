@@ -4,10 +4,15 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/moqsien/goutils/pkgs/crypt"
 	tui "github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/neobox/pkgs/conf"
+)
+
+const (
+	WireguardScheme string = "wireguard://"
 )
 
 func IsWarpConfValid(w *WarpConf) bool {
@@ -29,7 +34,7 @@ func IsWarpConfValid(w *WarpConf) bool {
 /*
 Prepare wireguard info for sing-box
 */
-func GetWireguardInfo(cnf *conf.NeoBoxConf) (wConfStr string, endpoint *PingIP) {
+func GetWireguardInfo(cnf *conf.NeoBoxConf) (rawUri string, endpoint *PingIP) {
 	wguard := NewWGuard(cnf)
 	warpConf := wguard.GetWarpConf()
 	if !IsWarpConfValid(warpConf) {
@@ -45,6 +50,9 @@ func GetWireguardInfo(cnf *conf.NeoBoxConf) (wConfStr string, endpoint *PingIP) 
 func EncryptWireguardInfo(w *WarpConf) (str string) {
 	if bStr, err := json.Marshal(w); err == nil {
 		str = base64.StdEncoding.EncodeToString(bStr)
+		if str != "" {
+			str = fmt.Sprintf("%s%s", WireguardScheme, str)
+		}
 	} else {
 		tui.PrintError(err)
 	}
@@ -55,5 +63,5 @@ func TestWireguardInfo() {
 	cnf := conf.GetDefaultConf()
 	w, _ := GetWireguardInfo(cnf)
 	fmt.Println(w)
-	fmt.Println(crypt.DecodeBase64(w))
+	fmt.Println(crypt.DecodeBase64(strings.ReplaceAll(w, WireguardScheme, "")))
 }

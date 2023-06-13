@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/moqsien/neobox/pkgs/wguard"
+	"github.com/moqsien/neobox/pkgs/parser"
 )
 
 func main() {
@@ -26,5 +26,6 @@ func main() {
 	// s, _ := base64.StdEncoding.DecodeString("1DiV")
 	// fmt.Println(s)
 	// wguard.TestIPrangeParser()
-	wguard.TestWireguardInfo()
+	// wguard.TestWireguardInfo()
+	parser.TestWireguardOutbound()
 }

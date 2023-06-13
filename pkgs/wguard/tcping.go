@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	tui "github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/koanfer"
 	"github.com/moqsien/neobox/pkgs/conf"
@@ -174,6 +175,7 @@ func (that *TCPinger) Run(ipType IPType) {
 		go that.start()
 	}
 	that.wg.Wait()
+	tui.PrintInfof("Get %d cloudflare IPs.", that.result.Len())
 	that.Save()
 }
 

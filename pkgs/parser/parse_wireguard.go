@@ -56,7 +56,7 @@ func (that *WireguardOutbound) Scheme() string {
 }
 
 func TestWireguardOutbound() {
-	rawUri := "wireguard://eyJQcml2YXRlS2V5IjoiT0FjaTRpQzV0Y1RVS1BmZmxyNjB6QXFyeHp2bFlZMldrbncwa2lxYnFGZz0iLCJBZGRyVjQiOiIxNzIuMTYuMC4yIiwiQWRkclY2IjoiMjYwNjo0NzAwOjExMDo4YmI5OjY4YmU6YTEzMDpjZWRlOjE4YmMiLCJETlMiOiIxLjEuMS4xIiwiTVRVIjoxMjgwLCJQdWJsaWNLZXkiOiJibVhPQytGMUZ4RU1GOWR5aUsySDUvMVNVdHpIMEp1Vm81MWgyd1BmZ3lvPSIsIkFsbG93ZWRJUHMiOlsiMC4wLjAuMC8wIiwiOjovMCJdLCJFbmRwb2ludCI6IjE2Mi4xNTkuMzUuMjA4OjQ0MyIsIkNsaWVudElEIjoiTjBBcyIsIlJlc2VydmVkIjpbNTUsNjQsNDRdfQ=="
+	rawUri := "wireguard://xxxxx=="
 	ob := &WireguardOutbound{}
 	ob.Parse(rawUri)
 	fmt.Println(ob.WConf)

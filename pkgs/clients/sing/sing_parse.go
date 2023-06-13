@@ -201,7 +201,7 @@ func getWireguardStr(iob iface.IOutboundParser) *gjson.Json {
 		j := gjson.New(WireguardStr)
 		j.Set("tag", vTag)
 		j.Set("type", "wireguard")
-		host := strings.Split(strings.TrimSuffix(ob.WConf.Endpoint, "\n"), "")
+		host := strings.Split(strings.TrimSuffix(ob.WConf.Endpoint, "\n"), ":")
 		if len(host) == 2 {
 			j.Set("server", host[0])
 			j.Set("server_port", gconv.Int(host[1]))

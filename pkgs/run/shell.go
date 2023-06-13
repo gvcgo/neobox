@@ -430,6 +430,8 @@ func (that *Shell) wireguard() {
 				if len(c.Args[0]) == 26 {
 					w := wguard.NewWGuard(that.conf)
 					w.Run(c.Args[0])
+				} else {
+					tui.PrintWarning("invalid license key.")
 				}
 			} else {
 				w := wguard.NewWGuard(that.conf)
@@ -443,12 +445,13 @@ func (that *Shell) wireguard() {
 
 func (that *Shell) cloudflare() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "cloudflare",
-		Help: "test and restore cloudflare available CDN IPs.",
+		Name: "cfips",
+		Help: "test and restore cloudflare available IPs.",
 		Func: func(c *goktrl.Context) {
+			spinner, _ := pterm.DefaultSpinner.Start("Filtering cloudflare IPs...")
 			pinger := wguard.NewTCPinger(that.conf)
-			// TODO: parameters
 			pinger.Run(wguard.IPV4)
+			spinner.Info("Filteration ended...")
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
 		SocketName:  that.ktrlSocks,

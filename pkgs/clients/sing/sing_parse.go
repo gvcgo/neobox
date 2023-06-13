@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -179,6 +180,46 @@ func getShadowsocksRStr(iob iface.IOutboundParser) *gjson.Json {
 	return nil
 }
 
+var WireguardStr = `{
+	"type": "wireguard",
+  	"tag": "wireguard-out",
+	"server": "162.159.195.81", 
+	"server_port": 928,
+	"local_address": [
+		"172.16.0.2/32",
+		"2606:4700:110:8bb9:68be:a130:cede:18bc/128" 
+	],
+	"private_key": "OAci4iC5tcTUKPfflr60zAqrxzvlYY2Wknw0kiqbqFg=",
+	"peer_public_key": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
+	"mtu": 1280
+}`
+
+func getWireguardStr(iob iface.IOutboundParser) *gjson.Json {
+	vTag := "wireguard-out"
+	ob, _ := iob.(*parser.WireguardOutbound)
+	if ob != nil {
+		j := gjson.New(WireguardStr)
+		j.Set("tag", vTag)
+		j.Set("type", "wireguard")
+		host := strings.Split(strings.TrimSuffix(ob.WConf.Endpoint, "\n"), "")
+		if len(host) == 2 {
+			j.Set("server", host[0])
+			j.Set("server_port", gconv.Int(host[1]))
+		}
+		j.Set("local_address.0", fmt.Sprintf("%s/32", ob.WConf.AddrV4))
+		j.Set("local_address.1", fmt.Sprintf("%s/128", ob.WConf.AddrV6))
+		j.Set("private_key", ob.WConf.PrivateKey)
+		j.Set("peer_public_key", ob.WConf.PublicKey)
+		j.Set("mtu", ob.WConf.MTU)
+		outboundStr := j.MustToJsonIndentString()
+		confStr := fmt.Sprintf(ConfStr, outboundStr)
+		j = gjson.New(confStr)
+		j.Set("route.final", vTag)
+		return j
+	}
+	return nil
+}
+
 func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte) {
 	if p == nil {
 		return
@@ -196,6 +237,8 @@ func GetConfStr(p iface.IProxy, inPort int, logPath string) (r []byte) {
 		j = getShadowsocksRStr(p.GetParser())
 	case parser.VlessScheme:
 		j = getVlessConfStr(p.GetParser())
+	case parser.WireguardScheme:
+		j = getWireguardStr(p.GetParser())
 	default:
 		return
 	}

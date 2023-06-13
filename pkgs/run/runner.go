@@ -21,6 +21,7 @@ import (
 	"github.com/moqsien/neobox/pkgs/clients/sing"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/iface"
+	"github.com/moqsien/neobox/pkgs/parser"
 	"github.com/moqsien/neobox/pkgs/proxy"
 	cron "github.com/robfig/cron/v3"
 )
@@ -163,6 +164,9 @@ func (that *Runner) Restart(pIdx int) (result string) {
 		err := that.client.Start()
 		if err == nil {
 			result = fmt.Sprintf("client restarted use: %d.%s", pIdx, that.currentProxy.String())
+			if that.currentProxy.Scheme() == parser.WireguardScheme {
+				result += fmt.Sprintf("\n%s", string(that.client.GetConf()))
+			}
 		} else {
 			result = fmt.Sprintf("restart client failed: %+v\n%s", err, string(that.client.GetConf()))
 			that.client.Close()

@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
@@ -140,6 +141,11 @@ func AddProxyToDB(p *Proxy) (r Proxy, err error) {
 	return
 }
 
+func DeleteProxyFromDB(p *Proxy) (err error) {
+	StorageDB().DB.Table(historyVpns.TableName()).Where("raw_uri = ?", p.RawUri).Delete(p)
+	return
+}
+
 func GetManualVpnsFromDB() (pList []*Proxy, err error) {
 	result := StorageDB().DB.Table(manualVpns.TableName()).Find(&pList)
 	err = result.Error
@@ -174,4 +180,17 @@ func AddWarpConfigToDB(w *WarpConfig) (rw WarpConfig, err error) {
 		log.Error("[Put warp config to db failed]", err)
 	}
 	return
+}
+
+func Filter() {
+	l, _ := GetHistoryVpnsFromDB()
+	filter := map[string]struct{}{}
+	for _, p := range l {
+		if _, ok := filter[p.String()]; !ok {
+			filter[p.String()] = struct{}{}
+		} else {
+			DeleteProxyFromDB(p)
+			fmt.Println(p.String())
+		}
+	}
 }

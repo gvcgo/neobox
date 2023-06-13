@@ -1,10 +1,14 @@
 package main
 
-import "github.com/moqsien/neobox/example"
+import (
+	"github.com/moqsien/neobox/example"
+	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/neobox/pkgs/run"
+)
 
 func main() {
-	// cnf := conf.GetDefaultConf()
-	// run.SetNeoBoxEnvs(cnf)
+	cnf := conf.GetDefaultConf()
+	run.SetNeoBoxEnvs(cnf)
 	// f := proxy.NewFetcher(cnf)
 	// result := f.GetRawProxyList(true)
 	// fmt.Println(result)
@@ -26,4 +30,6 @@ func main() {
 	// wguard.TestIPrangeParser()
 	// wguard.TestWireguardInfo()
 	// parser.TestWireguardOutbound()
+	// proxy.SetDBPathEnv(`C:\Users\moqsien\data\projects\go\src\neobox\storage.db`)
+	// proxy.Filter()
 }

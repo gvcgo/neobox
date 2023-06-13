@@ -40,10 +40,14 @@ func (that *NeoPinger) send(force ...bool) {
 	that.sendChan = make(chan *Proxy, 30)
 	r := that.fetcher.GetRawProxyList(force...)
 	tui.PrintInfof("Find %v raw proxies.\n", len(r))
+	filter := map[string]struct{}{}
 	for _, rawUri := range r {
 		p := NewProxy(rawUri)
 		if p != nil {
-			that.sendChan <- p
+			if _, ok := filter[p.String()]; !ok {
+				that.sendChan <- p
+			}
+			filter[p.String()] = struct{}{}
 		}
 	}
 	close(that.sendChan)

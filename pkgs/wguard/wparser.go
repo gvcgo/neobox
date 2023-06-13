@@ -1,6 +1,14 @@
 package wguard
 
-import "github.com/moqsien/neobox/pkgs/conf"
+import (
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+
+	"github.com/moqsien/goutils/pkgs/crypt"
+	tui "github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/neobox/pkgs/conf"
+)
 
 func IsWarpConfValid(w *WarpConf) bool {
 	if w.PrivateKey == "" {
@@ -21,15 +29,31 @@ func IsWarpConfValid(w *WarpConf) bool {
 /*
 Prepare wireguard info for sing-box
 */
-func GetWireguardInfo(cnf *conf.NeoBoxConf) (w *WarpConf, endpoint *PingIP) {
+func GetWireguardInfo(cnf *conf.NeoBoxConf) (wConfStr string, endpoint *PingIP) {
 	wguard := NewWGuard(cnf)
 	warpConf := wguard.GetWarpConf()
 	if !IsWarpConfValid(warpConf) {
-		return nil, nil
+		return "", nil
 	}
 	pinger := NewTCPinger(cnf)
 	if endpoint = pinger.ChooseEndpoint(); endpoint != nil {
 		warpConf.Endpoint = endpoint.IP
 	}
-	return warpConf, endpoint
+	return EncryptWireguardInfo(warpConf), endpoint
+}
+
+func EncryptWireguardInfo(w *WarpConf) (str string) {
+	if bStr, err := json.Marshal(w); err == nil {
+		str = base64.StdEncoding.EncodeToString(bStr)
+	} else {
+		tui.PrintError(err)
+	}
+	return
+}
+
+func TestWireguardInfo() {
+	cnf := conf.GetDefaultConf()
+	w, _ := GetWireguardInfo(cnf)
+	fmt.Println(w)
+	fmt.Println(crypt.DecodeBase64(w))
 }

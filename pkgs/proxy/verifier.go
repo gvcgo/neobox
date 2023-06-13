@@ -262,10 +262,10 @@ func (that *Verifier) Run(force ...bool) {
 // add available wireguard proxies to verified list.
 func (that *Verifier) GetWireguardInfo() {
 	if that.conf != nil {
-		if _, endpoint := wguard.GetWireguardInfo(that.conf); endpoint != nil {
+		if rawUri, endpoint := wguard.GetWireguardInfo(that.conf); rawUri != "" {
 			p := &Proxy{
 				RTT:    endpoint.RTT,
-				RawUri: fmt.Sprintf("wireguard://%s", endpoint.IP),
+				RawUri: fmt.Sprintf("wireguard://%s", rawUri),
 			}
 			that.verifiedList.AddProxies(p)
 		}

@@ -26,5 +26,5 @@ func main() {
 	// s, _ := base64.StdEncoding.DecodeString("1DiV")
 	// fmt.Println(s)
 	// wguard.TestIPrangeParser()
-	wguard.TestTCPinger()
+	wguard.TestWireguardInfo()
 }

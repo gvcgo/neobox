@@ -9,7 +9,7 @@ var ConfStr string = `{
     "dns": {
         "servers": [
             {
-                "tag": "goolge",
+                "tag": "google",
                 "address": "8.8.8.8"
             },
             {
@@ -26,6 +26,18 @@ var ConfStr string = `{
             {
                 "geosite": "cn",
                 "server": "china"
+            },
+            {
+                "geosite": "!cn",
+                "server": "google"
+            },
+            {
+                "domain_keyword": [
+                    "google",
+                    "github",
+                    "youtube"
+                ],
+                "server": "google"
             }
         ],
         "disable_cache": true,

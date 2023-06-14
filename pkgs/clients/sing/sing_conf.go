@@ -9,6 +9,10 @@ var ConfStr string = `{
     "dns": {
         "servers": [
             {
+                "tag": "google",
+                "address": "8.8.8.8"
+            },
+            {
                 "tag": "NeuStar",
                 "address": "156.154.70.1"
             },
@@ -24,10 +28,6 @@ var ConfStr string = `{
                 "tag": "china",
                 "address": "local",
                 "detour": "direct"
-            },
-            {
-                "tag": "google",
-                "address": "8.8.8.8"
             }
         ],
         "rules": [
@@ -44,8 +44,8 @@ var ConfStr string = `{
                 "server": "NeuStar"
             }
         ],
-        "disable_cache": false,
-        "disable_expire": false
+        "disable_cache": true,
+        "disable_expire": true
     },
     "inbounds": [
         {

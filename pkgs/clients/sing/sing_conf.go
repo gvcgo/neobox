@@ -9,10 +9,6 @@ var ConfStr string = `{
     "dns": {
         "servers": [
             {
-                "tag": "google",
-                "address": "8.8.8.8"
-            },
-            {
                 "tag": "china",
                 "address": "local",
                 "detour": "direct"
@@ -20,6 +16,10 @@ var ConfStr string = `{
             {
                 "tag": "cloudflare",
                 "address": "1.1.1.1"
+            },
+            {
+                "tag": "google",
+                "address": "8.8.8.8"
             }
         ],
         "rules": [
@@ -28,15 +28,15 @@ var ConfStr string = `{
                 "server": "china"
             },
             {
-                "geosite": "!cn",
-                "server": "google"
-            },
-            {
                 "domain_keyword": [
                     "google",
                     "github",
                     "youtube"
                 ],
+                "server": "google"
+            },
+            {
+                "geosite": "!cn",
                 "server": "google"
             }
         ],
@@ -50,7 +50,8 @@ var ConfStr string = `{
             "listen": "::",
             "listen_port": 2019,
             "sniff": true,
-            "set_system_proxy": false
+            "set_system_proxy": false,
+            "domain_strategy": "prefer_ipv4"
         }
     ],
     "outbounds": [
@@ -62,10 +63,6 @@ var ConfStr string = `{
         {
             "type": "block",
             "tag": "block"
-        },
-        {
-            "type": "dns",
-            "tag": "dns-out"
         }
     ],
     "route": {

@@ -271,7 +271,11 @@ func (that *Shell) show() {
 			if pList := v.Info(); pList != nil {
 				pList.Load()
 				for idx, p := range pList.Proxies.List {
-					tui.Cyan(fmt.Sprintf("%s. %s | RTT %s ms", pterm.Yellow(idx), pterm.LightMagenta(p.String()), pterm.Yellow(p.RTT)))
+					location := v.QueryLocation(p)
+					if location == "" {
+						location = "??"
+					}
+					tui.Cyan(fmt.Sprintf("%s. %s<%s> | RTT %s ms", pterm.Yellow(idx), pterm.LightMagenta(p.String()), pterm.LightBlue(location), pterm.Yellow(p.RTT)))
 				}
 			}
 			tui.Cyan("========================================================================")

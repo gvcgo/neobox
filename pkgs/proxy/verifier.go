@@ -52,6 +52,7 @@ type Verifier struct {
 	isRunning    bool
 	tempList     *sync.Map
 	vPath        string
+	locations    *LocParser
 }
 
 func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
@@ -63,6 +64,7 @@ func NewVerifier(cnf *conf.NeoBoxConf) *Verifier {
 		verifiedList: NewProxyList(vPath),
 		wg:           &sync.WaitGroup{},
 		vPath:        vPath,
+		locations:    NewLocParser(cnf),
 	}
 	return v
 }
@@ -258,6 +260,8 @@ func (that *Verifier) Run(force ...bool) {
 	}
 	that.verifiedList.Save()
 
+	// get ip locations
+	that.locations.ParseProxies(that.verifiedList.Proxies.List)
 	that.isRunning = false
 	that.tempList = nil
 }
@@ -284,4 +288,8 @@ func (that *Verifier) Info() *ProxyList {
 		return nil
 	}
 	return that.verifiedList
+}
+
+func (that *Verifier) QueryLocation(p *Proxy) (location string) {
+	return that.locations.Query(p.Address())
 }

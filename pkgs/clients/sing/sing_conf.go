@@ -9,13 +9,13 @@ var ConfStr string = `{
     "dns": {
         "servers": [
             {
+                "tag": "cloudflare",
+                "address": "1.1.1.1"
+            },
+            {
                 "tag": "china",
                 "address": "local",
                 "detour": "direct"
-            },
-            {
-                "tag": "cloudflare",
-                "address": "1.1.1.1"
             },
             {
                 "tag": "google",
@@ -33,11 +33,7 @@ var ConfStr string = `{
                     "github",
                     "youtube"
                 ],
-                "server": "google"
-            },
-            {
-                "geosite": "!cn",
-                "server": "google"
+                "server": "cloudflare"
             }
         ],
         "disable_cache": true,

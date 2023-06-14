@@ -34,15 +34,15 @@ func IsWarpConfValid(w *WarpConf) bool {
 /*
 Prepare wireguard info for sing-box
 */
-func GetWireguardInfo(cnf *conf.NeoBoxConf) (rawUri string, endpoint *PingIP) {
+func GetWireguardInfo(cnf *conf.NeoBoxConf) (rawUri string, endpoint *WVerifiedIP) {
 	wguard := NewWGuard(cnf)
 	warpConf := wguard.GetWarpConf()
 	if !IsWarpConfValid(warpConf) {
 		return "", nil
 	}
-	pinger := NewTCPinger(cnf)
-	if endpoint = pinger.ChooseEndpoint(); endpoint != nil {
-		warpConf.Endpoint = endpoint.IP
+	wips := NewWIPs(cnf)
+	if endpoint = wips.ChooseEndpoint(); endpoint != nil {
+		warpConf.Endpoint = endpoint.Addr
 	}
 	return EncryptWireguardInfo(warpConf), endpoint
 }

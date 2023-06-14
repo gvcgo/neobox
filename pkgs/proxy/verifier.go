@@ -252,7 +252,10 @@ func (that *Verifier) Run(force ...bool) {
 		that.verifiedList.SaveToDB()
 	}
 
-	that.GetWireguardInfo() // Do not save cloudflare IPs to history db.
+	// Do not save cloudflare IPs to history db.
+	if p := that.GetWireguardInfo(); p != nil {
+		that.verifiedList.AddProxies(p)
+	}
 	that.verifiedList.Save()
 
 	that.isRunning = false
@@ -260,16 +263,16 @@ func (that *Verifier) Run(force ...bool) {
 }
 
 // add available wireguard proxies to verified list.
-func (that *Verifier) GetWireguardInfo() {
+func (that *Verifier) GetWireguardInfo() *Proxy {
 	if that.conf != nil {
 		if rawUri, endpoint := wguard.GetWireguardInfo(that.conf); rawUri != "" {
-			p := &Proxy{
-				RTT:    endpoint.RTT,
+			return &Proxy{
+				RTT:    endpoint.ParseRTT(),
 				RawUri: rawUri,
 			}
-			that.verifiedList.AddProxies(p)
 		}
 	}
+	return nil
 }
 
 func (that *Verifier) IsRunning() bool {

@@ -154,6 +154,10 @@ func (that *Runner) Restart(pIdx int) (result string) {
 	that.client.Close()
 	time.Sleep(2 * time.Second)
 	that.currentProxy, that.currentPIdx = that.verifier.GetProxyByIndex(pIdx)
+	// randomly choose wiregurd peer endpoint ip
+	if that.currentProxy.Scheme() == parser.WireguardScheme {
+		that.currentProxy = that.verifier.GetWireguardInfo()
+	}
 	if that.currentProxy != nil {
 		that.client.SetProxy(that.currentProxy)
 		if that.conf.NeoLogFileDir != "" {
@@ -164,9 +168,9 @@ func (that *Runner) Restart(pIdx int) (result string) {
 		err := that.client.Start()
 		if err == nil {
 			result = fmt.Sprintf("client restarted use: %d.%s", pIdx, that.currentProxy.String())
-			if that.currentProxy.Scheme() == parser.WireguardScheme {
-				result += fmt.Sprintf("\n%s", string(that.client.GetConf()))
-			}
+			// if that.currentProxy.Scheme() == parser.WireguardScheme {
+			// 	result += fmt.Sprintf("\n%s", string(that.client.GetConf()))
+			// }
 		} else {
 			result = fmt.Sprintf("restart client failed: %+v\n%s", err, string(that.client.GetConf()))
 			that.client.Close()

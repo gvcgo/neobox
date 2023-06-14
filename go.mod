@@ -17,7 +17,6 @@ require (
 	github.com/sagernet/sing-box v1.2.7
 	github.com/urfave/cli/v2 v2.25.0
 	github.com/xtls/xray-core v1.8.1
-	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc
 	gorm.io/gorm v1.25.1
 )
 
@@ -167,6 +166,7 @@ require (
 	go4.org/netipx v0.0.0-20230303233057-f1b76eb4bb35 // indirect
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
+	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.6.0 // indirect

@@ -61,3 +61,5 @@ Commands:
 - wireguard
 - deduplicate by host and port
 - trojan bugfix
+- 162.158.0.0/15
+- 188.114.96.0/20

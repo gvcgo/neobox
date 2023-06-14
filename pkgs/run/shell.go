@@ -443,15 +443,13 @@ func (that *Shell) wireguard() {
 	})
 }
 
-func (that *Shell) cloudflare() {
+func (that *Shell) getWireguardIPs() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "cfips",
-		Help: "test and restore cloudflare available IPs.",
+		Help: "download/update valid cloudflare ips.",
 		Func: func(c *goktrl.Context) {
-			spinner, _ := pterm.DefaultSpinner.Start("Filtering cloudflare IPs...")
-			pinger := wguard.NewTCPinger(that.conf)
-			pinger.Run(wguard.IPV4)
-			spinner.Info("Filteration ended...")
+			wip := wguard.NewWIPs(that.conf)
+			wip.DownloadAndParse()
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
 		SocketName:  that.ktrlSocks,
@@ -473,7 +471,7 @@ func (that *Shell) InitKtrl() {
 	that.manualGC()
 	that.setKey()
 	that.wireguard()
-	that.cloudflare()
+	that.getWireguardIPs()
 }
 
 func (that *Shell) StartShell() {

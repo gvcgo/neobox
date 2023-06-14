@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/moqsien/neobox/example"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/run"
+	"github.com/moqsien/neobox/pkgs/wguard"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 	// par := proxy.NewParser(cnf)
 	// par.Parse()
 	// parser.TestSSR()
-	example.Start()
+	// example.Start()
 	// fmt.Println(strings.Replace("-dajfajf-dfafkf-", "-", "@", 1))
 	// s, _ := base64.StdEncoding.DecodeString("1DiV")
 	// fmt.Println(s)
@@ -32,4 +32,5 @@ func main() {
 	// parser.TestWireguardOutbound()
 	// proxy.SetDBPathEnv(`C:\Users\moqsien\data\projects\go\src\neobox\storage.db`)
 	// proxy.Filter()
+	wguard.TestWireguardInfo()
 }

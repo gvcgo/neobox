@@ -9,6 +9,14 @@ var ConfStr string = `{
     "dns": {
         "servers": [
             {
+                "tag": "NeuStar",
+                "address": "156.154.70.1"
+            },
+            {
+                "tag": "Norton",
+                "address": "199.85.126.30"
+            },
+            {
                 "tag": "cloudflare",
                 "address": "1.1.1.1"
             },
@@ -33,11 +41,11 @@ var ConfStr string = `{
                     "github",
                     "youtube"
                 ],
-                "server": "cloudflare"
+                "server": "NeuStar"
             }
         ],
-        "disable_cache": true,
-        "disable_expire": true
+        "disable_cache": false,
+        "disable_expire": false
     },
     "inbounds": [
         {
@@ -64,19 +72,13 @@ var ConfStr string = `{
     "route": {
         "rules": [
             {
-                "protocol": [
-                    "quic"
-                ],
-                "outbound": "block"
+                "geosite": "cn",
+                "geoip": "cn",
+                "outbound": "direct"
             },
             {
                 "geosite": "category-ads-all",
                 "outbound": "block"
-            },
-            {
-                "geosite": "cn",
-                "geoip": "cn",
-                "outbound": "direct"
             }
         ],
         "auto_detect_interface": true,

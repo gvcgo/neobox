@@ -42,6 +42,7 @@ type NeoBoxConf struct {
 	WireGuardConfDir         string            `json,koanf:"wire_guard_conf_dir"`     // Where to store wireguard configurations
 	WireGuardIPV4FileName    string            `json,koanf:"wireguard_ipv4_filename"` // file name of ipv4 range
 	WireGuardIPUrl           string            `json,koanf:"wireguard_ip_url"`        // where to download optimized ips for wireguard
+	ExtraVPNsDir             string            `json,koanf:"extra_vpns_dir"`          // where to find extra VPN list in txt files
 }
 
 func GetDefaultConf() (n *NeoBoxConf) {
@@ -78,6 +79,7 @@ func GetDefaultConf() (n *NeoBoxConf) {
 	n.WireGuardConfDir = filepath.Join(n.NeoWorkDir, "wireguard")
 	n.WireGuardIPV4FileName = "wireguard_ipv4_verified.json"
 	n.WireGuardIPUrl = "https://gitlab.com/moqsien/neobox_resources/-/raw/main/cloudflare_ips/result.csv"
+	n.ExtraVPNsDir = filepath.Join(n.NeoWorkDir, "extra_vpns")
 	return
 }
 

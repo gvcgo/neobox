@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gocolly/colly/v2"
 	crypt "github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	log "github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/neobox/pkgs/parser"
 )
 
 type RawList struct {
@@ -92,6 +94,27 @@ func (that *Fetcher) GetRawProxies(force ...bool) *RawResult {
 	return that.RawProxies
 }
 
+func (that *Fetcher) readExtaVPNList() (r []string) {
+	if ok, _ := gutils.PathIsExist(that.Conf.ExtraVPNsDir); !ok {
+		os.MkdirAll(that.Conf.ExtraVPNsDir, 0666)
+		return
+	}
+	dList, _ := os.ReadDir(that.Conf.ExtraVPNsDir)
+	for _, d := range dList {
+		if !d.IsDir() && strings.HasSuffix(d.Name(), ".txt") {
+			if content, err := os.ReadFile(filepath.Join(that.Conf.ExtraVPNsDir, d.Name())); err == nil && len(content) > 0 {
+				for _, s := range strings.Split(string(content), "\n") {
+					s = strings.Trim(strings.TrimSpace(s), "\r")
+					if parser.ParseScheme(s) != "" {
+						r = append(r, s)
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
 func (that *Fetcher) GetRawProxyList(force ...bool) (r []string) {
 	result := that.GetRawProxies(force...)
 	if result == nil {
@@ -102,6 +125,7 @@ func (that *Fetcher) GetRawProxyList(force ...bool) (r []string) {
 	r = append(r, result.Trojan.List...)
 	r = append(r, result.SSList.List...)
 	r = append(r, result.SSRList.List...)
+	r = append(r, that.readExtaVPNList()...)
 	return
 }
 

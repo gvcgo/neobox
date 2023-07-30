@@ -130,12 +130,13 @@ func (that *Fetcher) GetRawProxyList(force ...bool) (r []string) {
 }
 
 type RawStatistics struct {
-	Vmess  int `json:"vmess"`
-	SSR    int `json:"ssr"`
-	Vless  int `json:"vless"`
-	SS     int `json:"ss"`
-	Trojan int `json:"trojan"`
-	Other  int `json:"other"`
+	Vmess      int    `json:"vmess"`
+	SSR        int    `json:"ssr"`
+	Vless      int    `json:"vless"`
+	SS         int    `json:"ss"`
+	Trojan     int    `json:"trojan"`
+	Other      int    `json:"other"`
+	UpdateTime string `json:"update_time"`
 }
 
 func (that *Fetcher) GetStatistics() *RawStatistics {
@@ -144,11 +145,12 @@ func (that *Fetcher) GetStatistics() *RawStatistics {
 		return &RawStatistics{}
 	}
 	return &RawStatistics{
-		Vmess:  len(result.VmessList.List),
-		Vless:  len(result.VlessList.List),
-		SSR:    len(result.SSRList.List),
-		SS:     len(result.SSList.List),
-		Trojan: len(result.Trojan.List),
-		Other:  len(result.Other.List),
+		Vmess:      len(result.VmessList.List),
+		Vless:      len(result.VlessList.List),
+		SSR:        len(result.SSRList.List),
+		SS:         len(result.SSList.List),
+		Trojan:     len(result.Trojan.List),
+		Other:      len(result.Other.List),
+		UpdateTime: result.UpdateTime,
 	}
 }

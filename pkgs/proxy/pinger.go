@@ -56,8 +56,11 @@ func (that *NeoPinger) send(force ...bool) {
 func (that *NeoPinger) ping(p *Proxy) {
 	if p != nil {
 		if pinger, err := probing.NewPinger(p.Address()); err == nil {
-			if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
+			if runtime.GOOS == "windows" {
 				pinger.SetPrivileged(true)
+			} else if runtime.GOOS == "darwin" {
+				// false for MacOS
+				pinger.SetPrivileged(false)
 			}
 			pinger.Count = 5
 			pinger.Interval = time.Millisecond * 300

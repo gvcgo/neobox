@@ -234,7 +234,8 @@ func (that *Shell) show() {
 			rawStatistics := proxy.NewFetcher(that.conf).GetStatistics()
 			tui.Cyan("========================================================================")
 			tui.Green("VPN list statitics: ")
-			str := fmt.Sprintf("RawList: vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s] others[%s].",
+			str := fmt.Sprintf("RawList[@%s]: vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s] others[%s].",
+				pterm.Magenta(rawStatistics.UpdateTime),
 				pterm.Yellow(rawStatistics.Vmess),
 				pterm.Yellow(rawStatistics.Vless),
 				pterm.Yellow(rawStatistics.Trojan),

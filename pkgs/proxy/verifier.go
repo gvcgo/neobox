@@ -121,7 +121,7 @@ func (that *Verifier) send(cType clients.ClientType, force ...bool) {
 	if cType == clients.TypeXray {
 		that.sendChan = make(chan *Proxy, 30)
 		for _, p := range that.originList.Proxies.List {
-			if p.Scheme() != parser.SSRScheme && p.Scheme() != parser.Shadowsockscheme {
+			if p.Scheme() != parser.SSRScheme {
 				that.sendChan <- p
 			}
 		}
@@ -129,7 +129,7 @@ func (that *Verifier) send(cType clients.ClientType, force ...bool) {
 	} else {
 		that.sendSSRChan = make(chan *Proxy, 30)
 		for _, p := range that.originList.Proxies.List {
-			if p.Scheme() == parser.SSRScheme || p.Scheme() == parser.Shadowsockscheme {
+			if p.Scheme() == parser.SSRScheme {
 				that.sendSSRChan <- p
 			}
 		}

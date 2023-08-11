@@ -24,6 +24,7 @@ func main() {
 	// par.Parse()
 	// parser.TestSSR()
 	example.Start()
+	// gohacks.Nanotime
 	// fmt.Println(strings.Replace("-dajfajf-dfafkf-", "-", "@", 1))
 	// s, _ := base64.StdEncoding.DecodeString("1DiV")
 	// fmt.Println(s)

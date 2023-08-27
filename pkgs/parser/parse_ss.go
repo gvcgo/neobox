@@ -5,9 +5,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-
-	crypt "github.com/moqsien/goutils/pkgs/crypt"
-	"github.com/moqsien/neobox/pkgs/utils"
 )
 
 var SSMethod map[string]struct{} = map[string]struct{}{
@@ -47,11 +44,11 @@ ss://chacha20-ietf-poly1305:728229b9-164e-45cb-bfb3-896b3a056a18@node03.gde52px1
 func (that *SSOutbound) Parse(rawUri string) {
 	that.Raw = rawUri
 	if strings.Contains(rawUri, Shadowsockscheme) {
-		r := strings.ReplaceAll(rawUri, Shadowsockscheme, "")
-		uList := strings.Split(r, "@")
-		if len(uList) == 2 {
-			userInfo := crypt.DecodeBase64(utils.NormalizeSSR(uList[0]))
-			_uri := fmt.Sprintf("%s%s@%s", Shadowsockscheme, userInfo, uList[1])
+		_uri := ParseRawUri(rawUri)
+		// fmt.Println("==== ", _uri)
+		if _uri != "" {
+			// userInfo := crypt.DecodeBase64(utils.NormalizeSSR(uList[0]))
+			// _uri := fmt.Sprintf("%s%s@%s", Shadowsockscheme, userInfo, uList[1])
 			if u, err := url.Parse(_uri); err == nil {
 				that.Address = u.Hostname()
 				that.Port, _ = strconv.Atoi(u.Port())
@@ -82,7 +79,7 @@ func (that *SSOutbound) GetAddr() string {
 
 func (that *SSOutbound) Decode(rawUri string) string {
 	that.Parse(rawUri)
-	return fmt.Sprintf("%s%s:%s@%s:%d", Shadowsockscheme, that.Password, that.Method, that.Address, that.Port)
+	return fmt.Sprintf("%s%s:%s@%s:%d", Shadowsockscheme, that.Method, that.Password, that.Address, that.Port)
 }
 
 func (that *SSOutbound) Scheme() string {
@@ -90,7 +87,10 @@ func (that *SSOutbound) Scheme() string {
 }
 
 func TestSS() {
-	rawUri := "ss://YWVzLTI1Ni1jZmI6YW1hem9uc2tyMDU@13.231.193.143:443#JP%2033%20%E2%86%92%20tg%40nicevpn123"
+	// rawUri := "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo5OGI2YWI5MS1mZjFiLTQ3NmItYTgxMC01NzVmMWRkNTgzZjc=@free.node.kk-proxy.pro:55928#8%7C%E4%B8%AD%E8%BD%AC%20%F0%9F%87%BA%F0%9F%87%B8%20United%20States%2009%20%40nodpai"
+	// rawUri := "ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp0MHNybWR4cm0zeHlqbnZxejlld2x4YjJteXE3cmp1dg@0603dc7.j3.gladns.com:2377/?plugin=obfs-local;obfs=tls;obfs-host=(TG@WangCai_1)c68b799:50307#8DKJ|@Zyw_Channel"
+	rawUri := "ss://YWVzLTI1Ni1jZmI6YXNkS2thc2tKS2Zuc2FANTEuMTU4LjIwMC4xNjQ6NDQz#🇫🇷FR_502"
 	p := &SSOutbound{}
-	p.Parse(rawUri)
+	fmt.Println(p.Decode(rawUri))
+	// fmt.Println(p)
 }

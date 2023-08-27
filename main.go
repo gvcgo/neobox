@@ -1,14 +1,12 @@
 package main
 
 import (
-	"github.com/moqsien/neobox/example"
-	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/neobox/pkgs/run"
+	"github.com/moqsien/neobox/pkgs/parser"
 )
 
 func main() {
-	cnf := conf.GetDefaultConf()
-	run.SetNeoBoxEnvs(cnf)
+	// cnf := conf.GetDefaultConf()
+	// run.SetNeoBoxEnvs(cnf)
 	// f := proxy.NewFetcher(cnf)
 	// result := f.GetRawProxyList(true)
 	// fmt.Println(result)
@@ -23,7 +21,9 @@ func main() {
 	// par := proxy.NewParser(cnf)
 	// par.Parse()
 	// parser.TestSSR()
-	example.Start()
+
+	// example.Start()
+
 	// gohacks.Nanotime
 	// fmt.Println(strings.Replace("-dajfajf-dfafkf-", "-", "@", 1))
 	// s, _ := base64.StdEncoding.DecodeString("1DiV")
@@ -36,4 +36,5 @@ func main() {
 	// wguard.TestWireguardInfo()
 	// proxy.TestLocParser()
 	// parser.TestTrojanOutbound()
+	parser.TestSS()
 }

@@ -8,6 +8,14 @@ import (
 	"github.com/moqsien/goutils/pkgs/gtui"
 )
 
+/*
+vless: ['security', 'type', 'sni', 'path', 'encryption', 'headerType', 'packetEncoding', 'serviceName', 'mode', 'flow', 'alpn', 'host', 'fp', 'pbk', 'sid', 'spx']
+trojan: ['allowInsecure', 'peer', 'sni', 'type', 'path', 'security', 'headerType']
+shadowsocks: ['plugin', 'obfs', 'obfs-host', 'mode', 'path', 'mux', 'host']
+shadowsocksr: ['remarks', 'obfsparam', 'protoparam', 'group']
+vmess: ['v', 'ps', 'add', 'port', 'aid', 'scy', 'net', 'type', 'tls', 'id', 'sni', 'host', 'path', 'alpn', 'security', 'skip-cert-verify', 'fp', 'test_name', 'serverPort', 'nation']
+*/
+
 func HandleQuery(rawUri string) (result string) {
 	result = rawUri
 	if !strings.Contains(rawUri, "?") {

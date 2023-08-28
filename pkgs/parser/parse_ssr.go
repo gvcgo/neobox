@@ -7,8 +7,11 @@ import (
 
 	"github.com/gogf/gf/v2/util/gconv"
 	crypt "github.com/moqsien/goutils/pkgs/crypt"
-	"github.com/moqsien/neobox/pkgs/utils"
 )
+
+/*
+shadowsocksr: ['remarks', 'obfsparam', 'protoparam', 'group']
+*/
 
 type SSROutbound struct {
 	Email      string
@@ -72,18 +75,36 @@ func (that *SSROutbound) parseMethod(s string) {
 		that.Method = vList[3]
 		that.Obfs = vList[4]
 		that.Password = crypt.DecodeBase64(strings.TrimSuffix(vList[5], "/"))
+	} else if len(vList) == 5 {
+		that.Address = vList[0]
+		that.Port = gconv.Int(vList[1])
+		that.Proto = vList[2]
+		that.Method = vList[3]
+		obfs_pwd := vList[4]
+		for obfs_name := range SSROBFS {
+			if strings.Contains(obfs_pwd, obfs_name) {
+				that.Obfs = obfs_name
+				that.Password = crypt.DecodeBase64(strings.TrimPrefix(obfs_pwd, obfs_name))
+			}
+		}
 	}
 }
 
 func (that *SSROutbound) parse(rawUri string) {
 	that.Raw = rawUri
 	if strings.HasPrefix(rawUri, SSRScheme) {
-		r := strings.ReplaceAll(rawUri, SSRScheme, "")
-		r = crypt.DecodeBase64(utils.NormalizeSSR(r))
+		r := ParseRawUri(rawUri)
+		r = strings.ReplaceAll(r, SSRScheme, "")
 		vList := strings.Split(r, "?")
 		if len(vList) == 2 {
 			that.parseMethod(vList[0])
 			that.parseParams(vList[1])
+		} else {
+			vList = strings.Split(r, "remarks=")
+			if len(vList) == 2 {
+				that.parseMethod(vList[0])
+				that.parseParams("remarks=" + vList[1])
+			}
 		}
 	}
 }
@@ -109,7 +130,7 @@ func (that *SSROutbound) String() string {
 
 func (that *SSROutbound) Decode(rawUri string) string {
 	that.Parse(rawUri)
-	return fmt.Sprintf("%s%s:%s@%s:%d", SSRScheme, that.Password, that.Method, that.Address, that.Port)
+	return fmt.Sprintf("%s%s:%s@%s:%d", SSRScheme, that.Method, that.Password, that.Address, that.Port)
 }
 
 func (that *SSROutbound) GetAddr() string {
@@ -121,7 +142,8 @@ func (that *SSROutbound) Scheme() string {
 }
 
 func TestSSR() {
-	rawUri := "ssr://aGs1LnZmdW4uaWN1OjQ0MzphdXRoX2FlczEyOF9zaGExOmFlcy0yNTYtY2ZiOnBsYWluOmRubDFibTFsLz9vYmZzcGFyYW09WXpNd05qRXhOamsxTWk1cVpDNW9KU1h2djcwJTNEJnJlbWFya3M9U2xCZk5UUXVPVFV1TVRJekxqZ3dYekEyTURFeU1ESXpZMkZtTmkwME5EZHpjM0klM0QmcHJvdG9wYXJhbT1NVFk1TlRJNk9XSnBhemhK"
+	// rawUri := "ssr://aGs1LnZmdW4uaWN1OjQ0MzphdXRoX2FlczEyOF9zaGExOmFlcy0yNTYtY2ZiOnBsYWluOmRubDFibTFsLz9vYmZzcGFyYW09WXpNd05qRXhOamsxTWk1cVpDNW9KU1h2djcwJTNEJnJlbWFya3M9U2xCZk5UUXVPVFV1TVRJekxqZ3dYekEyTURFeU1ESXpZMkZtTmkwME5EZHpjM0klM0QmcHJvdG9wYXJhbT1NVFk1TlRJNk9XSnBhemhK"
+	rawUri := "ssr://94.23.116.190:443:origin:aes-256-ctr:tls1.2_ticket_authSG93ZHlCeXBhc3NlcjIwMjI=remarks=MTJ8UmxKZmMzQmxaV1J1YjJSbFh6QXdNalUlM0Q=\u0026obfsparam=VG05dVpRJTNEJTNE\u0026protoparam=VG05dVpRJTNEJTNE"
 	p := &SSROutbound{}
 	fmt.Println(p.Decode(rawUri))
 }

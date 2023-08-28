@@ -28,6 +28,10 @@ var SSMethod map[string]struct{} = map[string]struct{}{
 	"xchacha20":                     {},
 }
 
+/*
+shadowsocks: ['plugin', 'obfs', 'obfs-host', 'mode', 'path', 'mux', 'host']
+*/
+
 type SSOutbound struct {
 	Address  string
 	Port     int

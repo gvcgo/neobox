@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+/*
+vless: ['security', 'type', 'sni', 'path', 'encryption', 'headerType', 'packetEncoding', 'serviceName', 'mode', 'flow', 'alpn', 'host', 'fp', 'pbk', 'sid', 'spx']
+*/
+
 type VlessOutbound struct {
 	Address    string
 	Port       int
@@ -59,4 +63,8 @@ func (that *VlessOutbound) GetAddr() string {
 
 func (that *VlessOutbound) Scheme() string {
 	return VlessScheme
+}
+
+func TestVless() {
+
 }

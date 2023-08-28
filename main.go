@@ -36,5 +36,6 @@ func main() {
 	// wguard.TestWireguardInfo()
 	// proxy.TestLocParser()
 	// parser.TestTrojanOutbound()
-	parser.TestSS()
+	parser.TestVless()
+	// parser.TestVmess()
 }

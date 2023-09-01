@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/moqsien/goutils v0.3.1
 	github.com/moqsien/vpnparser v0.0.1
+	github.com/prometheus-community/pro-bing v0.3.0
 )
 
 require (
@@ -23,6 +24,7 @@ require (
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/gogf/gf v1.16.9 // indirect
 	github.com/gogf/gf/v2 v2.4.1 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/gookit/color v1.5.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -45,9 +47,10 @@ require (
 	go.opentelemetry.io/otel v1.15.1 // indirect
 	go.opentelemetry.io/otel/trace v1.15.1 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
-	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/term v0.8.0 // indirect
-	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/net v0.11.0 // indirect
+	golang.org/x/sync v0.3.0 // indirect
+	golang.org/x/sys v0.9.0 // indirect
+	golang.org/x/term v0.9.0 // indirect
+	golang.org/x/text v0.10.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

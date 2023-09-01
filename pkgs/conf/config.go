@@ -30,7 +30,7 @@ type NeoConf struct {
 	DownloadUrl           string            `json,koanf:"download_url"`
 	SocketDir             string            `json,koanf:"socket_dir"`
 	MaxPingers            int               `json,koanf:"max_pingers"`
-	MaxPingAvgRTT         int               `json,koanf:"max_ping_avgrtt"`
+	MaxPingAvgRTT         int64             `json,koanf:"max_ping_avgrtt"`
 	InboundPort           int               `json,koanf:"inbound_port"`
 	VerificationPortRange *PortRange        `json,koanf:"port_range"`
 	VerificationTimeout   int               `json,koanf:"verification_timeout"`

@@ -99,7 +99,7 @@ func (that *Pinger) startPing() {
 	}
 }
 
-func (that *Pinger) Run(force ...bool) {
+func (that *Pinger) Run() {
 	go that.send()
 	time.Sleep(time.Millisecond * 100)
 	that.Result.Clear()

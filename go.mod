@@ -2,20 +2,26 @@ module github.com/moqsien/neobox
 
 go 1.20
 
-require github.com/moqsien/goutils v0.3.1
+require (
+	github.com/moqsien/goutils v0.3.1
+	github.com/moqsien/vpnparser v0.0.1
+)
 
 require (
 	atomicgo.dev/cursor v0.1.1 // indirect
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	atomicgo.dev/schedule v0.0.2 // indirect
+	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/sevenzip v1.4.2 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
+	github.com/clbanning/mxj v1.8.5-0.20200714211355-ff02cfb8ea28 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
+	github.com/gogf/gf v1.16.9 // indirect
 	github.com/gogf/gf/v2 v2.4.1 // indirect
 	github.com/gookit/color v1.5.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -43,4 +49,5 @@ require (
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/term v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

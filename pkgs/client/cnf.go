@@ -1,5 +1,11 @@
 package client
 
+import (
+	"github.com/gogf/gf/encoding/gjson"
+	"github.com/moqsien/vpnparser/pkgs/outbound"
+	vutils "github.com/moqsien/vpnparser/pkgs/utils"
+)
+
 var SingBoxConfigStr string = `{
     "log": {
         "disabled": false,
@@ -182,3 +188,31 @@ var XrayCoreConfigStr = `{
         ]
     }
 }`
+
+type IOutbound interface {
+	GetHost() string
+	GetOutbound() string
+	GetOutboundType() string
+}
+
+func PrepareConfig(out IOutbound, inboundPort int, logPath string) (conf []byte) {
+	if out == nil {
+		return
+	}
+	switch out.GetOutboundType() {
+	case string(outbound.SingBox):
+		j := gjson.New(SingBoxConfigStr)
+		j = vutils.SetJsonObjectByString("outbounds.0", out.GetOutbound(), j)
+		j.Set("inbounds.0.listen_port", inboundPort)
+		j.Set("log.output", logPath)
+		return j.MustToJson()
+	case string(outbound.XrayCore):
+		j := gjson.New(XrayCoreConfigStr)
+		j = vutils.SetJsonObjectByString("outbounds.0", out.GetOutbound(), j)
+		j.Set("inbounds.0.port", inboundPort)
+		j.Set("log.error", logPath)
+		return j.MustToJson()
+	default:
+		return
+	}
+}

@@ -3,6 +3,7 @@ module github.com/moqsien/neobox
 go 1.20
 
 require (
+	github.com/gogf/gf v1.16.9
 	github.com/moqsien/goutils v0.3.1
 	github.com/moqsien/vpnparser v0.0.1
 	github.com/prometheus-community/pro-bing v0.3.0
@@ -22,7 +23,6 @@ require (
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
-	github.com/gogf/gf v1.16.9 // indirect
 	github.com/gogf/gf/v2 v2.4.1 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gookit/color v1.5.3 // indirect

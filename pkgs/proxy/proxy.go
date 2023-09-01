@@ -28,6 +28,14 @@ func (that *ProxyItem) GetHost() string {
 	return fmt.Sprintf("%s:%d", that.Address, that.Port)
 }
 
+func (that *ProxyItem) GetOutbound() string {
+	return that.Outbound
+}
+
+func (that *ProxyItem) GetOutboundType() string {
+	return that.OutboundType
+}
+
 func ParseRawUri(rawUri string) (p *ProxyItem) {
 	p = &ProxyItem{}
 	rawUri = parser.ParseRawUri(rawUri)

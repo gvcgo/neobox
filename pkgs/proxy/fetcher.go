@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"time"
@@ -40,8 +41,11 @@ func (that *ProxyFetcher) DecryptAndLoad() {
 		if content, err := os.ReadFile(that.downloadedFile); err == nil {
 			c := crypt.NewCrptWithKey([]byte(that.Key.Key))
 			if result, err := c.AesDecrypt(content); err == nil {
-				os.WriteFile(that.decryptedFile, result, os.ModePerm)
+				if err := os.WriteFile(that.decryptedFile, result, os.ModePerm); err == nil {
+					json.Unmarshal(result, that.Result)
+				}
 			}
 		}
 	}
+	// fmt.Println(that.Result)
 }

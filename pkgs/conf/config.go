@@ -39,7 +39,6 @@ type NeoConf struct {
 	GeoInfoUrls           map[string]string `json,koanf:"geo_info_urls"`
 	GeoInfoDir            string            `json,koanf:"geo_info_dir"`
 	KeeperCron            string            `json,koanf:"keeper_cron"`
-	ExtraVPNFilesDir      string            `json,koanf:"extra_vpn_files_dir"`
 }
 
 func GetDefaultNeoConf() (n *NeoConf) {
@@ -67,7 +66,6 @@ func GetDefaultNeoConf() (n *NeoConf) {
 	n.LogDir = n.WorkDir
 	n.SocketDir = n.WorkDir
 	n.GeoInfoDir = n.WorkDir
-	n.ExtraVPNFilesDir = n.WorkDir
 	return
 }
 

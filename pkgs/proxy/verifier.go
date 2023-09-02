@@ -138,7 +138,7 @@ func (that *Verifier) Run() {
 	}
 	gtui.PrintInfo("filters for [vmess/ss/vless/trojan] started.")
 
-	for i := 1; i <= 10; i++ {
+	for i := 1; i <= 20; i++ {
 		go that.startClient(end+i, outbound.SingBox)
 	}
 	gtui.PrintInfo("filters for [ssr/ss-obfs] started.")

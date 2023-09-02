@@ -1,7 +1,11 @@
 package client
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/gogf/gf/encoding/gjson"
+	"github.com/moqsien/neobox/pkgs/utils"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 	vutils "github.com/moqsien/vpnparser/pkgs/utils"
 )
@@ -195,6 +199,11 @@ type IOutbound interface {
 	GetOutboundType() string
 }
 
+const (
+	SingBoxGeoIPFileName   string = "geoip.db"
+	SingboxGeoSiteFileName string = "geosite.db"
+)
+
 func PrepareConfig(out IOutbound, inboundPort int, logPath string) (conf []byte) {
 	if out == nil {
 		return
@@ -205,12 +214,17 @@ func PrepareConfig(out IOutbound, inboundPort int, logPath string) (conf []byte)
 		j = vutils.SetJsonObjectByString("outbounds.0", out.GetOutbound(), j)
 		j.Set("inbounds.0.listen_port", inboundPort)
 		j.Set("log.output", logPath)
+		if assetDir := os.Getenv(utils.AssetDirEnvName); assetDir != "" {
+			j.Set("route.geoip.path", filepath.Join(assetDir, SingBoxGeoIPFileName))
+			j.Set("route.geosite.path", filepath.Join(assetDir, SingboxGeoSiteFileName))
+		}
 		return j.MustToJson()
 	case string(outbound.XrayCore):
 		j := gjson.New(XrayCoreConfigStr)
 		j = vutils.SetJsonObjectByString("outbounds.0", out.GetOutbound(), j)
 		j.Set("inbounds.0.port", inboundPort)
 		j.Set("log.error", logPath)
+		// xray-core use "XRAY_LOCATION_ASSET" to specify the location of assets
 		return j.MustToJson()
 	default:
 		return

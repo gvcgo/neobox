@@ -5,12 +5,12 @@ import (
 	"runtime"
 
 	"github.com/moqsien/goutils/pkgs/gtui"
-	"github.com/sagernet/sing-box/log"
+	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/xtls/xray-core/core"
 	"github.com/xtls/xray-core/infra/conf/serial"
 )
 
-type Core struct {
+type XInstance struct {
 	inboundPort int
 	logPath     string
 	outbound    IOutbound
@@ -18,47 +18,47 @@ type Core struct {
 	*core.Instance
 }
 
-func NewXClient() *Core {
-	return &Core{}
+func NewXClient() *XInstance {
+	return &XInstance{}
 }
 
-func (that *Core) SetInPortAndLogFile(inboundPort int, logPath string) {
+func (that *XInstance) SetInPortAndLogFile(inboundPort int, logPath string) {
 	that.inboundPort = inboundPort
 	that.logPath = logPath
 }
 
-func (that *Core) SetOutbound(out IOutbound) {
+func (that *XInstance) SetOutbound(out IOutbound) {
 	that.outbound = out
 }
 
-func (that *Core) Start() error {
+func (that *XInstance) Start() error {
 	that.conf = PrepareConfig(that.outbound, that.inboundPort, that.logPath)
 	if config, err := serial.DecodeJSONConfig(bytes.NewReader(that.conf)); err == nil {
 		var f *core.Config
 		f, err = config.Build()
 		if err != nil {
-			log.Error("[Build config for Xray failed] ", err)
+			logs.Error("[Build config for Xray failed] ", err)
 			return err
 		}
 		that.Instance, err = core.New(f)
 		if err != nil {
-			log.Error("[Init Xray Instance Failed] ", err)
+			logs.Error("[Init Xray Instance Failed] ", err)
 			return err
 		}
 		err = that.Instance.Start()
 		if err != nil {
-			log.Error("[Start Xray Instance Failed] ", err)
+			logs.Error("[Start Xray Instance Failed] ", err)
 			return err
 		}
 		gtui.PrintInfof("Xray-core started successfully [%s]", that.outbound.GetHost())
 	} else {
-		log.Error("[Parse config file failed] ", err)
+		logs.Error("[Parse config file failed] ", err)
 		return err
 	}
 	return nil
 }
 
-func (that *Core) Close() {
+func (that *XInstance) Close() {
 	that.conf = nil
 	if that.Instance != nil {
 		that.Instance.Close()
@@ -67,6 +67,6 @@ func (that *Core) Close() {
 	}
 }
 
-func (that *Core) GetConf() []byte {
+func (that *XInstance) GetConf() []byte {
 	return that.conf
 }

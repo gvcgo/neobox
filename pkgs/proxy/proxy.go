@@ -48,7 +48,7 @@ func ParseRawUri(rawUri string) (p *ProxyItem) {
 			return nil
 		}
 		ob.Parse(rawUri)
-		p.OutboundType = ob.GetOutboundStr()
+		p.Outbound = ob.GetOutboundStr()
 		p.Address = ob.Addr()
 		p.Port = ob.Port()
 	} else if scheme == parser.SchemeSS && strings.Contains(rawUri, "plugin=") {
@@ -58,7 +58,7 @@ func ParseRawUri(rawUri string) (p *ProxyItem) {
 			return nil
 		}
 		ob.Parse(rawUri)
-		p.OutboundType = ob.GetOutboundStr()
+		p.Outbound = ob.GetOutboundStr()
 		p.Address = ob.Addr()
 		p.Port = ob.Port()
 	} else {
@@ -68,7 +68,7 @@ func ParseRawUri(rawUri string) (p *ProxyItem) {
 			return nil
 		}
 		ob.Parse(rawUri)
-		p.OutboundType = ob.GetOutboundStr()
+		p.Outbound = ob.GetOutboundStr()
 		p.Address = ob.Addr()
 		p.Port = ob.Port()
 	}

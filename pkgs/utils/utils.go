@@ -25,3 +25,16 @@ func SetPingWithoutRootForLinux() {
 		gtui.PrintError("[execute cmd failed]", err)
 	}
 }
+
+/*
+ENVs
+*/
+const (
+	AssetDirEnvName    string = "XRAY_LOCATION_ASSET"
+	SockFileDirEnvName string = "NEOBOX_SOCK_FILE_DIR"
+)
+
+func SetNeoboxEnvs(assetDir, sockDir string) {
+	os.Setenv(AssetDirEnvName, assetDir)
+	os.Setenv(SockFileDirEnvName, sockDir)
+}

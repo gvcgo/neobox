@@ -8,6 +8,7 @@ import (
 
 	"github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/goutils/pkgs/gutils"
+	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/goutils/pkgs/request"
 	"github.com/moqsien/neobox/pkgs/conf"
 )
@@ -43,9 +44,14 @@ func (that *ProxyFetcher) DecryptAndLoad() {
 			if result, err := c.AesDecrypt(content); err == nil {
 				if err := os.WriteFile(that.decryptedFile, result, os.ModePerm); err == nil {
 					json.Unmarshal(result, that.Result)
+				} else {
+					logs.Error(err.Error())
 				}
+			} else {
+				logs.Error(err.Error())
 			}
+		} else {
+			logs.Error(err.Error())
 		}
 	}
-	// fmt.Println(that.Result)
 }

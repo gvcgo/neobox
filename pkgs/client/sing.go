@@ -6,12 +6,12 @@ import (
 	"runtime"
 
 	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/logs"
 	box "github.com/sagernet/sing-box"
-	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
 )
 
-type Box struct {
+type SInstance struct {
 	inboundPort int
 	logPath     string
 	outbound    IOutbound
@@ -20,25 +20,25 @@ type Box struct {
 	*box.Box
 }
 
-func NewClient() *Box {
-	return &Box{}
+func NewSClient() *SInstance {
+	return &SInstance{}
 }
 
-func (that *Box) SetInPortAndLogFile(inboundPort int, logPath string) {
+func (that *SInstance) SetInPortAndLogFile(inboundPort int, logPath string) {
 	that.inboundPort = inboundPort
 	that.logPath = logPath
 }
 
-func (that *Box) SetOutbound(out IOutbound) {
+func (that *SInstance) SetOutbound(out IOutbound) {
 	that.outbound = out
 }
 
-func (that *Box) Start() (err error) {
+func (that *SInstance) Start() (err error) {
 	that.conf = PrepareConfig(that.outbound, that.inboundPort, that.logPath)
 	if len(that.conf) > 0 {
 		opt := &option.Options{}
 		if err = opt.UnmarshalJSON(that.conf); err != nil {
-			log.Error("[Build config for Sing-Box failed] ", err)
+			logs.Error("[Build config for Sing-Box failed] ", err)
 			return err
 		}
 
@@ -50,31 +50,31 @@ func (that *Box) Start() (err error) {
 		})
 		if err != nil {
 			that.Close()
-			log.Error("[Init Sing-Box Failed] ", err)
+			logs.Error("[Init Sing-Box Failed] ", err)
 			return
 		}
 
 		err = that.Box.Start()
 		if err != nil {
 			that.Close()
-			log.Error("[Start Sing-Box Failed] ", err)
+			logs.Error("[Start Sing-Box Failed] ", err)
 			return
 		}
 		gtui.PrintInfof("Sing-box started successfully [%s]", that.outbound.GetHost())
 		return
 	} else {
-		log.Error("[Parse config file failed]")
+		logs.Error("[Parse config file failed]")
 		return fmt.Errorf("cannot parse proxy")
 	}
 }
 
-func (that *Box) cancelBox() {
+func (that *SInstance) cancelBox() {
 	if that.cancel != nil {
 		that.cancel()
 	}
 }
 
-func (that *Box) Close() {
+func (that *SInstance) Close() {
 	that.conf = nil
 	that.cancelBox()
 	if that.Box != nil {
@@ -84,6 +84,6 @@ func (that *Box) Close() {
 	}
 }
 
-func (that *Box) GetConf() []byte {
+func (that *SInstance) GetConf() []byte {
 	return that.conf
 }

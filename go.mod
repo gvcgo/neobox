@@ -29,9 +29,13 @@ require (
 	github.com/cloudflare/circl v1.2.1-0.20221019164342-6ab4dfed8f3c // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/cretz/bine v0.2.0 // indirect
+	github.com/dgryski/go-metro v0.0.0-20211217172704-adc40b04c140 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
+	github.com/francoispqt/gojay v1.2.13 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/gaukas/godicttls v0.0.4 // indirect
+	github.com/ghodss/yaml v1.0.1-0.20220118164431-d8423dcdf344 // indirect
 	github.com/go-chi/chi/v5 v5.0.10 // indirect
 	github.com/go-chi/cors v1.2.1 // indirect
 	github.com/go-chi/render v1.0.3 // indirect
@@ -46,6 +50,7 @@ require (
 	github.com/google/pprof v0.0.0-20230821062121-407c9e7a662f // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gookit/color v1.5.3 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
@@ -69,11 +74,15 @@ require (
 	github.com/onsi/ginkgo/v2 v2.12.0 // indirect
 	github.com/ooni/go-libtor v1.1.8 // indirect
 	github.com/oschwald/maxminddb-golang v1.12.0 // indirect
+	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/pires/go-proxyproto v0.7.0 // indirect
 	github.com/pterm/pterm v0.12.62 // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/quic-go/qtls-go1-20 v0.3.3 // indirect
+	github.com/quic-go/quic-go v0.38.1 // indirect
+	github.com/refraction-networking/utls v1.4.3 // indirect
+	github.com/riobard/go-bloom v0.0.0-20200614022211-cdc8013cb5b3 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/sagernet/cloudflare-tls v0.0.0-20221031050923-d70792f4c3a0 // indirect
 	github.com/sagernet/go-tun2socks v1.16.12-0.20220818015926-16cb67876a61 // indirect
@@ -95,11 +104,14 @@ require (
 	github.com/sagernet/websocket v0.0.0-20220913015213-615516348b4e // indirect
 	github.com/sagernet/wireguard-go v0.0.0-20230807125731-5d4a7ef2dc5f // indirect
 	github.com/scjalliance/comshim v0.0.0-20230315213746-5e51f40bd3b9 // indirect
+	github.com/seiflotfy/cuckoofilter v0.0.0-20220411075957-e3b120b3f5fb // indirect
 	github.com/u-root/uio v0.0.0-20230220225925-ffce2a382923 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
+	github.com/v2fly/ss-bloomring v0.0.0-20210312155135-28617310f63e // indirect
 	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
+	github.com/xtls/reality v0.0.0-20230828171259-e426190d57f6 // indirect
 	github.com/zeebo/blake3 v0.2.3 // indirect
 	go.etcd.io/bbolt v1.3.7 // indirect
 	go.opentelemetry.io/otel v1.15.1 // indirect
@@ -121,6 +133,8 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d // indirect
 	google.golang.org/grpc v1.57.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gvisor.dev/gvisor v0.0.0-20230822212503-5bf4e5f98744 // indirect
 	lukechampine.com/blake3 v1.2.1 // indirect
 )

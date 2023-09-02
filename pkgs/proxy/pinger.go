@@ -18,14 +18,12 @@ type Pinger struct {
 	pingSucceededFile string
 	sendChan          chan *ProxyItem
 	wg                *sync.WaitGroup
-	lock              *sync.Mutex
 }
 
 func NewPinger(cnf *conf.NeoConf) (p *Pinger) {
 	p = &Pinger{
 		CNF:    cnf,
-		Result: &Result{},
-		lock:   &sync.Mutex{},
+		Result: NewResult(),
 	}
 	p.ProxyFetcher = NewProxyFetcher(cnf)
 	p.pingSucceededFile = filepath.Join(cnf.WorkDir, conf.PingSucceededFileName)
@@ -47,9 +45,7 @@ func (that *Pinger) ping(proxyItem *ProxyItem) {
 				if s.PacketLoss < 10.0 {
 					proxyItem.RTT = s.AvgRtt.Milliseconds()
 					if proxyItem.RTT <= that.CNF.MaxPingAvgRTT {
-						that.lock.Lock()
 						that.Result.AddItem(proxyItem)
-						that.lock.Unlock()
 						return
 					}
 				}
@@ -68,12 +64,7 @@ func (that *Pinger) send() {
 	that.ProxyFetcher.DecryptAndLoad()
 	gtui.PrintInfof("Find %v raw proxies.\n", that.ProxyFetcher.Result.Len())
 	filter := map[string]struct{}{}
-	itemList := []*ProxyItem{}
-	itemList = append(itemList, that.ProxyFetcher.Result.Vmess...)
-	itemList = append(itemList, that.ProxyFetcher.Result.Vless...)
-	itemList = append(itemList, that.ProxyFetcher.Result.Trojan...)
-	itemList = append(itemList, that.ProxyFetcher.Result.ShadowSocks...)
-	itemList = append(itemList, that.ProxyFetcher.Result.ShadowSocksR...)
+	itemList := that.ProxyFetcher.Result.GetTotalList()
 	for _, item := range itemList {
 		if _, ok := filter[item.GetHost()]; !ok {
 			that.sendChan <- item

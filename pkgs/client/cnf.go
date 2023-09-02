@@ -196,7 +196,7 @@ var XrayCoreConfigStr = `{
 type IOutbound interface {
 	GetHost() string
 	GetOutbound() string
-	GetOutboundType() string
+	GetOutboundType() outbound.ClientType
 }
 
 const (
@@ -209,7 +209,7 @@ func PrepareConfig(out IOutbound, inboundPort int, logPath string) (conf []byte)
 		return
 	}
 	switch out.GetOutboundType() {
-	case string(outbound.SingBox):
+	case outbound.SingBox:
 		j := gjson.New(SingBoxConfigStr)
 		j = vutils.SetJsonObjectByString("outbounds.0", out.GetOutbound(), j)
 		j.Set("inbounds.0.listen_port", inboundPort)
@@ -219,7 +219,7 @@ func PrepareConfig(out IOutbound, inboundPort int, logPath string) (conf []byte)
 			j.Set("route.geosite.path", filepath.Join(assetDir, SingboxGeoSiteFileName))
 		}
 		return j.MustToJson()
-	case string(outbound.XrayCore):
+	case outbound.XrayCore:
 		j := gjson.New(XrayCoreConfigStr)
 		j = vutils.SetJsonObjectByString("outbounds.0", out.GetOutbound(), j)
 		j.Set("inbounds.0.port", inboundPort)

@@ -23,7 +23,7 @@ type ProxyFetcher struct {
 }
 
 func NewProxyFetcher(cnf *conf.NeoConf) (p *ProxyFetcher) {
-	p = &ProxyFetcher{CNF: cnf, Result: &Result{}}
+	p = &ProxyFetcher{CNF: cnf, Result: NewResult()}
 	p.Key = conf.NewEncryptKey(cnf.WorkDir)
 	p.fetcher = request.NewFetcher()
 	p.downloadedFile = filepath.Join(p.CNF.WorkDir, conf.DownloadedFileName)

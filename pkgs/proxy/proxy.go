@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
@@ -13,12 +14,12 @@ import (
 )
 
 type ProxyItem struct {
-	Address      string `json:"address"`
-	Port         int    `json:"port"`
-	RTT          int64  `json:"rtt"`
-	RawUri       string `json:"raw_uri"`
-	Outbound     string `json:"outbound"`
-	OutboundType string `json:"outbound_type"`
+	Address      string              `json:"address"`
+	Port         int                 `json:"port"`
+	RTT          int64               `json:"rtt"`
+	RawUri       string              `json:"raw_uri"`
+	Outbound     string              `json:"outbound"`
+	OutboundType outbound.ClientType `json:"outbound_type"`
 }
 
 func (that *ProxyItem) GetHost() string {
@@ -32,7 +33,7 @@ func (that *ProxyItem) GetOutbound() string {
 	return that.Outbound
 }
 
-func (that *ProxyItem) GetOutboundType() string {
+func (that *ProxyItem) GetOutboundType() outbound.ClientType {
 	return that.OutboundType
 }
 
@@ -42,7 +43,7 @@ func ParseRawUri(rawUri string) (p *ProxyItem) {
 
 	scheme := vutils.ParseScheme(rawUri)
 	if scheme == parser.SchemeSSR {
-		p.OutboundType = string(outbound.SingBox)
+		p.OutboundType = outbound.SingBox
 		ob := outbound.GetOutbound(outbound.SingBox, rawUri)
 		if ob == nil {
 			return nil
@@ -52,7 +53,7 @@ func ParseRawUri(rawUri string) (p *ProxyItem) {
 		p.Address = ob.Addr()
 		p.Port = ob.Port()
 	} else if scheme == parser.SchemeSS && strings.Contains(rawUri, "plugin=") {
-		p.OutboundType = string(outbound.SingBox)
+		p.OutboundType = outbound.SingBox
 		ob := outbound.GetOutbound(outbound.SingBox, rawUri)
 		if ob == nil {
 			return nil
@@ -62,7 +63,7 @@ func ParseRawUri(rawUri string) (p *ProxyItem) {
 		p.Address = ob.Addr()
 		p.Port = ob.Port()
 	} else {
-		p.OutboundType = string(outbound.XrayCore)
+		p.OutboundType = outbound.XrayCore
 		ob := outbound.GetOutbound(outbound.XrayCore, rawUri)
 		if ob == nil {
 			return nil
@@ -87,23 +88,39 @@ type Result struct {
 	TrojanTotal  int          `json:"trojan_total"`
 	SSTotal      int          `json:"ss_total"`
 	SSRTotal     int          `json:"ssr_total"`
+	totalList    []*ProxyItem
+	lock         *sync.Mutex
+}
+
+func NewResult() *Result {
+	return &Result{
+		lock: &sync.Mutex{},
+	}
 }
 
 func (that *Result) Load(fPath string) {
 	if ok, _ := gutils.PathIsExist(fPath); ok {
 		if content, err := os.ReadFile(fPath); err == nil {
+			that.lock.Lock()
 			json.Unmarshal(content, that)
+			that.lock.Unlock()
 		}
 	}
 }
 
 func (that *Result) Save(fPath string) {
 	if content, err := json.Marshal(that); err == nil {
+		that.lock.Lock()
 		os.WriteFile(fPath, content, os.ModePerm)
+		that.lock.Unlock()
 	}
 }
 
 func (that *Result) AddItem(proxyItem *ProxyItem) {
+	that.lock.Lock()
+	if proxyItem == nil {
+		return
+	}
 	switch vutils.ParseScheme(proxyItem.RawUri) {
 	case parser.SchemeVmess:
 		that.Vmess = append(that.Vmess, proxyItem)
@@ -122,13 +139,27 @@ func (that *Result) AddItem(proxyItem *ProxyItem) {
 		that.SSRTotal++
 	default:
 	}
+	that.totalList = append(that.totalList, proxyItem)
+	that.lock.Unlock()
 }
 
 func (that *Result) Len() int {
 	return that.VmessTotal + that.VlessTotal + that.TrojanTotal + that.SSTotal + that.SSRTotal
 }
 
+func (that *Result) GetTotalList() []*ProxyItem {
+	if len(that.totalList) != that.Len() {
+		that.totalList = append(that.totalList, that.Vmess...)
+		that.totalList = append(that.totalList, that.Vless...)
+		that.totalList = append(that.totalList, that.Trojan...)
+		that.totalList = append(that.totalList, that.ShadowSocks...)
+		that.totalList = append(that.totalList, that.ShadowSocksR...)
+	}
+	return that.totalList
+}
+
 func (that *Result) Clear() {
+	that.lock.Lock()
 	that.Vmess = []*ProxyItem{}
 	that.VmessTotal = 0
 	that.Vless = []*ProxyItem{}
@@ -139,4 +170,6 @@ func (that *Result) Clear() {
 	that.SSRTotal = 0
 	that.ShadowSocksR = []*ProxyItem{}
 	that.SSRTotal = 0
+	that.totalList = []*ProxyItem{}
+	that.lock.Unlock()
 }

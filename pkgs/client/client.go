@@ -15,20 +15,19 @@ type IClient interface {
 	Close()
 }
 
-func NewClient(cnf *conf.NeoConf, inboundPort int, out IOutbound, enableLog bool) (client IClient) {
+func NewClient(cnf *conf.NeoConf, inboundPort int, cType outbound.ClientType, enableLog bool) (client IClient) {
 	logPath := ""
 	if enableLog {
 		logPath = filepath.Join(cnf.LogDir, "neobox_client.log")
 	}
-	switch out.GetOutboundType() {
-	case string(outbound.SingBox):
+	switch cType {
+	case outbound.SingBox:
 		client = NewSClient()
-	case string(outbound.XrayCore):
+	case outbound.XrayCore:
 		client = NewXClient()
 	default:
 		return nil
 	}
 	client.SetInPortAndLogFile(inboundPort, logPath)
-	client.SetOutbound(out)
 	return
 }

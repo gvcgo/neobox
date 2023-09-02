@@ -1,9 +1,13 @@
 package utils
 
 import (
+	"fmt"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"runtime"
+	"time"
 
 	"github.com/moqsien/goutils/pkgs/gtui"
 )
@@ -37,4 +41,29 @@ const (
 func SetNeoboxEnvs(assetDir, sockDir string) {
 	os.Setenv(AssetDirEnvName, assetDir)
 	os.Setenv(SockFileDirEnvName, sockDir)
+}
+
+/*
+http client
+*/
+const (
+	LocalProxyPattern string = "http://127.0.0.1:%d"
+)
+
+func GetHttpClient(inPort int, timeout int) (c *http.Client, err error) {
+	var uri *url.URL
+	uri, err = url.Parse(fmt.Sprintf(LocalProxyPattern, inPort))
+	if err != nil {
+		return
+	}
+	if timeout == 0 {
+		timeout = 3
+	}
+	c = &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(uri),
+		},
+		Timeout: time.Duration(timeout) * time.Second,
+	}
+	return
 }

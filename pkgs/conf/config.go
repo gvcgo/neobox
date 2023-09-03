@@ -38,6 +38,7 @@ type NeoConf struct {
 	VerificationCron      string            `json,koanf:"verification_cron"`
 	GeoInfoUrls           map[string]string `json,koanf:"geo_info_urls"`
 	GeoInfoDir            string            `json,koanf:"geo_info_dir"`
+	GeoInfoSumUrl         string            `json,koanf:"geo_info_sum_url"`
 	KeeperCron            string            `json,koanf:"keeper_cron"`
 }
 
@@ -61,7 +62,8 @@ func GetDefaultNeoConf() (n *NeoConf) {
 			"geoip.db":    "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geoip.db",
 			"geosite.db":  "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geosite.db",
 		},
-		KeeperCron: "@every 3m",
+		GeoInfoSumUrl: "https://gitlab.com/moqsien/gvc_resources/-/raw/main/files_info.json?ref_type=heads&inline=false",
+		KeeperCron:    "@every 3m",
 	}
 	n.LogDir = n.WorkDir
 	n.SocketDir = n.WorkDir

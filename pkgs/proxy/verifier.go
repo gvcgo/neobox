@@ -18,8 +18,8 @@ type Verifier struct {
 	Pinger       *Pinger
 	Result       *Result
 	verifiedFile string
-	sendXrayChan chan *ProxyItem
-	sendSingChan chan *ProxyItem
+	sendXrayChan chan *outbound.ProxyItem
+	sendSingChan chan *outbound.ProxyItem
 	wg           *sync.WaitGroup
 	isRunning    bool
 }
@@ -37,8 +37,8 @@ func NewVerifier(cnf *conf.NeoConf) (v *Verifier) {
 
 func (that *Verifier) send() {
 	itemList := that.Pinger.Result.GetTotalList()
-	that.sendSingChan = make(chan *ProxyItem, 20)
-	that.sendXrayChan = make(chan *ProxyItem, 50)
+	that.sendSingChan = make(chan *outbound.ProxyItem, 20)
+	that.sendXrayChan = make(chan *outbound.ProxyItem, 50)
 	for _, proxyItem := range itemList {
 		switch proxyItem.GetOutboundType() {
 		case outbound.SingBox:
@@ -71,7 +71,7 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 	pClient := client.NewClient(that.CNF, inboundPort, cType, false)
 
 	var (
-		recChan    chan *ProxyItem
+		recChan    chan *outbound.ProxyItem
 		httpClient *http.Client
 	)
 	httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)

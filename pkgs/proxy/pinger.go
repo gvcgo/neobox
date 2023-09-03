@@ -8,6 +8,7 @@ import (
 
 	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/vpnparser/pkgs/outbound"
 	probing "github.com/prometheus-community/pro-bing"
 )
 
@@ -16,7 +17,7 @@ type Pinger struct {
 	ProxyFetcher      *ProxyFetcher
 	Result            *Result
 	pingSucceededFile string
-	sendChan          chan *ProxyItem
+	sendChan          chan *outbound.ProxyItem
 	wg                *sync.WaitGroup
 }
 
@@ -30,7 +31,7 @@ func NewPinger(cnf *conf.NeoConf) (p *Pinger) {
 	return
 }
 
-func (that *Pinger) ping(proxyItem *ProxyItem) {
+func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 	if proxyItem != nil {
 		if pinger, err := probing.NewPinger(proxyItem.Address); err == nil {
 			if runtime.GOOS == "windows" {
@@ -59,7 +60,7 @@ func (that *Pinger) ping(proxyItem *ProxyItem) {
 }
 
 func (that *Pinger) send() {
-	that.sendChan = make(chan *ProxyItem, 100)
+	that.sendChan = make(chan *outbound.ProxyItem, 100)
 	that.ProxyFetcher.Download()
 	that.ProxyFetcher.DecryptAndLoad()
 	gtui.PrintInfof("Find %v raw proxies.\n", that.ProxyFetcher.Result.Len())

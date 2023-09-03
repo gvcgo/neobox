@@ -2,3 +2,5 @@
 *.txt
 *.exe
 *.conf
+*.dat
+*.db

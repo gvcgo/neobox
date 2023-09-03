@@ -415,6 +415,8 @@ github.com/moqsien/goutils v0.3.1 h1:0oBQOGG/GhzJGopn/zbHi3ahaG3/NitKs9OuWJspdhs
 github.com/moqsien/goutils v0.3.1/go.mod h1:V9Yj1e5Qo292hqMyYVfX4/yTihpl6wFp7HhpPZMUvxg=
 github.com/moqsien/vpnparser v0.0.1 h1:tnmQ+8a6cc7g3wdVexr0w/L6vAWRHmOb7hY/edRucoc=
 github.com/moqsien/vpnparser v0.0.1/go.mod h1:VlPKqnK63T+pZwZBXRjFhE6L79QOC7Iy8sZAHgN9ZK8=
+github.com/moqsien/xraycore v1.8.5 h1:sU/tgHK8ncdQHt5+k1NNRqTttMiUAk8mV9f0ijCbRiw=
+github.com/moqsien/xraycore v1.8.5/go.mod h1:TtHX59kJ2GvHGgM90gXboFL1xcFB+rm9cZv0zM1Y4GM=
 github.com/moqsien/xtractr v0.0.1 h1:LT7R2pDAA9ttuMXtvSq5L2/Ufb9K9UsARNJe69qek7s=
 github.com/moqsien/xtractr v0.0.1/go.mod h1:f6rBBcTp0h9E1C7uB9A/SVr6jtF635H4/bpDDZhHijo=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
@@ -618,8 +620,6 @@ github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e h1:JVG44RsyaB9T2KIHavM
 github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e/go.mod h1:RbqR21r5mrJuqunuUZ/Dhy/avygyECGrLceyNeo4LiM=
 github.com/xtls/reality v0.0.0-20230828171259-e426190d57f6 h1:T+YCYGfFdzyaKTDCdZn/hEiKvsw6yUfd+e4hze0rCUw=
 github.com/xtls/reality v0.0.0-20230828171259-e426190d57f6/go.mod h1:rkuAY1S9F8eI8gDiPDYvACE8e2uwkyg8qoOTuwWov7Y=
-github.com/xtls/xray-core v1.8.4 h1:YEoY3iLx/5zoNbt5HORG5LtPyzwICInFfoS+oPkYDIw=
-github.com/xtls/xray-core v1.8.4/go.mod h1:GGD9elFSHa4IqOArW8gzMsEksPIqK/jdNLo8RcSMfnI=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=

@@ -6,8 +6,8 @@ import (
 
 	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/goutils/pkgs/logs"
-	"github.com/xtls/xray-core/core"
-	"github.com/xtls/xray-core/infra/conf/serial"
+	"github.com/moqsien/xraycore/core"
+	"github.com/moqsien/xraycore/infra/conf/serial"
 )
 
 type XInstance struct {

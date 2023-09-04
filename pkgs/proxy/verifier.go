@@ -119,8 +119,8 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 	}
 }
 
-func (that *Verifier) Run() {
-	that.Pinger.Run()
+func (that *Verifier) Run(force ...bool) {
+	that.Pinger.Run(force...)
 	s, x := that.Pinger.Statistics()
 	gtui.PrintInfof("Ping succeeded proxies: %v, singBox: %v, xrayCore: %v", that.Pinger.Result.Len(), s, x)
 	if that.Result.Len() > 0 {
@@ -150,21 +150,4 @@ func (that *Verifier) Run() {
 		that.Result.Save(that.verifiedFile)
 	}
 	that.isRunning = false
-}
-
-func (that *Verifier) Test() {
-	for {
-		select {
-		case _, ok := <-that.sendSingChan:
-			if !ok {
-				fmt.Println("sing channel closed")
-			}
-		case _, ok := <-that.sendXrayChan:
-			if !ok {
-				fmt.Println("xray channel closed")
-			}
-		default:
-		}
-		time.Sleep(time.Second * 3)
-	}
 }

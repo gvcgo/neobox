@@ -35,6 +35,7 @@ func NewProxyFetcher(cnf *conf.NeoConf) (p *ProxyFetcher) {
 func (that *ProxyFetcher) Download() {
 	that.fetcher.SetUrl(that.CNF.DownloadUrl)
 	that.fetcher.Timeout = 5 * time.Minute
+	that.fetcher.SetThreadNum(2)
 	that.fetcher.GetAndSaveFile(that.downloadedFile, true)
 }
 
@@ -53,11 +54,22 @@ func (that *ProxyFetcher) DecryptAndLoad() {
 				}
 			} else {
 				logs.Error(err.Error())
-				// gtui.PrintError(err)
 			}
 		} else {
 			logs.Error(err.Error())
-			// gtui.PrintError(err)
 		}
 	}
+}
+
+func (that *ProxyFetcher) DownAndLoad(force ...bool) {
+	flag := false
+	if len(force) > 0 {
+		flag = force[0]
+	}
+	if ok, _ := gutils.PathIsExist(that.downloadedFile); ok && !flag {
+		that.DecryptAndLoad()
+		return
+	}
+	that.Download()
+	that.DecryptAndLoad()
 }

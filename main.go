@@ -17,7 +17,7 @@ func main() {
 	// f.Download()
 	// f.DecryptAndLoad()
 	v := proxy.NewVerifier(cnf)
-	v.Run()
+	v.Run(true)
 	for _, item := range v.Result.GetTotalList() {
 		fmt.Println(utils.ParseScheme(item.RawUri), item.GetHost())
 	}

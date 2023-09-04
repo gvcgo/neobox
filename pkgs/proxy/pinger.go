@@ -65,10 +65,9 @@ func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 	}
 }
 
-func (that *Pinger) send() {
+func (that *Pinger) send(force ...bool) {
 	that.sendChan = make(chan *outbound.ProxyItem, 100)
-	that.ProxyFetcher.Download()
-	that.ProxyFetcher.DecryptAndLoad()
+	that.ProxyFetcher.DownAndLoad(force...)
 	gtui.PrintInfof("Find %v raw proxies.\n", that.ProxyFetcher.Result.Len())
 	filter := map[string]struct{}{}
 	itemList := that.ProxyFetcher.Result.GetTotalList()
@@ -97,8 +96,8 @@ func (that *Pinger) startPing() {
 	}
 }
 
-func (that *Pinger) Run() {
-	go that.send()
+func (that *Pinger) Run(force ...bool) {
+	go that.send(force...)
 	time.Sleep(time.Millisecond * 100)
 	that.Result.Clear()
 	for i := 0; i < that.CNF.MaxPingers; i++ {

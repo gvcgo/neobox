@@ -39,6 +39,7 @@ func (that *SInstance) Start() (err error) {
 		opt := &option.Options{}
 		if err = opt.UnmarshalJSON(that.conf); err != nil {
 			logs.Error("[Build config for Sing-Box failed] ", err)
+			fmt.Println(that.outbound.GetOutbound())
 			return err
 		}
 

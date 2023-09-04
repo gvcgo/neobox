@@ -46,7 +46,7 @@ func GetDefaultNeoConf() (n *NeoConf) {
 	n = &NeoConf{
 		WorkDir:       `C:\Users\moqsien\data\projects\go\src\neobox`,
 		DownloadUrl:   "https://gitlab.com/moqsien/gvc_resources/-/raw/main/conf.txt",
-		MaxPingers:    50,
+		MaxPingers:    120,
 		MaxPingAvgRTT: 600,
 		InboundPort:   2023,
 		VerificationPortRange: &PortRange{

@@ -3,6 +3,7 @@ package proxy
 import (
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -35,6 +36,9 @@ func NewPinger(cnf *conf.NeoConf) (p *Pinger) {
 
 func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 	if proxyItem != nil {
+		if strings.Contains(proxyItem.Address, "127.0.0") {
+			return
+		}
 		if pinger, err := probing.NewPinger(proxyItem.Address); err == nil {
 			if runtime.GOOS == "windows" {
 				pinger.SetPrivileged(true)
@@ -45,7 +49,7 @@ func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 			pinger.Interval = time.Millisecond * 500
 			pinger.Timeout = time.Second * 2
 			pinger.OnFinish = func(s *probing.Statistics) {
-				if s.PacketLoss < 30.0 && s.AvgRtt != 0.0 {
+				if s.PacketLoss < 10.0 && s.AvgRtt != 0.0 {
 					proxyItem.RTT = s.AvgRtt.Milliseconds()
 					if proxyItem.RTT <= that.CNF.MaxPingAvgRTT {
 						that.Result.AddItem(proxyItem)
@@ -55,8 +59,7 @@ func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 				// gtui.PrintInfo(s.Addr, s.AvgRtt.Microseconds(), s.PacketLoss)
 			}
 			if err := pinger.Run(); err != nil {
-				logs.Error("[Ping failed]", err)
-				// gtui.PrintError(err)
+				logs.Error("[Ping failed]", err, ", Addr: ", proxyItem.Address)
 			}
 		}
 	}
@@ -105,4 +108,17 @@ func (that *Pinger) Run() {
 	if that.Result.Len() > 0 {
 		that.Result.Save(that.pingSucceededFile)
 	}
+}
+
+func (that *Pinger) Statistics() (singCount, xrayCount int) {
+	for _, item := range that.Result.GetTotalList() {
+		switch item.GetOutboundType() {
+		case outbound.SingBox:
+			singCount++
+		case outbound.XrayCore:
+			xrayCount++
+		default:
+		}
+	}
+	return
 }

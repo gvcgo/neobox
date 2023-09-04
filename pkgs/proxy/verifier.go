@@ -22,7 +22,7 @@ type Verifier struct {
 	verifiedFile string
 	sendXrayChan chan *outbound.ProxyItem
 	sendSingChan chan *outbound.ProxyItem
-	wg           *sync.WaitGroup
+	wg           sync.WaitGroup
 	isRunning    bool
 }
 
@@ -31,7 +31,7 @@ func NewVerifier(cnf *conf.NeoConf) (v *Verifier) {
 		CNF:    cnf,
 		Pinger: NewPinger(cnf),
 		Result: outbound.NewResult(),
-		wg:     &sync.WaitGroup{},
+		wg:     sync.WaitGroup{},
 	}
 	v.verifiedFile = filepath.Join(cnf.WorkDir, conf.VerifiedFileName)
 	return
@@ -76,7 +76,7 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 		recChan    chan *outbound.ProxyItem
 		httpClient *http.Client
 	)
-	// httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)
+	httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)
 	// switch cType {
 	// case outbound.XrayCore:
 	// 	recChan = that.sendXrayChan
@@ -84,7 +84,7 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 	// 	recChan = that.sendSingChan
 	// }
 	for {
-		httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)
+		// httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)
 		if recChan == nil {
 			switch cType {
 			case outbound.XrayCore:
@@ -95,7 +95,7 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 		}
 		select {
 		case p, ok := <-recChan:
-			if p == nil && !ok {
+			if !ok {
 				pClient.Close()
 				return
 			}
@@ -128,7 +128,8 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 
 func (that *Verifier) Run() {
 	that.Pinger.Run()
-	gtui.PrintInfo("Ping succeeded proxies: ", that.Pinger.Result.Len())
+	s, x := that.Pinger.Statistics()
+	gtui.PrintInfof("Ping succeeded proxies: %v, singBox: %v, xrayCore: %v", that.Pinger.Result.Len(), s, x)
 	if that.Result.Len() > 0 {
 		that.Result.Clear()
 	}
@@ -145,9 +146,10 @@ func (that *Verifier) Run() {
 	}
 	gtui.PrintInfo("filters for [vmess/ss/vless/trojan] started.")
 
-	for i := 1; i <= 20; i++ {
+	for i := 1; i <= 10; i++ {
 		go that.startClient(end+i, outbound.SingBox)
 	}
+
 	gtui.PrintInfo("filters for [ssr/ss-obfs] started.")
 	that.wg.Wait()
 
@@ -155,4 +157,21 @@ func (that *Verifier) Run() {
 		that.Result.Save(that.verifiedFile)
 	}
 	that.isRunning = false
+}
+
+func (that *Verifier) Test() {
+	for {
+		select {
+		case _, ok := <-that.sendSingChan:
+			if !ok {
+				fmt.Println("sing channel closed")
+			}
+		case _, ok := <-that.sendXrayChan:
+			if !ok {
+				fmt.Println("xray channel closed")
+			}
+		default:
+		}
+		time.Sleep(time.Second * 3)
+	}
 }

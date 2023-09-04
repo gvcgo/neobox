@@ -8,6 +8,9 @@ import (
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/xraycore/core"
 	"github.com/moqsien/xraycore/infra/conf/serial"
+
+	// must imported
+	_ "github.com/moqsien/xraycore/main/distro/all"
 )
 
 type XInstance struct {
@@ -33,14 +36,8 @@ func (that *XInstance) SetOutbound(out IOutbound) {
 
 func (that *XInstance) Start() error {
 	that.conf = PrepareConfig(that.outbound, that.inboundPort, that.logPath)
-	if config, err := serial.DecodeJSONConfig(bytes.NewReader(that.conf)); err == nil {
-		var f *core.Config
-		f, err = config.Build()
-		if err != nil {
-			logs.Error("[Build config for Xray failed] ", err)
-			return err
-		}
-		that.Instance, err = core.New(f)
+	if config, err := serial.LoadJSONConfig(bytes.NewReader(that.conf)); err == nil {
+		that.Instance, err = core.New(config)
 		if err != nil {
 			logs.Error("[Init Xray Instance Failed] ", err)
 			return err
@@ -53,7 +50,7 @@ func (that *XInstance) Start() error {
 		gtui.PrintInfof("Xray-core started successfully [%s]", that.outbound.GetHost())
 	} else {
 		gtui.PrintError(err)
-		logs.Error("[Parse config file failed] ", err)
+		logs.Error("[Load JSON Config failed] ", err)
 		return err
 	}
 	return nil

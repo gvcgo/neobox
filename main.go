@@ -16,9 +16,12 @@ func main() {
 	// f.Download()
 	// f.DecryptAndLoad()
 	v := proxy.NewVerifier(cnf)
+	go v.Test()
 	v.Run()
-
-	fmt.Println(len(v.Result.GetTotalList()))
+	for _, item := range v.Result.GetTotalList() {
+		fmt.Println(item.GetHost())
+	}
+	fmt.Println(v.Result.Len())
 
 	// p := proxy.NewPinger(cnf)
 	// p.Run()

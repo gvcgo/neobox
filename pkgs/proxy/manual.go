@@ -7,6 +7,7 @@ import (
 
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/neobox/pkgs/utils"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 )
 
@@ -26,7 +27,7 @@ func NewMannualProxy(cnf *conf.NeoConf) (m *MannualProxy) {
 }
 
 func (that *MannualProxy) AddRawUri(rawUri string) {
-	proxyItem := ParseRawUri(rawUri)
+	proxyItem := utils.ParseRawUri(rawUri)
 	if proxyItem == nil {
 		return
 	}
@@ -42,7 +43,7 @@ func (that *MannualProxy) AddFromFile(fPath string) {
 			that.Result.Load(that.mannuallyAddedFile)
 			for _, rawUri := range vList {
 				rawUri = strings.TrimSpace(rawUri)
-				proxyItem := ParseRawUri(rawUri)
+				proxyItem := utils.ParseRawUri(rawUri)
 				that.Result.AddItem(proxyItem)
 			}
 			that.Result.Save(that.mannuallyAddedFile)

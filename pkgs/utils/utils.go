@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/vpnparser/pkgs/outbound"
 )
 
 /*
@@ -65,5 +66,11 @@ func GetHttpClient(inPort int, timeout int) (c *http.Client, err error) {
 		},
 		Timeout: time.Duration(timeout) * time.Second,
 	}
+	return
+}
+
+func ParseRawUri(rawUri string) (p *outbound.ProxyItem) {
+	p = outbound.NewItemByEncryptedRawUri(rawUri)
+	p.GetOutbound()
 	return
 }

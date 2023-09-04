@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 	probing "github.com/prometheus-community/pro-bing"
@@ -15,7 +16,7 @@ import (
 type Pinger struct {
 	CNF               *conf.NeoConf
 	ProxyFetcher      *ProxyFetcher
-	Result            *Result
+	Result            *outbound.Result
 	pingSucceededFile string
 	sendChan          chan *outbound.ProxyItem
 	wg                *sync.WaitGroup
@@ -24,7 +25,8 @@ type Pinger struct {
 func NewPinger(cnf *conf.NeoConf) (p *Pinger) {
 	p = &Pinger{
 		CNF:    cnf,
-		Result: NewResult(),
+		Result: outbound.NewResult(),
+		wg:     &sync.WaitGroup{},
 	}
 	p.ProxyFetcher = NewProxyFetcher(cnf)
 	p.pingSucceededFile = filepath.Join(cnf.WorkDir, conf.PingSucceededFileName)
@@ -40,20 +42,21 @@ func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 				pinger.SetPrivileged(false)
 			}
 			pinger.Count = 5
-			pinger.Interval = time.Millisecond * 300
+			pinger.Interval = time.Millisecond * 500
 			pinger.Timeout = time.Second * 2
 			pinger.OnFinish = func(s *probing.Statistics) {
-				if s.PacketLoss < 10.0 {
+				if s.PacketLoss < 30.0 && s.AvgRtt != 0.0 {
 					proxyItem.RTT = s.AvgRtt.Milliseconds()
 					if proxyItem.RTT <= that.CNF.MaxPingAvgRTT {
 						that.Result.AddItem(proxyItem)
 						return
 					}
 				}
+				// gtui.PrintInfo(s.Addr, s.AvgRtt.Microseconds(), s.PacketLoss)
 			}
 			if err := pinger.Run(); err != nil {
-				// log.Error("[Ping failed]", err)
-				gtui.PrintError(err)
+				logs.Error("[Ping failed]", err)
+				// gtui.PrintError(err)
 			}
 		}
 	}

@@ -3,9 +3,10 @@ module github.com/moqsien/neobox
 go 1.21
 
 require (
+	github.com/bytedance/sonic v1.8.8
 	github.com/gogf/gf v1.16.9
 	github.com/moqsien/goutils v0.3.1
-	github.com/moqsien/vpnparser v0.0.3
+	github.com/moqsien/vpnparser v0.0.5
 	github.com/moqsien/xraycore v1.8.5
 	github.com/prometheus-community/pro-bing v0.3.0
 	github.com/sagernet/sing-box v1.4.1
@@ -25,6 +26,7 @@ require (
 	github.com/bodgit/sevenzip v1.4.2 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
 	github.com/caddyserver/certmagic v0.19.2 // indirect
+	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/clbanning/mxj v1.8.5-0.20200714211355-ff02cfb8ea28 // indirect
 	github.com/cloudflare/circl v1.2.1-0.20221019164342-6ab4dfed8f3c // indirect
 	github.com/containerd/console v1.0.3 // indirect
@@ -114,6 +116,7 @@ require (
 	github.com/sagernet/wireguard-go v0.0.0-20230807125731-5d4a7ef2dc5f // indirect
 	github.com/scjalliance/comshim v0.0.0-20230315213746-5e51f40bd3b9 // indirect
 	github.com/seiflotfy/cuckoofilter v0.0.0-20220411075957-e3b120b3f5fb // indirect
+	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/u-root/uio v0.0.0-20230220225925-ffce2a382923 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/v2fly/ss-bloomring v0.0.0-20210312155135-28617310f63e // indirect
@@ -130,6 +133,7 @@ require (
 	go.uber.org/zap v1.25.0 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
 	go4.org/netipx v0.0.0-20230824141953-6213f710f925 // indirect
+	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
 	golang.org/x/mod v0.12.0 // indirect

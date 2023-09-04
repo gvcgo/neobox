@@ -7,18 +7,19 @@ import (
 
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/vpnparser/pkgs/outbound"
 )
 
 type MannualProxy struct {
 	CNF                *conf.NeoConf
-	Result             *Result
+	Result             *outbound.Result
 	mannuallyAddedFile string
 }
 
 func NewMannualProxy(cnf *conf.NeoConf) (m *MannualProxy) {
 	m = &MannualProxy{
 		CNF:    cnf,
-		Result: &Result{},
+		Result: outbound.NewResult(),
 	}
 	m.mannuallyAddedFile = filepath.Join(m.CNF.WorkDir, conf.MannuallyAddedFileName)
 	return

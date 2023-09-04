@@ -1,8 +1,10 @@
 package proxy
 
 import (
+	"fmt"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,7 +18,7 @@ import (
 type Verifier struct {
 	CNF          *conf.NeoConf
 	Pinger       *Pinger
-	Result       *Result
+	Result       *outbound.Result
 	verifiedFile string
 	sendXrayChan chan *outbound.ProxyItem
 	sendSingChan chan *outbound.ProxyItem
@@ -28,7 +30,7 @@ func NewVerifier(cnf *conf.NeoConf) (v *Verifier) {
 	v = &Verifier{
 		CNF:    cnf,
 		Pinger: NewPinger(cnf),
-		Result: NewResult(),
+		Result: outbound.NewResult(),
 		wg:     &sync.WaitGroup{},
 	}
 	v.verifiedFile = filepath.Join(cnf.WorkDir, conf.VerifiedFileName)
@@ -74,23 +76,23 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 		recChan    chan *outbound.ProxyItem
 		httpClient *http.Client
 	)
-	httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)
-	switch cType {
-	case outbound.XrayCore:
-		recChan = that.sendXrayChan
-	default:
-		recChan = that.sendSingChan
-	}
+	// httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)
+	// switch cType {
+	// case outbound.XrayCore:
+	// 	recChan = that.sendXrayChan
+	// default:
+	// 	recChan = that.sendSingChan
+	// }
 	for {
-		// httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)
-		// if recChan == nil {
-		// 	switch cType {
-		// 	case outbound.XrayCore:
-		// 		recChan = that.sendXrayChan
-		// 	default:
-		// 		recChan = that.sendSingChan
-		// 	}
-		// }
+		httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)
+		if recChan == nil {
+			switch cType {
+			case outbound.XrayCore:
+				recChan = that.sendXrayChan
+			default:
+				recChan = that.sendSingChan
+			}
+		}
 		select {
 		case p, ok := <-recChan:
 			if p == nil && !ok {
@@ -100,7 +102,10 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 			pClient.SetOutbound(p)
 			start := time.Now()
 			if err := pClient.Start(); err != nil {
-				gtui.PrintErrorf("Client[%s] start failed. Error: %+v\n", p.GetHost(), err)
+				gtui.PrintErrorf("%s_Client[%s] start failed. Error: %+v\n", cType, p.GetHost(), err)
+				if strings.Contains(err.Error(), "proxyman.InboundConfig is not registered") {
+					fmt.Println(string(pClient.GetConf()))
+				}
 				pClient.Close()
 				return
 			}
@@ -122,6 +127,8 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 }
 
 func (that *Verifier) Run() {
+	that.Pinger.Run()
+	gtui.PrintInfo("Ping succeeded proxies: ", that.Pinger.Result.Len())
 	if that.Result.Len() > 0 {
 		that.Result.Clear()
 	}

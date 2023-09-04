@@ -52,6 +52,7 @@ func (that *XInstance) Start() error {
 		}
 		gtui.PrintInfof("Xray-core started successfully [%s]", that.outbound.GetHost())
 	} else {
+		gtui.PrintError(err)
 		logs.Error("[Parse config file failed] ", err)
 		return err
 	}

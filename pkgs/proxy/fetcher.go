@@ -1,16 +1,17 @@
 package proxy
 
 import (
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"time"
 
+	json "github.com/bytedance/sonic"
 	"github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/goutils/pkgs/request"
 	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/vpnparser/pkgs/outbound"
 )
 
 type ProxyFetcher struct {
@@ -19,11 +20,11 @@ type ProxyFetcher struct {
 	fetcher        *request.Fetcher
 	downloadedFile string
 	decryptedFile  string
-	Result         *Result
+	Result         *outbound.Result
 }
 
 func NewProxyFetcher(cnf *conf.NeoConf) (p *ProxyFetcher) {
-	p = &ProxyFetcher{CNF: cnf, Result: NewResult()}
+	p = &ProxyFetcher{CNF: cnf, Result: outbound.NewResult()}
 	p.Key = conf.NewEncryptKey(cnf.WorkDir)
 	p.fetcher = request.NewFetcher()
 	p.downloadedFile = filepath.Join(p.CNF.WorkDir, conf.DownloadedFileName)
@@ -43,15 +44,20 @@ func (that *ProxyFetcher) DecryptAndLoad() {
 			c := crypt.NewCrptWithKey([]byte(that.Key.Key))
 			if result, err := c.AesDecrypt(content); err == nil {
 				if err := os.WriteFile(that.decryptedFile, result, os.ModePerm); err == nil {
-					json.Unmarshal(result, that.Result)
+					err = json.Unmarshal(result, that.Result)
+					if err != nil {
+						logs.Error(err.Error())
+					}
 				} else {
 					logs.Error(err.Error())
 				}
 			} else {
 				logs.Error(err.Error())
+				// gtui.PrintError(err)
 			}
 		} else {
 			logs.Error(err.Error())
+			// gtui.PrintError(err)
 		}
 	}
 }

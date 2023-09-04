@@ -419,8 +419,8 @@ github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lN
 github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
 github.com/moqsien/goutils v0.3.1 h1:0oBQOGG/GhzJGopn/zbHi3ahaG3/NitKs9OuWJspdhs=
 github.com/moqsien/goutils v0.3.1/go.mod h1:V9Yj1e5Qo292hqMyYVfX4/yTihpl6wFp7HhpPZMUvxg=
-github.com/moqsien/vpnparser v0.0.5 h1:lrnmE3FMhRLjaTeqTYCeOuc6DUV5OUwnG0RV+hV4ReM=
-github.com/moqsien/vpnparser v0.0.5/go.mod h1:Dcy/NtnfOIqkwdPDvuiU1gqGIoUhIYFiZSeWttTVd4s=
+github.com/moqsien/vpnparser v0.0.8 h1:g0TLSVrYCuCLJLC5ob73hYYigdGa1ep5nOf3rlhgVL4=
+github.com/moqsien/vpnparser v0.0.8/go.mod h1:Dcy/NtnfOIqkwdPDvuiU1gqGIoUhIYFiZSeWttTVd4s=
 github.com/moqsien/xraycore v1.8.5 h1:sU/tgHK8ncdQHt5+k1NNRqTttMiUAk8mV9f0ijCbRiw=
 github.com/moqsien/xraycore v1.8.5/go.mod h1:TtHX59kJ2GvHGgM90gXboFL1xcFB+rm9cZv0zM1Y4GM=
 github.com/moqsien/xtractr v0.0.1 h1:LT7R2pDAA9ttuMXtvSq5L2/Ufb9K9UsARNJe69qek7s=

@@ -6,7 +6,7 @@ require (
 	github.com/bytedance/sonic v1.8.8
 	github.com/gogf/gf v1.16.9
 	github.com/moqsien/goutils v0.3.1
-	github.com/moqsien/vpnparser v0.0.5
+	github.com/moqsien/vpnparser v0.0.8
 	github.com/moqsien/xraycore v1.8.5
 	github.com/prometheus-community/pro-bing v0.3.0
 	github.com/sagernet/sing-box v1.4.1

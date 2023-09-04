@@ -6,6 +6,7 @@ import (
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/proxy"
+	"github.com/moqsien/vpnparser/pkgs/utils"
 )
 
 func main() {
@@ -16,10 +17,9 @@ func main() {
 	// f.Download()
 	// f.DecryptAndLoad()
 	v := proxy.NewVerifier(cnf)
-	go v.Test()
 	v.Run()
 	for _, item := range v.Result.GetTotalList() {
-		fmt.Println(item.GetHost())
+		fmt.Println(utils.ParseScheme(item.RawUri), item.GetHost())
 	}
 	fmt.Println(v.Result.Len())
 

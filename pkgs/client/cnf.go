@@ -92,7 +92,7 @@ var SingBoxConfigStr string = `{
             }
         ],
         "auto_detect_interface": true,
-        "final": "vmess-out",
+        "final": "PROXY_OUT",
         "geoip": {
             "path": ""
         },

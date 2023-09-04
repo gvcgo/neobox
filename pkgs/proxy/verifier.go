@@ -77,14 +77,7 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 		httpClient *http.Client
 	)
 	httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)
-	// switch cType {
-	// case outbound.XrayCore:
-	// 	recChan = that.sendXrayChan
-	// default:
-	// 	recChan = that.sendSingChan
-	// }
 	for {
-		// httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)
 		if recChan == nil {
 			switch cType {
 			case outbound.XrayCore:
@@ -102,7 +95,7 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 			pClient.SetOutbound(p)
 			start := time.Now()
 			if err := pClient.Start(); err != nil {
-				gtui.PrintErrorf("%s_Client[%s] start failed. Error: %+v\n", cType, p.GetHost(), err)
+				gtui.PrintErrorf("%s_Client[%s] start failed. Error: %+v\n", cType, p.RawUri, err)
 				if strings.Contains(err.Error(), "proxyman.InboundConfig is not registered") {
 					fmt.Println(string(pClient.GetConf()))
 				}

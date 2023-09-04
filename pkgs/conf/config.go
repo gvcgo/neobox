@@ -19,6 +19,8 @@ const (
 	PingSucceededFileName  string = "neobox_ping_succeeded.json"
 	VerifiedFileName       string = "neobox_verified.json"
 	MannuallyAddedFileName string = "neobox_mannually_added.json"
+	IPLocationsFileName    string = "neobox_ip_locations.json"
+	CountryAbbrFileName    string = "neobox_country_abbr.json"
 	SQLiteDBFileName       string = "neobox_sqlite.db"
 	EncryptKeyFileName     string = ".neobox_encrypt_key.json"
 	DefaultKey             string = "5lR3hcN8Zzpo1nzI"
@@ -36,6 +38,8 @@ type NeoConf struct {
 	VerificationTimeout   int               `json,koanf:"verification_timeout"`
 	VerificationUrl       string            `json,koanf:"verification_url"`
 	VerificationCron      string            `json,koanf:"verification_cron"`
+	CountryAbbrevsUrl     string            `json,koanf:"country_abbr_url"`
+	IPLocationQueryUrl    string            `json,koanf:"ip_location_url"`
 	GeoInfoUrls           map[string]string `json,koanf:"geo_info_urls"`
 	GeoInfoDir            string            `json,koanf:"geo_info_dir"`
 	GeoInfoSumUrl         string            `json,koanf:"geo_info_sum_url"`
@@ -56,6 +60,8 @@ func GetDefaultNeoConf() (n *NeoConf) {
 		VerificationTimeout: 3,
 		VerificationUrl:     "https://www.google.com",
 		VerificationCron:    "@every 2h",
+		CountryAbbrevsUrl:   "https://gitlab.com/moqsien/gvc_resources/-/raw/main/country_names.json?ref_type=heads&inline=false",
+		IPLocationQueryUrl:  "https://www.fkcoder.com/ip?ip=%s",
 		GeoInfoUrls: map[string]string{
 			"geoip.dat":   "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geoip.dat",
 			"geosite.dat": "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geosite.dat",

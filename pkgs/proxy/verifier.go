@@ -18,6 +18,7 @@ import (
 type Verifier struct {
 	CNF          *conf.NeoConf
 	Pinger       *Pinger
+	Locater      *ProxyLocations
 	Result       *outbound.Result
 	verifiedFile string
 	sendXrayChan chan *outbound.ProxyItem
@@ -28,10 +29,11 @@ type Verifier struct {
 
 func NewVerifier(cnf *conf.NeoConf) (v *Verifier) {
 	v = &Verifier{
-		CNF:    cnf,
-		Pinger: NewPinger(cnf),
-		Result: outbound.NewResult(),
-		wg:     sync.WaitGroup{},
+		CNF:     cnf,
+		Pinger:  NewPinger(cnf),
+		Locater: NewLocations(cnf),
+		Result:  outbound.NewResult(),
+		wg:      sync.WaitGroup{},
 	}
 	v.verifiedFile = filepath.Join(cnf.WorkDir, conf.VerifiedFileName)
 	return
@@ -147,6 +149,9 @@ func (that *Verifier) Run(force ...bool) {
 	that.wg.Wait()
 
 	if that.Result.Len() > 0 {
+		for _, pxyItem := range that.Result.GetTotalList() {
+			that.Locater.Query(pxyItem)
+		}
 		that.Result.Save(that.verifiedFile)
 	}
 	that.isRunning = false

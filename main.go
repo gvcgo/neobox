@@ -19,7 +19,7 @@ func main() {
 	v := proxy.NewVerifier(cnf)
 	v.Run(true)
 	for _, item := range v.Result.GetTotalList() {
-		fmt.Println(utils.ParseScheme(item.RawUri), item.GetHost())
+		fmt.Println(utils.ParseScheme(item.RawUri), item.GetHost(), "location: ", item.Location)
 	}
 	fmt.Println(v.Result.Len())
 

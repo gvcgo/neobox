@@ -44,7 +44,7 @@ func (that *Proxy) Update(db *gorm.DB, values interface{}) error {
 
 func (that *Proxy) Get(db *gorm.DB) (*Proxy, error) {
 	p := &Proxy{}
-	db = db.Where("id = ? AND raw_uri = ?", that.ID, that.RawUri)
+	db = db.Where("scheme = ? AND address = ? AND port = ?", that.Scheme, that.Address, that.Port)
 	err := db.First(p).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return p, err

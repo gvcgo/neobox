@@ -13,16 +13,15 @@ type PortRange struct {
 }
 
 const (
-	LogFileName            string = "neobox.log"
-	DownloadedFileName     string = "neobox_vpns_encrypted.txt"
-	DecryptedFileName      string = "neobox_vpns_decrypted.json"
-	PingSucceededFileName  string = "neobox_ping_succeeded.json"
-	VerifiedFileName       string = "neobox_verified.json"
-	MannuallyAddedFileName string = "neobox_mannually_added.json"
-	CountryAbbrFileName    string = "neobox_country_abbr.json"
-	SQLiteDBFileName       string = "neobox_sqlite.db"
-	EncryptKeyFileName     string = ".neobox_encrypt_key.json"
-	DefaultKey             string = "5lR3hcN8Zzpo1nzI"
+	LogFileName           string = "neobox.log"
+	DownloadedFileName    string = "neobox_vpns_encrypted.txt"
+	DecryptedFileName     string = "neobox_vpns_decrypted.json"
+	PingSucceededFileName string = "neobox_ping_succeeded.json"
+	VerifiedFileName      string = "neobox_verified.json"
+	CountryAbbrFileName   string = "neobox_country_abbr.json"
+	SQLiteDBFileName      string = "neobox_sqlite.db"
+	EncryptKeyFileName    string = ".neobox_encrypt_key.json"
+	DefaultKey            string = "5lR3hcN8Zzpo1nzI"
 )
 
 type NeoConf struct {

@@ -100,16 +100,22 @@ func (that *Shell) restart() {
 			}
 		},
 		ArgsDescription: "choose a specified vpn by index.",
-		KtrlHandler: func(c *goktrl.Context) {
+		ArgsHook: func(args []string) (r []string) {
 			idxStr := "0"
-			if len(c.Args) > 0 {
-				idxStr = c.Args[0]
+			if len(args) > 0 {
+				idxStr = args[0]
 			}
 			if proxyItem := that.runner.GetProxyByIndex(idxStr); proxyItem != nil {
-				r := that.runner.Restart(proxyItem.String())
-				c.Send(r, 200)
-			} else {
+				r = append(r, proxyItem.String())
+			}
+			return
+		},
+		KtrlHandler: func(c *goktrl.Context) {
+			if len(c.Args) == 0 {
 				c.Send("Cannot find specified proxy.", 200)
+			} else {
+				r := that.runner.Restart(c.Args...)
+				c.Send(r, 200)
 			}
 		},
 		SocketName: that.ktrlSocks,

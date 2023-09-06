@@ -23,16 +23,16 @@ const (
 )
 
 type MannualProxy struct {
-	CNF               *conf.NeoConf
-	Result            *outbound.Result
-	mannualProxySaver *dao.Proxy
+	CNF              *conf.NeoConf
+	Result           *outbound.Result
+	manualProxySaver *dao.Proxy
 }
 
 func NewMannualProxy(cnf *conf.NeoConf) (m *MannualProxy) {
 	m = &MannualProxy{
-		CNF:               cnf,
-		Result:            outbound.NewResult(),
-		mannualProxySaver: &dao.Proxy{},
+		CNF:              cnf,
+		Result:           outbound.NewResult(),
+		manualProxySaver: &dao.Proxy{},
 	}
 	return
 }
@@ -42,7 +42,7 @@ func (that *MannualProxy) AddRawUri(rawUri, sourceType string) {
 		return
 	}
 	if proxyItem := utils.ParseRawUri(rawUri); proxyItem != nil {
-		that.mannualProxySaver.CreateOrUpdateProxy(proxyItem, sourceType)
+		that.manualProxySaver.CreateOrUpdateProxy(proxyItem, sourceType)
 	}
 }
 
@@ -61,7 +61,7 @@ func (that *MannualProxy) AddFromFile(fPath, sourceType string) {
 			for _, rawUri := range vList {
 				rawUri = strings.TrimSpace(rawUri)
 				if proxyItem := utils.ParseRawUri(rawUri); proxyItem != nil {
-					that.mannualProxySaver.CreateOrUpdateProxy(proxyItem, sourceType)
+					that.manualProxySaver.CreateOrUpdateProxy(proxyItem, sourceType)
 				}
 			}
 		}
@@ -72,5 +72,5 @@ func (that *MannualProxy) RemoveMannualProxy(addr string, port int, sourceType s
 	if sourceType != model.SourceTypeEdgeTunnel && sourceType != model.SourceTypeManually {
 		return
 	}
-	that.mannualProxySaver.DeleteOneRecord(addr, port)
+	that.manualProxySaver.DeleteOneRecord(addr, port)
 }

@@ -34,7 +34,7 @@ const (
 // index prefix for proxy
 const (
 	FromEdgetunnel string = "e"
-	FromMannually  string = "m"
+	FromManually   string = "m"
 )
 
 var StopChan chan struct{} = make(chan struct{})
@@ -129,8 +129,8 @@ func (that *Runner) GetProxyByIndex(idxStr string) (p *outbound.ProxyItem) {
 			}
 			return eList[idx]
 		}
-	} else if strings.HasPrefix(idxStr, FromMannually) {
-		idx, _ := strconv.Atoi(strings.TrimLeft(idxStr, FromMannually))
+	} else if strings.HasPrefix(idxStr, FromManually) {
+		idx, _ := strconv.Atoi(strings.TrimLeft(idxStr, FromManually))
 		if mList := that.verifier.GetProxyFromDB(model.SourceTypeManually); len(mList) > 0 {
 			if idx < 0 || idx >= len(mList) {
 				return mList[0]

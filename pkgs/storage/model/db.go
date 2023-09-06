@@ -1,9 +1,7 @@
 package model
 
 import (
-	"fmt"
 	"path/filepath"
-	"time"
 
 	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/goutils/pkgs/gutils"
@@ -25,49 +23,23 @@ func NewDBEngine(cnf *conf.NeoConf) (db *gorm.DB, err error) {
 		hsqlite.Open(dbPath),
 		&gorm.Config{
 			Logger: logger.Default.LogMode(logger.Error),
-			DryRun: true,
 		},
 	)
 	if err != nil {
 		logs.Error(err)
-		return
+		panic(err)
 	}
 	if !existed {
 		m := db.Migrator()
-		m.CreateTable(&Proxy{})
-		if m.HasTable(&Proxy{}) {
-			gtui.PrintSuccess(fmt.Sprintf("create [%s] succeeded.", (&Proxy{}).TableName()))
+		if err := m.CreateTable(&Proxy{}); err != nil {
+			gtui.PrintInfo(err)
 		}
-		m.CreateTable(&Location{})
-		if m.HasTable(&Location{}) {
-			gtui.PrintSuccess(fmt.Sprintf("create [%s] succeeded.", (&Location{}).TableName()))
+		if err := m.CreateTable(&Location{}); err != nil {
+			gtui.PrintInfo(err)
 		}
 	}
-	db.Callback().Create().Replace("gorm:create", beforeCreate)
-	db.Callback().Update().Replace("gorm:update", beforeUpdate)
+	DBEngine = db
 	return
-}
-
-func beforeCreate(db *gorm.DB) {
-	if db.Statement.Schema != nil {
-		nowTime := time.Now().Unix()
-		if createTimeField := db.Statement.Schema.LookUpField("CreatedOn"); createTimeField != nil {
-			if _, isZero := createTimeField.ValueOf(db.Statement.Context, db.Statement.ReflectValue); isZero {
-				createTimeField.Set(db.Statement.Context, db.Statement.ReflectValue, nowTime)
-			}
-		}
-	}
-}
-
-func beforeUpdate(db *gorm.DB) {
-	if db.Statement.Schema != nil {
-		nowTime := time.Now().Unix()
-		if modifyTimeField := db.Statement.Schema.LookUpField("ModifiedOn"); modifyTimeField != nil {
-			if _, isZero := modifyTimeField.ValueOf(db.Statement.Context, db.Statement.ReflectValue); isZero {
-				modifyTimeField.Set(db.Statement.Context, db.Statement.ReflectValue, nowTime)
-			}
-		}
-	}
 }
 
 type Model struct {

@@ -33,11 +33,13 @@ type NeoConf struct {
 	SocketDir             string            `json,koanf:"socket_dir"`
 	MaxPingers            int               `json,koanf:"max_pingers"`
 	MaxPingAvgRTT         int64             `json,koanf:"max_ping_avgrtt"`
+	MaxPingPackLoss       float64           `json,koanf:"max_ping_packloss"`
 	InboundPort           int               `json,koanf:"inbound_port"`
 	VerificationPortRange *PortRange        `json,koanf:"port_range"`
 	VerificationTimeout   int               `json,koanf:"verification_timeout"`
 	VerificationUrl       string            `json,koanf:"verification_url"`
 	VerificationCron      string            `json,koanf:"verification_cron"`
+	MaxToSaveRTT          int64             `json,koanf:"max_tosave_rtt"`
 	CountryAbbrevsUrl     string            `json,koanf:"country_abbr_url"`
 	IPLocationQueryUrl    string            `json,koanf:"ip_location_url"`
 	GeoInfoUrls           map[string]string `json,koanf:"geo_info_urls"`
@@ -48,11 +50,12 @@ type NeoConf struct {
 
 func GetDefaultNeoConf() (n *NeoConf) {
 	n = &NeoConf{
-		WorkDir:       `C:\Users\moqsien\data\projects\go\src\neobox`,
-		DownloadUrl:   "https://gitlab.com/moqsien/gvc_resources/-/raw/main/conf.txt",
-		MaxPingers:    120,
-		MaxPingAvgRTT: 600,
-		InboundPort:   2023,
+		WorkDir:         `C:\Users\moqsien\data\projects\go\src\neobox`,
+		DownloadUrl:     "https://gitlab.com/moqsien/gvc_resources/-/raw/main/conf.txt",
+		MaxPingers:      120,
+		MaxPingAvgRTT:   600,
+		MaxPingPackLoss: 10,
+		InboundPort:     2023,
 		VerificationPortRange: &PortRange{
 			Min: 9045,
 			Max: 9095,
@@ -60,6 +63,7 @@ func GetDefaultNeoConf() (n *NeoConf) {
 		VerificationTimeout: 3,
 		VerificationUrl:     "https://www.google.com",
 		VerificationCron:    "@every 2h",
+		MaxToSaveRTT:        2000,
 		CountryAbbrevsUrl:   "https://gitlab.com/moqsien/gvc_resources/-/raw/main/country_names.json?ref_type=heads&inline=false",
 		IPLocationQueryUrl:  "https://www.fkcoder.com/ip?ip=%s",
 		GeoInfoUrls: map[string]string{

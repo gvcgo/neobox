@@ -49,7 +49,7 @@ func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 			pinger.Interval = time.Millisecond * 500
 			pinger.Timeout = time.Second * 2
 			pinger.OnFinish = func(s *probing.Statistics) {
-				if s.PacketLoss < 10.0 && s.AvgRtt != 0.0 {
+				if s.PacketLoss <= that.CNF.MaxPingPackLoss && s.AvgRtt != 0.0 {
 					proxyItem.RTT = s.AvgRtt.Milliseconds()
 					if proxyItem.RTT <= that.CNF.MaxPingAvgRTT {
 						that.Result.AddItem(proxyItem)

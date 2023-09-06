@@ -11,6 +11,8 @@ import (
 	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/neobox/pkgs/client"
 	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/neobox/pkgs/storage/dao"
+	"github.com/moqsien/neobox/pkgs/storage/model"
 	"github.com/moqsien/neobox/pkgs/utils"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 )
@@ -25,15 +27,17 @@ type Verifier struct {
 	sendSingChan chan *outbound.ProxyItem
 	wg           sync.WaitGroup
 	isRunning    bool
+	historySaver *dao.Proxy
 }
 
 func NewVerifier(cnf *conf.NeoConf) (v *Verifier) {
 	v = &Verifier{
-		CNF:     cnf,
-		Pinger:  NewPinger(cnf),
-		Locater: NewLocations(cnf),
-		Result:  outbound.NewResult(),
-		wg:      sync.WaitGroup{},
+		CNF:          cnf,
+		Pinger:       NewPinger(cnf),
+		Locater:      NewLocations(cnf),
+		Result:       outbound.NewResult(),
+		wg:           sync.WaitGroup{},
+		historySaver: &dao.Proxy{},
 	}
 	v.verifiedFile = filepath.Join(cnf.WorkDir, conf.VerifiedFileName)
 	return
@@ -153,6 +157,15 @@ func (that *Verifier) Run(force ...bool) {
 			that.Locater.Query(pxyItem)
 		}
 		that.Result.Save(that.verifiedFile)
+		that.saveHistory()
 	}
 	that.isRunning = false
+}
+
+func (that *Verifier) saveHistory() {
+	for _, pxy := range that.Result.GetTotalList() {
+		if pxy != nil && pxy.RTT <= that.CNF.MaxToSaveRTT {
+			that.historySaver.CreateOrUpdateProxy(pxy, model.SourceTypeHistory)
+		}
+	}
 }

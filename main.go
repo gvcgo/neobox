@@ -1,27 +1,32 @@
 package main
 
 import (
-	_ "github.com/moqsien/goutils/pkgs/gutils"
-	_ "github.com/moqsien/neobox/pkgs/conf"
-	_ "github.com/moqsien/neobox/pkgs/proxy"
-	_ "github.com/moqsien/vpnparser/pkgs/utils"
+	"fmt"
+
+	"github.com/moqsien/goutils/pkgs/gutils"
+	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/neobox/pkgs/proxy"
+	"github.com/moqsien/neobox/pkgs/storage/model"
+	"github.com/moqsien/vpnparser/pkgs/utils"
 )
 
 func main() {
-	// gs := gutils.CtrlCSignal{}
-	// gs.ListenSignal()
-	// cnf := conf.GetDefaultNeoConf()
+	gs := gutils.CtrlCSignal{}
+	gs.ListenSignal()
+	cnf := conf.GetDefaultNeoConf()
 
 	// f := proxy.NewProxyFetcher(cnf)
 	// f.Download()
 	// f.DecryptAndLoad()
 
-	// v := proxy.NewVerifier(cnf)
-	// v.Run(true)
-	// for _, item := range v.Result.GetTotalList() {
-	// 	fmt.Println(utils.ParseScheme(item.RawUri), item.GetHost(), "location: ", item.Location)
-	// }
-	// fmt.Println(v.Result.Len())
+	model.NewDBEngine(cnf)
+
+	v := proxy.NewVerifier(cnf)
+	v.Run()
+	for _, item := range v.Result.GetTotalList() {
+		fmt.Println(utils.ParseScheme(item.RawUri), item.GetHost(), "location: ", item.Location)
+	}
+	fmt.Println(v.Result.Len())
 
 	// p := proxy.NewPinger(cnf)
 	// p.Run()

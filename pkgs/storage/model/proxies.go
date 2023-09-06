@@ -14,8 +14,8 @@ const (
 type Proxy struct {
 	*Model
 	Scheme       string              `json:"scheme"`
-	Address      string              `json:"address"`
-	Port         int                 `json:"port"`
+	Address      string              `json:"address" gorm:"uniqueIndex:idx_addr_port"`
+	Port         int                 `json:"port" gorm:"uniqueIndex:idx_addr_port"`
 	RTT          int64               `json:"rtt"`
 	RawUri       string              `json:"raw_uri"`
 	Location     string              `json:"location"`

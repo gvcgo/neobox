@@ -1,9 +1,13 @@
 package model
 
 import (
+	"fmt"
 	"path/filepath"
 	"time"
 
+	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gutils"
+	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/hackbrowser/utils/hsqlite"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"gorm.io/gorm"
@@ -16,6 +20,7 @@ var (
 
 func NewDBEngine(cnf *conf.NeoConf) (db *gorm.DB, err error) {
 	dbPath := filepath.Join(cnf.WorkDir, conf.SQLiteDBFileName)
+	existed, _ := gutils.PathIsExist(dbPath)
 	db, err = gorm.Open(
 		hsqlite.Open(dbPath),
 		&gorm.Config{
@@ -23,6 +28,21 @@ func NewDBEngine(cnf *conf.NeoConf) (db *gorm.DB, err error) {
 			DryRun: true,
 		},
 	)
+	if err != nil {
+		logs.Error(err)
+		return
+	}
+	if !existed {
+		m := db.Migrator()
+		m.CreateTable(&Proxy{})
+		if m.HasTable(&Proxy{}) {
+			gtui.PrintSuccess(fmt.Sprintf("create [%s] succeeded.", (&Proxy{}).TableName()))
+		}
+		m.CreateTable(&Location{})
+		if m.HasTable(&Location{}) {
+			gtui.PrintSuccess(fmt.Sprintf("create [%s] succeeded.", (&Location{}).TableName()))
+		}
+	}
 	db.Callback().Create().Replace("gorm:create", beforeCreate)
 	db.Callback().Update().Replace("gorm:update", beforeUpdate)
 	return

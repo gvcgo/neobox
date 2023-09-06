@@ -37,6 +37,15 @@ func NewGeoInfo(cnf *conf.NeoConf) (g *GeoInfo) {
 	return
 }
 
+func (that *GeoInfo) DoesGeoInfoFileExist() bool {
+	for fName := range that.CNF.GeoInfoUrls {
+		if ok, _ := gutils.PathIsExist(filepath.Join(that.geoDir, fName)); !ok {
+			return false
+		}
+	}
+	return true
+}
+
 func (that *GeoInfo) Download() {
 	that.fetcher.Url = that.CNF.GeoInfoSumUrl
 	that.fetcher.Timeout = time.Minute

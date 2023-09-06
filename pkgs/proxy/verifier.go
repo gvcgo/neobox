@@ -43,6 +43,26 @@ func NewVerifier(cnf *conf.NeoConf) (v *Verifier) {
 	return
 }
 
+func (that *Verifier) IsRunning() bool {
+	return that.isRunning
+}
+
+func (that *Verifier) ResultList() []*outbound.ProxyItem {
+	return that.Result.GetTotalList()
+}
+
+// func (that *Verifier) GetResultListByReload() []*outbound.ProxyItem {
+// 	if that.Result.Len() == 0 {
+// 		that.Result.Load(that.verifiedFile)
+// 	}
+// 	return that.Result.GetTotalList()
+// }
+
+func (that *Verifier) GetProxyFromDB(sourceType string) []*outbound.ProxyItem {
+	pList := that.historySaver.GetItemListBySourceType(sourceType)
+	return pList
+}
+
 func (that *Verifier) send() {
 	itemList := that.Pinger.Result.GetTotalList()
 	that.sendSingChan = make(chan *outbound.ProxyItem, 20)

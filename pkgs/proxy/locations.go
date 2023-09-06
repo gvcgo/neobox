@@ -16,6 +16,7 @@ import (
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/goutils/pkgs/request"
 	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/neobox/pkgs/storage/dao"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 )
 
@@ -32,51 +33,49 @@ type CountryItem struct {
 
 type ProxyLocations struct {
 	CNF                 *conf.NeoConf
-	locFilePath         string
 	countryAbbrFilePath string
 	fetcher             *request.Fetcher
 	CountryItemList     map[string]*CountryItem
-	IPLocations         map[string]string
 	lock                *sync.Mutex
+	ipLocationSaver     *dao.Location
+	countryItemSaver    *dao.Country
 }
 
 func NewLocations(cnf *conf.NeoConf) (pl *ProxyLocations) {
 	pl = &ProxyLocations{
-		CNF:             cnf,
-		fetcher:         request.NewFetcher(),
-		CountryItemList: map[string]*CountryItem{},
-		IPLocations:     map[string]string{},
-		lock:            &sync.Mutex{},
+		CNF:              cnf,
+		fetcher:          request.NewFetcher(),
+		CountryItemList:  map[string]*CountryItem{},
+		lock:             &sync.Mutex{},
+		ipLocationSaver:  &dao.Location{},
+		countryItemSaver: &dao.Country{},
 	}
-	pl.locFilePath = filepath.Join(cnf.WorkDir, conf.IPLocationsFileName)
 	pl.countryAbbrFilePath = filepath.Join(cnf.WorkDir, conf.CountryAbbrFileName)
-	pl.load()
+	pl.initCountries()
 	return
 }
 
-func (that *ProxyLocations) load() {
-	if ok, _ := gutils.PathIsExist(that.countryAbbrFilePath); !ok {
-		that.fetcher.SetUrl(that.CNF.CountryAbbrevsUrl)
-		that.fetcher.GetAndSaveFile(that.countryAbbrFilePath, true)
-	}
-	if ok, _ := gutils.PathIsExist(that.countryAbbrFilePath); ok {
-		content, _ := os.ReadFile(that.countryAbbrFilePath)
-		if err := json.Unmarshal(content, &that.CountryItemList); err != nil {
-			logs.Error(err.Error())
+func (that *ProxyLocations) initCountries() {
+	if cnt := that.countryItemSaver.CountTotal(); cnt <= 200 {
+		// download json file
+		if ok, _ := gutils.PathIsExist(that.countryAbbrFilePath); !ok {
+			that.fetcher.SetUrl(that.CNF.CountryAbbrevsUrl)
+			that.fetcher.GetAndSaveFile(that.countryAbbrFilePath, true)
 		}
-	}
-	if ok, _ := gutils.PathIsExist(that.locFilePath); ok {
-		content, _ := os.ReadFile(that.locFilePath)
-		if err := json.Unmarshal(content, &that.IPLocations); err != nil {
-			logs.Error(err.Error())
-		}
-	}
-}
 
-func (that *ProxyLocations) save() {
-	if len(that.IPLocations) > 0 {
-		if content, err := json.Marshal(that.IPLocations); err == nil {
-			os.WriteFile(that.locFilePath, content, os.ModePerm)
+		// parse json file
+		if ok, _ := gutils.PathIsExist(that.countryAbbrFilePath); ok {
+			content, _ := os.ReadFile(that.countryAbbrFilePath)
+			if err := json.Unmarshal(content, &that.CountryItemList); err != nil {
+				logs.Error(err.Error())
+			}
+		}
+
+		// migrate json file to db
+		for nameCN, item := range that.CountryItemList {
+			if err := that.countryItemSaver.CreateOrUpdateCountryItem(nameCN, item.ISO2, item.ISO3, item.ENG); err != nil {
+				logs.Error(err)
+			}
 		}
 	}
 }
@@ -94,22 +93,17 @@ func (that *ProxyLocations) parseIP(pxy *outbound.ProxyItem) (ipStr string) {
 }
 
 func (that *ProxyLocations) parseCountryName(cName string) (eName string) {
-	if engName, ok := that.CountryItemList[cName]; ok {
-		eName = engName.ISO3
-	} else {
-		eName = cName
+	eName = cName
+	if nameISO3 := that.countryItemSaver.GetISO3ByNameCN(cName); nameISO3 != "" {
+		eName = nameISO3
 	}
 	return
 }
 
 func (that *ProxyLocations) Query(pxy *outbound.ProxyItem) (name string) {
-	if len(that.IPLocations) == 0 {
-		that.load()
-	}
 	ipStr := that.parseIP(pxy)
-	var ok bool
-	name, ok = that.IPLocations[ipStr]
-	if ok {
+	name = that.ipLocationSaver.GetLocatonByIP(ipStr)
+	if name != "" {
 		pxy.Location = name
 		return
 	}
@@ -134,9 +128,9 @@ func (that *ProxyLocations) Query(pxy *outbound.ProxyItem) (name string) {
 		if content, err := io.ReadAll(resp.Body); err == nil {
 			j := gjson.New(content)
 			that.lock.Lock()
-			that.IPLocations[ipStr] = that.parseCountryName(j.GetString("country"))
-			pxy.Location = that.IPLocations[ipStr]
-			that.save()
+			countryAbbr := that.parseCountryName(j.GetString("country"))
+			that.ipLocationSaver.Create(ipStr, countryAbbr)
+			pxy.Location = countryAbbr
 			that.lock.Unlock()
 		}
 	}

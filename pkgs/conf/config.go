@@ -19,7 +19,6 @@ const (
 	PingSucceededFileName  string = "neobox_ping_succeeded.json"
 	VerifiedFileName       string = "neobox_verified.json"
 	MannuallyAddedFileName string = "neobox_mannually_added.json"
-	IPLocationsFileName    string = "neobox_ip_locations.json"
 	CountryAbbrFileName    string = "neobox_country_abbr.json"
 	SQLiteDBFileName       string = "neobox_sqlite.db"
 	EncryptKeyFileName     string = ".neobox_encrypt_key.json"

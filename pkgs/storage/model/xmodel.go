@@ -32,10 +32,13 @@ func NewDBEngine(cnf *conf.NeoConf) (db *gorm.DB, err error) {
 	if !existed {
 		m := db.Migrator()
 		if err := m.CreateTable(&Proxy{}); err != nil {
-			gtui.PrintInfo(err)
+			gtui.PrintError(err)
 		}
 		if err := m.CreateTable(&Location{}); err != nil {
-			gtui.PrintInfo(err)
+			gtui.PrintError(err)
+		}
+		if err := m.CreateTable(&Country{}); err != nil {
+			gtui.PrintError(err)
 		}
 	}
 	DBEngine = db

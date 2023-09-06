@@ -67,7 +67,9 @@ func (that *Proxy) CreateOrUpdateProxy(p *outbound.ProxyItem, sourceType string)
 }
 
 func (that *Proxy) GetProxy(address string, port int) *outbound.ProxyItem {
-	pxy := &model.Proxy{Address: address, Port: port}
+	pxy := model.NewProxy()
+	pxy.Address = address
+	pxy.Port = port
 	if p, err := pxy.Get(model.DBEngine); err == nil && p != nil {
 		pi := &outbound.ProxyItem{}
 		pi.Scheme = p.Scheme
@@ -82,4 +84,27 @@ func (that *Proxy) GetProxy(address string, port int) *outbound.ProxyItem {
 	} else {
 		return nil
 	}
+}
+
+func (that *Proxy) GetItemListBySourceType(sourceType string) []*outbound.ProxyItem {
+	pxy := model.NewProxy()
+	pxy.SourceType = sourceType
+	r, _ := pxy.GetItemListBySourceType(model.DBEngine)
+	return r
+}
+
+func (that *Proxy) CountBySchemeOrSourceType(scheme, sourceType string) int {
+	pxy := model.NewProxy()
+	pxy.Scheme = scheme
+	pxy.SourceType = sourceType
+	count, _ := pxy.CountBySchemeOrSourceType(model.DBEngine)
+	return int(count)
+}
+
+func (that *Proxy) DeleteOneRecord(address string, port int) error {
+	pxy := model.NewProxy()
+	pxy.Address = address
+	pxy.Port = port
+	err := pxy.Delete(model.DBEngine)
+	return err
 }

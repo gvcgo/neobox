@@ -151,8 +151,8 @@ func (that *Shell) stop() {
 			}
 		},
 		KtrlHandler: func(c *goktrl.Context) {
+			c.Send("Neobox successfully exited", 200)
 			that.runner.Stop()
-			c.Send("Neobox successfully exited.", 200)
 		},
 		SocketName: that.ktrlSocks,
 	})

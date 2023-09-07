@@ -59,8 +59,8 @@ func (that *Keeper) GetStarter() *exec.Cmd {
 func (that *Keeper) startKeeperServer() {
 	server := socks.NewUServer(that.kSockName)
 	server.AddHandler(keeperStopRoute, func(c *gin.Context) {
-		that.Stop()
 		c.String(http.StatusOK, "xtray keeper is stopped.")
+		that.Stop()
 	})
 	server.AddHandler(keeperPingRoute, func(c *gin.Context) {
 		c.String(http.StatusOK, OkStr)

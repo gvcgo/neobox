@@ -149,13 +149,13 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 }
 
 func (that *Verifier) Run(force ...bool) {
+	that.isRunning = true
 	that.Pinger.Run(force...)
 	s, x := that.Pinger.Statistics()
 	gtui.PrintInfof("Ping succeeded proxies: %v, singBox: %v, xrayCore: %v", that.Pinger.Result.Len(), s, x)
 	if that.Result.Len() > 0 {
 		that.Result.Clear()
 	}
-	that.isRunning = true
 	start, end := that.CNF.VerificationPortRange.Min, that.CNF.VerificationPortRange.Max
 	if start > end {
 		start, end = end, start

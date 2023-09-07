@@ -48,7 +48,7 @@ type NeoConf struct {
 
 func GetDefaultNeoConf() (n *NeoConf) {
 	n = &NeoConf{
-		WorkDir:         `C:\Users\moqsien\data\projects\go\src\neobox`,
+		WorkDir:         `C:\Users\moqsien\data\projects\go\src\neobox\test`,
 		DownloadUrl:     "https://gitlab.com/moqsien/gvc_resources/-/raw/main/conf.txt",
 		MaxPingers:      120,
 		MaxPingAvgRTT:   600,

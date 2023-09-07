@@ -118,29 +118,30 @@ func (that *Runner) PingVerifier() bool {
 	return false
 }
 
-func (that *Runner) getNextProxy(args ...string) {
+func (that *Runner) getNextProxy(args ...string) *outbound.ProxyItem {
 	proxyStr := ""
 	if len(args) > 0 {
 		proxyStr = args[0]
 	}
-	that.NextProxy = &outbound.ProxyItem{}
-	if err := json.Unmarshal([]byte(proxyStr), that.NextProxy); err != nil || proxyStr == "" {
+	p := &outbound.ProxyItem{}
+	json.Unmarshal([]byte(proxyStr), p)
+
+	if p.Address != "" && p.Port != 0 {
+		return p
+	} else {
 		verifiedList := that.verifier.ResultList()
 		if len(verifiedList) > 0 {
-			that.NextProxy = verifiedList[0]
-			return
+			return verifiedList[0]
 		}
 
 		if eList := that.verifier.GetProxyFromDB(model.SourceTypeEdgeTunnel); len(eList) > 0 {
-			that.NextProxy = eList[0]
-			return
+			return eList[0]
 		}
 		if mList := that.verifier.GetProxyFromDB(model.SourceTypeManually); len(mList) > 0 {
-			that.NextProxy = mList[0]
-			return
+			return mList[0]
 		}
-		that.NextProxy = nil
 	}
+	return nil
 }
 
 func (that *Runner) GetProxyByIndex(idxStr string) (p *outbound.ProxyItem) {
@@ -180,12 +181,16 @@ func (that *Runner) Start(args ...string) {
 	}
 	that.daemon.Run(os.Args...)
 
-	go that.startPingServer()
+	go that.startPingServer()   // start ping server
+	go that.shell.StartServer() // start shell server
 
 	cronTime := that.CNF.VerificationCron
 	if !strings.HasPrefix(cronTime, "@every") {
 		cronTime = "@every 2h"
 	}
+	// run verifier once starting.
+	go that.verifier.Run(true)
+
 	that.cron.AddFunc(cronTime, func() {
 		if !that.verifier.IsRunning() {
 			force := true
@@ -207,7 +212,7 @@ func (that *Runner) Restart(args ...string) (result string) {
 	// if !that.PingRunner() {
 	// 	return
 	// }
-	that.getNextProxy(args...)
+	that.NextProxy = that.getNextProxy(args...)
 	if that.NextProxy == nil {
 		result = "No available proxies."
 		return
@@ -216,11 +221,13 @@ func (that *Runner) Restart(args ...string) (result string) {
 	that.NextProxy = nil
 
 	that.Client = client.NewClient(that.CNF, that.CNF.InboundPort, that.CurrentProxy.OutboundType, true)
+	that.Client.SetOutbound(that.CurrentProxy)
 	err := that.Client.Start()
 	if err == nil {
 		result = fmt.Sprintf("client restarted use: %s%s", that.CurrentProxy.Scheme, that.CurrentProxy.GetHost())
 	} else {
 		result = fmt.Sprintf("restart client failed: %+v\n%s", err, string(that.Client.GetConf()))
+		os.WriteFile("config.log", []byte(that.Client.GetConf()), os.ModePerm)
 		that.Client.Close()
 	}
 	return

@@ -9,8 +9,10 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/moqsien/goktrl"
 	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
+	"github.com/pterm/pterm"
 )
 
 /*
@@ -42,6 +44,7 @@ const (
 func SetNeoboxEnvs(assetDir, sockDir string) {
 	os.Setenv(AssetDirEnvName, assetDir)
 	os.Setenv(SockFileDirEnvName, sockDir)
+	os.Setenv(goktrl.GoKtrlSockDirEnv, sockDir) // set goktrl sock file dir
 }
 
 /*
@@ -84,4 +87,17 @@ func FormatProxyItemForTable(p *outbound.ProxyItem) string {
 		addr = addr[:30] + "..."
 	}
 	return fmt.Sprintf("%s%s:%d", p.Scheme, addr, p.Port)
+}
+
+func FormatLineForShell(line ...string) string {
+	if len(line) < 4 {
+		return ""
+	}
+	pattern := "%6s. %-60s %12s %10s %10s\n"
+	index := pterm.Yellow(line[0])
+	proxy := pterm.LightMagenta(line[1])
+	location := pterm.Cyan(line[2])
+	rtt := pterm.LightGreen(line[3])
+	source := pterm.LightCyan(line[4])
+	return fmt.Sprintf(pattern, index, proxy, location, rtt, source)
 }

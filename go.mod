@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/gogf/gf v1.16.9
 	github.com/moqsien/goktrl v1.3.8
-	github.com/moqsien/goutils v0.3.1
+	github.com/moqsien/goutils v0.3.2
 	github.com/moqsien/hackbrowser v1.0.3
 	github.com/moqsien/vpnparser v0.1.1
 	github.com/moqsien/xraycore v1.8.5

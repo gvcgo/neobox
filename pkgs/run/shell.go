@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/moqsien/goktrl"
+	"github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/proxy"
@@ -90,8 +91,9 @@ func (that *Shell) start() {
 func (that *Shell) restart() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "restart",
-		Help: "Restart the running sing-box client with a chosen vpn. [restart vpn_index]",
+		Help: "Restart the running neobox client with a chosen proxy. [restart vpn_index]",
 		Func: func(c *goktrl.Context) {
+			fmt.Println(c.Args)
 			if that.runner.PingRunner() {
 				res, _ := c.GetResult()
 				gtui.PrintInfo(string(res))
@@ -101,14 +103,18 @@ func (that *Shell) restart() {
 				gtui.PrintInfo(string(res))
 			}
 		},
-		ArgsDescription: "choose a specified vpn by index.",
+		ArgsDescription: "choose a specified proxy by index.",
 		ArgsHook: func(args []string) (r []string) {
+			/*
+				hook: to choose a proxy at shell-side and then pass to server-side.
+				This will avoid verified-list changes when restarting.
+			*/
 			idxStr := "0"
 			if len(args) > 0 {
 				idxStr = args[0]
 			}
 			if proxyItem := that.runner.GetProxyByIndex(idxStr); proxyItem != nil {
-				r = append(r, proxyItem.String())
+				r = append(r, crypt.EncodeBase64(proxyItem.String()))
 			}
 			return
 		},
@@ -116,7 +122,9 @@ func (that *Shell) restart() {
 			if len(c.Args) == 0 {
 				c.Send("Cannot find specified proxy.", 200)
 			} else {
-				r := that.runner.Restart(c.Args...)
+				pxyStr := crypt.DecodeBase64(c.Args[0])
+				// os.WriteFile("config_arg_parsed.log", []byte(pxyStr), os.ModePerm)
+				r := that.runner.Restart(pxyStr)
 				c.Send(r, 200)
 			}
 		},
@@ -127,7 +135,7 @@ func (that *Shell) restart() {
 func (that *Shell) stop() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "stop",
-		Help: "Stop neobox.",
+		Help: "Stop neobox client.",
 		Func: func(c *goktrl.Context) {
 			if that.runner.PingRunner() {
 				res, _ := c.GetResult()
@@ -144,7 +152,7 @@ func (that *Shell) stop() {
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			that.runner.Stop()
-			c.Send("Neobox exited.", 200)
+			c.Send("Neobox successfully exited.", 200)
 		},
 		SocketName: that.ktrlSocks,
 	})
@@ -210,10 +218,10 @@ func (that *Shell) show() {
 			manualList := manual.GetItemListBySourceType(model.SourceTypeManually)
 			edgeTunnelList := manual.GetItemListBySourceType(model.SourceTypeEdgeTunnel)
 
-			paddedBox := pterm.DefaultBox.WithLeftPadding(1).WithRightPadding(1).WithTopPadding(1)
+			paddedBox := pterm.DefaultBox.WithLeftPadding(1).WithRightPadding(1).WithTopPadding(1).WithBottomPadding(1)
 
 			rawStatistics := fmt.Sprintf(
-				"RawList[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]",
+				"RawList[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]\n",
 				pterm.Green(rawResult.Len()),
 				pterm.LightGreen(rawResult.UpdateAt),
 				pterm.Yellow(rawResult.VmessTotal),
@@ -223,7 +231,7 @@ func (that *Shell) show() {
 				pterm.Yellow(rawResult.SSRTotal),
 			)
 			pingStatistics := fmt.Sprintf(
-				"Pinged[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]",
+				"Pinged[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]\n",
 				pterm.Green(pingResult.Len()),
 				pterm.LightGreen(pingResult.UpdateAt),
 				pterm.Yellow(pingResult.VmessTotal),
@@ -233,7 +241,7 @@ func (that *Shell) show() {
 				pterm.Yellow(pingResult.SSRTotal),
 			)
 			verifiedStatistics := fmt.Sprintf(
-				"Pinged[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]",
+				"Pinged[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]\n",
 				pterm.Green(verifiedResult.Len()),
 				pterm.LightGreen(verifiedResult.UpdateAt),
 				pterm.Yellow(verifiedResult.VmessTotal),
@@ -243,33 +251,30 @@ func (that *Shell) show() {
 				pterm.Yellow(verifiedResult.SSRTotal),
 			)
 			dbStatistics := fmt.Sprintf(
-				"Database: History[%s] EdgeTunnel[%s] Manually[%s]",
+				"Database: History[%s] EdgeTunnel[%s] Manually[%s]\n",
 				pterm.Yellow(manual.CountBySchemeOrSourceType("", model.SourceTypeHistory)),
 				pterm.Yellow(manual.CountBySchemeOrSourceType("", model.SourceTypeEdgeTunnel)),
 				pterm.Yellow(manual.CountBySchemeOrSourceType("", model.SourceTypeManually)),
 			)
-			title1 := pterm.LightCyan("Neobox Statistics")
-			box1 := paddedBox.WithTitle(title1).Sprintf("%s\n%s\n%s\n%s", rawStatistics, pingStatistics, verifiedStatistics, dbStatistics)
+			str := rawStatistics + pingStatistics + verifiedStatistics + dbStatistics
 
-			headers := []string{"index", "proxy", "location", "rtt", "source"}
-			tData := pterm.TableData{headers}
+			headers := []string{"idx", "proxy", "location", "rtt(ms)", "source"}
+			str += utils.FormatLineForShell(headers...)
+
 			for idx, item := range verifiedResult.GetTotalList() {
 				r := []string{fmt.Sprintf("%d", idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "current"}
-				tData = append(tData, r)
+				str += utils.FormatLineForShell(r...)
 			}
 
 			for idx, item := range edgeTunnelList {
 				r := []string{fmt.Sprintf("%s%d", FromEdgetunnel, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeEdgeTunnel}
-				tData = append(tData, r)
+				str += utils.FormatLineForShell(r...)
 			}
 
 			for idx, item := range manualList {
 				r := []string{fmt.Sprintf("%s%d", FromManually, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeManually}
-				tData = append(tData, r)
+				str += utils.FormatLineForShell(r...)
 			}
-			result, _ := pterm.DefaultTable.WithHasHeader().WithData(tData).Srender()
-			title2 := pterm.LightCyan("Available Proxies")
-			box2 := paddedBox.WithTitle(title2).Sprint(result)
 
 			var (
 				currenVpnInfo  string
@@ -290,17 +295,16 @@ func (that *Shell) show() {
 			if that.runner.PingVerifier() {
 				verifierStatus = pterm.LightGreen("running")
 			}
-			nStatus := pterm.Cyan(fmt.Sprintf("NeoBox[%s @%s] Verifier[%s] Keeper[%s]",
+			nStatus := pterm.Cyan(fmt.Sprintf("NeoBox[%s @%s] Verifier[%s] Keeper[%s]\n",
 				neoboxStatus,
 				currenVpnInfo,
 				verifierStatus,
 				keeperStatus,
 			))
-			logInfo := pterm.Magenta(fmt.Sprintf("LogFileDir: %s", pterm.LightGreen(that.CNF.LogDir)))
-			title3 := pterm.LightCyan("Neobox Status")
-			box3 := paddedBox.WithTitle(title3).WithTitleTopRight().Sprintf("%s\n%s", nStatus, logInfo)
+			logInfo := pterm.Magenta(fmt.Sprintf("LogFileDir: %s\n", pterm.LightGreen(that.CNF.LogDir)))
 
-			pterm.DefaultPanel.WithPanels(pterm.Panels{{{box1}}, {{box2}}, {{box3}}}).Render()
+			str += nStatus + logInfo
+			pterm.Println(paddedBox.Sprintln(str))
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			var m runtime.MemStats
@@ -315,7 +319,7 @@ func (that *Shell) show() {
 func (that *Shell) filter() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "filter",
-		Help: "Filter vpns by verifier.",
+		Help: "Start filtering proxies by verifier manually.",
 		Func: func(c *goktrl.Context) {
 			result, _ := c.GetResult()
 			gtui.PrintInfo(string(result))
@@ -336,7 +340,7 @@ func (that *Shell) filter() {
 func (that *Shell) geoinfo() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "geoinfo",
-		Help: "Install/Update geoip&geosite for sing-box/xray-core.",
+		Help: "Install/Update geoip&geosite for neobox client.",
 		Func: func(c *goktrl.Context) {
 			g := proxy.NewGeoInfo(that.CNF)
 			g.Download()

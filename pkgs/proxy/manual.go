@@ -26,6 +26,7 @@ type MannualProxy struct {
 	CNF              *conf.NeoConf
 	Result           *outbound.Result
 	manualProxySaver *dao.Proxy
+	locFinder        *ProxyLocations
 }
 
 func NewMannualProxy(cnf *conf.NeoConf) (m *MannualProxy) {
@@ -33,6 +34,7 @@ func NewMannualProxy(cnf *conf.NeoConf) (m *MannualProxy) {
 		CNF:              cnf,
 		Result:           outbound.NewResult(),
 		manualProxySaver: &dao.Proxy{},
+		locFinder:        NewLocations(cnf),
 	}
 	return
 }
@@ -42,6 +44,7 @@ func (that *MannualProxy) AddRawUri(rawUri, sourceType string) {
 		return
 	}
 	if proxyItem := utils.ParseRawUri(rawUri); proxyItem != nil {
+		that.locFinder.Query(proxyItem)
 		that.manualProxySaver.CreateOrUpdateProxy(proxyItem, sourceType)
 	}
 }

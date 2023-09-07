@@ -32,6 +32,11 @@ func NewProxyFetcher(cnf *conf.NeoConf) (p *ProxyFetcher) {
 	return
 }
 
+func (that *ProxyFetcher) GetResultByReload() *outbound.Result {
+	that.Result.Load(that.decryptedFile)
+	return that.Result
+}
+
 func (that *ProxyFetcher) Download() {
 	that.fetcher.SetUrl(that.CNF.DownloadUrl)
 	that.fetcher.Timeout = 5 * time.Minute

@@ -51,6 +51,7 @@ type Runner struct {
 	starter      *exec.Cmd
 	verifier     *proxy.Verifier
 	keeper       *Keeper
+	shell        *Shell
 }
 
 func NewRunner(cnf *conf.NeoConf) (r *Runner) {
@@ -61,10 +62,22 @@ func NewRunner(cnf *conf.NeoConf) (r *Runner) {
 		cron:       cron.New(),
 		verifier:   proxy.NewVerifier(cnf),
 		keeper:     NewKeeper(cnf),
+		shell:      NewShell(cnf),
 	}
+	r.shell.SetRunner(r)
+	r.shell.InitKtrl()
 	r.daemon.SetWorkdir(cnf.WorkDir)
 	r.daemon.SetScriptName(winRunScriptName)
 	return
+}
+
+// show current using proxy info
+func (that *Runner) Current() string {
+	if that.CurrentProxy == nil {
+		return ""
+	} else {
+		return that.CurrentProxy.Scheme + that.CurrentProxy.GetHost()
+	}
 }
 
 // runner server related
@@ -90,6 +103,16 @@ func (that *Runner) PingRunner() bool {
 		that.pingClient = socks.NewUClient(that.extraSocks)
 	}
 	if resp, err := that.pingClient.GetResp(runnerPingRoute, map[string]string{}); err == nil {
+		return strings.Contains(resp, OkStr)
+	}
+	return false
+}
+
+func (that *Runner) PingVerifier() bool {
+	if that.pingClient == nil {
+		that.pingClient = socks.NewUClient(that.extraSocks)
+	}
+	if resp, err := that.pingClient.GetResp(runnerVerifierRoute, map[string]string{}); err == nil {
 		return strings.Contains(resp, OkStr)
 	}
 	return false
@@ -139,7 +162,7 @@ func (that *Runner) GetProxyByIndex(idxStr string) (p *outbound.ProxyItem) {
 		}
 	} else {
 		idx, _ := strconv.Atoi(idxStr)
-		if vList := that.verifier.ResultList(); len(vList) > 0 {
+		if vList := that.verifier.GetResultListByReload(); len(vList) > 0 {
 			if idx < 0 || idx >= len(vList) {
 				return vList[0]
 			}
@@ -181,10 +204,9 @@ func (that *Runner) Start(args ...string) {
 }
 
 func (that *Runner) Restart(args ...string) (result string) {
-	if !that.PingRunner() {
-		that.Start(args...)
-		return
-	}
+	// if !that.PingRunner() {
+	// 	return
+	// }
 	that.getNextProxy(args...)
 	if that.NextProxy == nil {
 		result = "No available proxies."
@@ -239,6 +261,10 @@ func (that *Runner) PingKeeper() bool {
 	return that.keeper.PingKeeper()
 }
 
+func (that *Runner) StopKeeperByRequest() string {
+	return that.keeper.StopByRequest()
+}
+
 // geoinfo files
 func (that *Runner) DownloadGeoInfo() {
 	gd := proxy.NewGeoInfo(that.CNF)
@@ -248,4 +274,9 @@ func (that *Runner) DownloadGeoInfo() {
 func (that *Runner) DoesGeoInfoFileExist() bool {
 	gd := proxy.NewGeoInfo(that.CNF)
 	return gd.DoesGeoInfoFileExist()
+}
+
+// shell related
+func (that *Runner) OpenShell() {
+	that.shell.StartShell()
 }

@@ -75,6 +75,9 @@ func (that *GeoInfo) Download() {
 	}
 }
 
+func (that *GeoInfo) GetGeoDir() string {
+	return that.geoDir
+}
 func TestGeoInfo() {
 	cnf := conf.GetDefaultNeoConf()
 	gi := NewGeoInfo(cnf)

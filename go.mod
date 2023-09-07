@@ -12,8 +12,10 @@ require (
 	github.com/moqsien/vpnparser v0.1.1
 	github.com/moqsien/xraycore v1.8.5
 	github.com/prometheus-community/pro-bing v0.3.0
+	github.com/pterm/pterm v0.12.62
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sagernet/sing-box v1.4.1
+	github.com/urfave/cli/v2 v2.25.7
 	gorm.io/gorm v1.25.1
 )
 
@@ -38,6 +40,7 @@ require (
 	github.com/clbanning/mxj v1.8.5-0.20200714211355-ff02cfb8ea28 // indirect
 	github.com/cloudflare/circl v1.2.1-0.20221019164342-6ab4dfed8f3c // indirect
 	github.com/containerd/console v1.0.3 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/cretz/bine v0.2.0 // indirect
 	github.com/dgryski/go-metro v0.0.0-20211217172704-adc40b04c140 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -111,7 +114,6 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.7 // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/pires/go-proxyproto v0.7.0 // indirect
-	github.com/pterm/pterm v0.12.62 // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/quic-go/qtls-go1-20 v0.3.3 // indirect
 	github.com/quic-go/quic-go v0.38.1 // indirect
@@ -119,6 +121,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/riobard/go-bloom v0.0.0-20200614022211-cdc8013cb5b3 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sagernet/cloudflare-tls v0.0.0-20221031050923-d70792f4c3a0 // indirect
 	github.com/sagernet/go-tun2socks v1.16.12-0.20220818015926-16cb67876a61 // indirect
 	github.com/sagernet/gvisor v0.0.0-20230627031050-1ab0276e0dd2 // indirect
@@ -151,6 +154,7 @@ require (
 	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
+	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/xtls/reality v0.0.0-20230828171259-e426190d57f6 // indirect
 	github.com/zeebo/blake3 v0.2.3 // indirect
 	go.etcd.io/bbolt v1.3.7 // indirect

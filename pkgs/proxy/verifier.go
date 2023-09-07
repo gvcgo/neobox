@@ -51,12 +51,15 @@ func (that *Verifier) ResultList() []*outbound.ProxyItem {
 	return that.Result.GetTotalList()
 }
 
-// func (that *Verifier) GetResultListByReload() []*outbound.ProxyItem {
-// 	if that.Result.Len() == 0 {
-// 		that.Result.Load(that.verifiedFile)
-// 	}
-// 	return that.Result.GetTotalList()
-// }
+func (that *Verifier) GetResultListByReload() []*outbound.ProxyItem {
+	that.Result.Load(that.verifiedFile)
+	return that.Result.GetTotalList()
+}
+
+func (that *Verifier) GetResultByReload() *outbound.Result {
+	that.Result.Load(that.verifiedFile)
+	return that.Result
+}
 
 func (that *Verifier) GetProxyFromDB(sourceType string) []*outbound.ProxyItem {
 	pList := that.historySaver.GetItemListBySourceType(sourceType)
@@ -176,6 +179,7 @@ func (that *Verifier) Run(force ...bool) {
 		for _, pxyItem := range that.Result.GetTotalList() {
 			that.Locater.Query(pxyItem)
 		}
+		that.Result.UpdateAt = time.Now().Format("2006-01-02 15:04:05")
 		that.Result.Save(that.verifiedFile)
 		that.saveHistory()
 	}

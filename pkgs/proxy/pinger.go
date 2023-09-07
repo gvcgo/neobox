@@ -34,6 +34,11 @@ func NewPinger(cnf *conf.NeoConf) (p *Pinger) {
 	return
 }
 
+func (that *Pinger) GetResultByReload() *outbound.Result {
+	that.Result.Load(that.pingSucceededFile)
+	return that.Result
+}
+
 func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 	if proxyItem != nil {
 		if strings.Contains(proxyItem.Address, "127.0.0") {
@@ -105,6 +110,7 @@ func (that *Pinger) Run(force ...bool) {
 	}
 	that.wg.Wait()
 	if that.Result.Len() > 0 {
+		that.Result.UpdateAt = time.Now().Format("2006-01-02 15:04:05")
 		that.Result.Save(that.pingSucceededFile)
 	}
 }

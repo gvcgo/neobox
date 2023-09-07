@@ -44,6 +44,7 @@ type NeoConf struct {
 	GeoInfoDir            string            `json,koanf:"geo_info_dir"`
 	GeoInfoSumUrl         string            `json,koanf:"geo_info_sum_url"`
 	KeeperCron            string            `json,koanf:"keeper_cron"`
+	WireGuardConfDir      string            `json,koanf:"wireguard_conf_dir"`
 }
 
 func GetDefaultNeoConf() (n *NeoConf) {
@@ -76,6 +77,7 @@ func GetDefaultNeoConf() (n *NeoConf) {
 	n.LogDir = n.WorkDir
 	n.SocketDir = n.WorkDir
 	n.GeoInfoDir = n.WorkDir
+	n.WireGuardConfDir = filepath.Join(n.WorkDir, "wireguard")
 	return
 }
 

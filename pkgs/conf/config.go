@@ -13,15 +13,16 @@ type PortRange struct {
 }
 
 const (
-	LogFileName           string = "neobox.log"
-	DownloadedFileName    string = "neobox_vpns_encrypted.txt"
-	DecryptedFileName     string = "neobox_vpns_decrypted.json"
-	PingSucceededFileName string = "neobox_ping_succeeded.json"
-	VerifiedFileName      string = "neobox_verified.json"
-	CountryAbbrFileName   string = "neobox_country_abbr.json"
-	SQLiteDBFileName      string = "neobox_sqlite.db"
-	EncryptKeyFileName    string = ".neobox_encrypt_key.json"
-	DefaultKey            string = "5lR3hcN8Zzpo1nzI"
+	LogFileName            string = "neobox.log"
+	DownloadedFileName     string = "neobox_vpns_encrypted.txt"
+	DecryptedFileName      string = "neobox_vpns_decrypted.json"
+	PingSucceededFileName  string = "neobox_ping_succeeded.json"
+	VerifiedFileName       string = "neobox_verified.json"
+	CountryAbbrFileName    string = "neobox_country_abbr.json"
+	SQLiteDBFileName       string = "neobox_sqlite.db"
+	EncryptKeyFileName     string = ".neobox_encrypt_key.json"
+	DefaultKey             string = "5lR3hcN8Zzpo1nzI"
+	CloudflareIPV4FileName string = "cloudflare_ipv4.txt"
 )
 
 type NeoConf struct {
@@ -45,6 +46,7 @@ type NeoConf struct {
 	GeoInfoSumUrl         string            `json,koanf:"geo_info_sum_url"`
 	KeeperCron            string            `json,koanf:"keeper_cron"`
 	WireGuardConfDir      string            `json,koanf:"wireguard_conf_dir"`
+	CloudflareIPV4URL     string            `json,koanf:"cloudflare_ipv4_url"`
 }
 
 func GetDefaultNeoConf() (n *NeoConf) {
@@ -71,8 +73,9 @@ func GetDefaultNeoConf() (n *NeoConf) {
 			"geoip.db":    "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geoip.db",
 			"geosite.db":  "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geosite.db",
 		},
-		GeoInfoSumUrl: "https://gitlab.com/moqsien/gvc_resources/-/raw/main/files_info.json?ref_type=heads&inline=false",
-		KeeperCron:    "@every 3m",
+		GeoInfoSumUrl:     "https://gitlab.com/moqsien/gvc_resources/-/raw/main/files_info.json?ref_type=heads&inline=false",
+		KeeperCron:        "@every 3m",
+		CloudflareIPV4URL: "https://www.cloudflare.com/ips-v4",
 	}
 	n.LogDir = n.WorkDir
 	n.SocketDir = n.WorkDir

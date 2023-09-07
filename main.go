@@ -1,6 +1,8 @@
 package main
 
-import "github.com/moqsien/neobox/example"
+import (
+	"github.com/moqsien/neobox/pkgs/cflare/wspeed"
+)
 
 func main() {
 	// gs := gutils.CtrlCSignal{}
@@ -32,5 +34,7 @@ func main() {
 	// }
 	// proxy.TestGeoInfo()
 
-	example.Start()
+	// example.Start()
+	// wspeed.TestIPV4Download()
+	wspeed.TestIPv4Generator()
 }

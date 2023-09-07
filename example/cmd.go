@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/run"
 	"github.com/moqsien/neobox/pkgs/storage/model"
@@ -46,6 +47,8 @@ func NewApps() (a *Apps) {
 	a.initiate()
 	// init database
 	model.NewDBEngine(a.conf)
+	// set neobox client log dir
+	logs.SetLogger(a.conf.LogDir)
 	return a
 }
 

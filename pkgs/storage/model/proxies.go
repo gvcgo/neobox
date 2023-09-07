@@ -62,7 +62,7 @@ func (that *Proxy) Get(db *gorm.DB) (*Proxy, error) {
 func (that *Proxy) GetItemListBySourceType(db *gorm.DB) (pList []*outbound.ProxyItem, err error) {
 	fields := []string{"scheme", "address", "port", "rtt", "raw_uri", "location", "outbound", "outbound_type"}
 	rows, err := db.Select(fields).Table(that.TableName()).
-		Where("source_type = ?", that.SourceType).Order("rtt DESC").
+		Where("source_type = ?", that.SourceType).Order("rtt ASC").
 		Rows()
 	if err != nil {
 		return nil, err
@@ -97,4 +97,9 @@ func (that *Proxy) Delete(db *gorm.DB) error {
 		return err
 	}
 	return nil
+}
+
+func (that *Proxy) DeleteAll(db *gorm.DB) (err error) {
+	db.Exec("TRUNCATE TABLE ?", that.TableName())
+	return
 }

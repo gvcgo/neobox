@@ -32,3 +32,8 @@ func (that *Location) GetByIP(db *gorm.DB) (*Location, error) {
 	}
 	return l, nil
 }
+
+func (that *Location) DeleteAll(db *gorm.DB) (err error) {
+	db.Exec("TRUNCATE TABLE ?", that.TableName())
+	return
+}

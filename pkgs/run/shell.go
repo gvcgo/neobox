@@ -210,7 +210,7 @@ func (that *Shell) show() {
 			manualList := manual.GetItemListBySourceType(model.SourceTypeManually)
 			edgeTunnelList := manual.GetItemListBySourceType(model.SourceTypeEdgeTunnel)
 
-			paddedBox := pterm.DefaultBox.WithLeftPadding(4).WithRightPadding(4).WithTopPadding(1).WithBottomPadding(1)
+			paddedBox := pterm.DefaultBox.WithLeftPadding(1).WithRightPadding(1).WithTopPadding(1)
 
 			rawStatistics := fmt.Sprintf(
 				"RawList[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]",
@@ -254,22 +254,22 @@ func (that *Shell) show() {
 			headers := []string{"index", "proxy", "location", "rtt", "source"}
 			tData := pterm.TableData{headers}
 			for idx, item := range verifiedResult.GetTotalList() {
-				r := []string{fmt.Sprintf("%d", idx), item.Scheme + item.GetHost(), item.Location, fmt.Sprintf("%v", item.RTT), "current"}
+				r := []string{fmt.Sprintf("%d", idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "current"}
 				tData = append(tData, r)
 			}
 
 			for idx, item := range edgeTunnelList {
-				r := []string{fmt.Sprintf("%s%d", FromEdgetunnel, idx), item.Scheme + item.GetHost(), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeEdgeTunnel}
+				r := []string{fmt.Sprintf("%s%d", FromEdgetunnel, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeEdgeTunnel}
 				tData = append(tData, r)
 			}
 
 			for idx, item := range manualList {
-				r := []string{fmt.Sprintf("%s%d", FromManually, idx), item.Scheme + item.GetHost(), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeManually}
+				r := []string{fmt.Sprintf("%s%d", FromManually, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeManually}
 				tData = append(tData, r)
 			}
 			result, _ := pterm.DefaultTable.WithHasHeader().WithData(tData).Srender()
 			title2 := pterm.LightCyan("Available Proxies")
-			box2 := paddedBox.WithTitle(title2).WithTitleTopCenter().Sprint(result)
+			box2 := paddedBox.WithTitle(title2).Sprint(result)
 
 			var (
 				currenVpnInfo  string

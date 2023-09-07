@@ -74,3 +74,14 @@ func ParseRawUri(rawUri string) (p *outbound.ProxyItem) {
 	p.GetOutbound()
 	return
 }
+
+func FormatProxyItemForTable(p *outbound.ProxyItem) string {
+	if p == nil {
+		return ""
+	}
+	addr := p.Address
+	if len(addr) > 32 {
+		addr = addr[:30] + "..."
+	}
+	return fmt.Sprintf("%s%s:%d", p.Scheme, addr, p.Port)
+}

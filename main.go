@@ -1,32 +1,24 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/moqsien/goutils/pkgs/gutils"
-	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/neobox/pkgs/proxy"
-	"github.com/moqsien/neobox/pkgs/storage/model"
-	"github.com/moqsien/vpnparser/pkgs/utils"
-)
+import "github.com/moqsien/neobox/example"
 
 func main() {
-	gs := gutils.CtrlCSignal{}
-	gs.ListenSignal()
-	cnf := conf.GetDefaultNeoConf()
+	// gs := gutils.CtrlCSignal{}
+	// gs.ListenSignal()
+	// cnf := conf.GetDefaultNeoConf()
 
 	// f := proxy.NewProxyFetcher(cnf)
 	// f.Download()
 	// f.DecryptAndLoad()
 
-	model.NewDBEngine(cnf)
+	// model.NewDBEngine(cnf)
 
-	v := proxy.NewVerifier(cnf)
-	v.Run(true)
-	for _, item := range v.Result.GetTotalList() {
-		fmt.Println(utils.ParseScheme(item.RawUri), item.GetHost(), "location: ", item.Location)
-	}
-	fmt.Println(v.Result.Len())
+	// v := proxy.NewVerifier(cnf)
+	// v.Run(true)
+	// for _, item := range v.Result.GetTotalList() {
+	// 	fmt.Println(utils.ParseScheme(item.RawUri), item.GetHost(), "location: ", item.Location)
+	// }
+	// fmt.Println(v.Result.Len())
 
 	// p := proxy.NewPinger(cnf)
 	// p.Run()
@@ -39,4 +31,6 @@ func main() {
 	// 	fmt.Println(v.GetOutbound())
 	// }
 	// proxy.TestGeoInfo()
+
+	example.Start()
 }

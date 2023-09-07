@@ -22,7 +22,7 @@ func NewDBEngine(cnf *conf.NeoConf) (db *gorm.DB, err error) {
 	db, err = gorm.Open(
 		hsqlite.Open(dbPath),
 		&gorm.Config{
-			Logger: logger.Default.LogMode(logger.Error),
+			Logger: logger.Default.LogMode(logger.Silent),
 		},
 	)
 	if err != nil {

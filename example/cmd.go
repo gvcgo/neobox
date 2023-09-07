@@ -1,4 +1,4 @@
-package main
+package example
 
 import (
 	"os"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/run"
+	"github.com/moqsien/neobox/pkgs/storage/model"
 	"github.com/moqsien/neobox/pkgs/utils"
 	cli "github.com/urfave/cli/v2"
 )
@@ -43,6 +44,8 @@ func NewApps() (a *Apps) {
 	}
 	utils.SetNeoboxEnvs(a.conf.GeoInfoDir, a.conf.SocketDir)
 	a.initiate()
+	// init database
+	model.NewDBEngine(a.conf)
 	return a
 }
 

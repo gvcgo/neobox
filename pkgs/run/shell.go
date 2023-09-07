@@ -262,7 +262,7 @@ func (that *Shell) show() {
 			str += utils.FormatLineForShell(headers...)
 
 			for idx, item := range verifiedResult.GetTotalList() {
-				r := []string{fmt.Sprintf("%d", idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "current"}
+				r := []string{fmt.Sprintf("%d", idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "verified"}
 				str += utils.FormatLineForShell(r...)
 			}
 

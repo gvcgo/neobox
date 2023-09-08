@@ -26,19 +26,19 @@ func NewIPV4Downloader(cnf *conf.NeoConf) (cfd *CFIPV4RangeDownloader) {
 		CNF:     cnf,
 		fetcher: request.NewFetcher(),
 	}
-	cfd.ipTxtFile = filepath.Join(cnf.WireGuardConfDir, conf.CloudflareIPV4FileName)
+	cfd.ipTxtFile = filepath.Join(cnf.CloudflareConf.WireGuardConfDir, conf.CloudflareIPV4FileName)
 	return
 }
 
 func (that *CFIPV4RangeDownloader) Download(force ...bool) {
-	if ok, _ := gutils.PathIsExist(that.CNF.WireGuardConfDir); !ok {
-		os.MkdirAll(that.CNF.WireGuardConfDir, 0777)
+	if ok, _ := gutils.PathIsExist(that.CNF.CloudflareConf.WireGuardConfDir); !ok {
+		os.MkdirAll(that.CNF.CloudflareConf.WireGuardConfDir, 0777)
 	}
 	flag := false
 	if len(force) > 0 {
 		flag = force[0]
 	}
-	that.fetcher.SetUrl(that.CNF.CloudflareIPV4URL)
+	that.fetcher.SetUrl(that.CNF.CloudflareConf.CloudflareIPV4URL)
 	that.fetcher.Timeout = time.Minute * 3
 	that.fetcher.GetAndSaveFile(that.ipTxtFile, flag)
 }

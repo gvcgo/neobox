@@ -25,6 +25,16 @@ const (
 	CloudflareIPV4FileName string = "cloudflare_ipv4.txt"
 )
 
+type CloudflareConf struct {
+	WireGuardConfDir  string  `json,koanf:"wireguard_conf_dir"`
+	CloudflareIPV4URL string  `json,koanf:"cloudflare_ipv4_url"`
+	PortList          []int   `json,koanf:"port_list"`
+	MaxGoroutines     int     `json,koanf:"max_goroutines"`
+	MaxRTT            int64   `json,koanf:"max_rtt"`
+	MaxLossRate       float32 `json,koanf:"max_loss_rate"`
+	MaxSaveToDB       int     `json,koanf:"max_saved"`
+}
+
 type NeoConf struct {
 	WorkDir               string            `json,koanf:"neobox_work_dir"`
 	LogDir                string            `json,koanf:"neobox_log_dir"`
@@ -45,8 +55,7 @@ type NeoConf struct {
 	GeoInfoDir            string            `json,koanf:"geo_info_dir"`
 	GeoInfoSumUrl         string            `json,koanf:"geo_info_sum_url"`
 	KeeperCron            string            `json,koanf:"keeper_cron"`
-	WireGuardConfDir      string            `json,koanf:"wireguard_conf_dir"`
-	CloudflareIPV4URL     string            `json,koanf:"cloudflare_ipv4_url"`
+	CloudflareConf        *CloudflareConf   `json,koanf:"cloudflare_conf"`
 }
 
 func GetDefaultNeoConf() (n *NeoConf) {
@@ -73,14 +82,21 @@ func GetDefaultNeoConf() (n *NeoConf) {
 			"geoip.db":    "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geoip.db",
 			"geosite.db":  "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geosite.db",
 		},
-		GeoInfoSumUrl:     "https://gitlab.com/moqsien/gvc_resources/-/raw/main/files_info.json?ref_type=heads&inline=false",
-		KeeperCron:        "@every 3m",
-		CloudflareIPV4URL: "https://www.cloudflare.com/ips-v4",
+		GeoInfoSumUrl: "https://gitlab.com/moqsien/gvc_resources/-/raw/main/files_info.json?ref_type=heads&inline=false",
+		KeeperCron:    "@every 3m",
+		CloudflareConf: &CloudflareConf{
+			CloudflareIPV4URL: "https://www.cloudflare.com/ips-v4",
+			PortList:          []int{443, 8443, 2053, 2096, 2087, 2083},
+			MaxGoroutines:     300,
+			MaxRTT:            500,
+			MaxLossRate:       0.0,
+			MaxSaveToDB:       100,
+		},
 	}
 	n.LogDir = n.WorkDir
 	n.SocketDir = n.WorkDir
 	n.GeoInfoDir = n.WorkDir
-	n.WireGuardConfDir = filepath.Join(n.WorkDir, "wireguard")
+	n.CloudflareConf.WireGuardConfDir = filepath.Join(n.WorkDir, "wireguard")
 	return
 }
 

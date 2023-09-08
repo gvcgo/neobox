@@ -34,9 +34,9 @@ type WGaurd struct {
 func NewWGuard(cnf *conf.NeoConf) (wg *WGaurd) {
 	wg = &WGaurd{
 		CNF:              cnf,
-		wAccountConfPath: filepath.Join(cnf.WireGuardConfDir, WireGuardAccountConfigFileName),
-		wConfPath:        filepath.Join(cnf.WireGuardConfDir, WireGuardConfigFileName),
-		warpConfFilePath: filepath.Join(cnf.WireGuardConfDir, WarpConfigFileName),
+		wAccountConfPath: filepath.Join(cnf.CloudflareConf.WireGuardConfDir, WireGuardAccountConfigFileName),
+		wConfPath:        filepath.Join(cnf.CloudflareConf.WireGuardConfDir, WireGuardConfigFileName),
+		warpConfFilePath: filepath.Join(cnf.CloudflareConf.WireGuardConfDir, WarpConfigFileName),
 	}
 	wg.wguardConf = NewWGaurdConf(wg.wAccountConfPath)
 	wg.warpConf = NewWarpConf(wg.wConfPath)
@@ -45,8 +45,8 @@ func NewWGuard(cnf *conf.NeoConf) (wg *WGaurd) {
 }
 
 func (that *WGaurd) initDir() {
-	if ok, _ := gutils.PathIsExist(that.CNF.WireGuardConfDir); !ok {
-		os.MkdirAll(that.CNF.WireGuardConfDir, 0666)
+	if ok, _ := gutils.PathIsExist(that.CNF.CloudflareConf.WireGuardConfDir); !ok {
+		os.MkdirAll(that.CNF.CloudflareConf.WireGuardConfDir, 0666)
 	}
 }
 
@@ -225,7 +225,7 @@ func (that *WGaurd) Generate() (err error) {
 	that.warpConf.Save()
 
 	PrintDevice(thisDevice, boundDevice)
-	gtui.PrintSuccess("Successfully generated WireGuard profile in:", that.CNF.WireGuardConfDir)
+	gtui.PrintSuccess("Successfully generated WireGuard profile in:", that.CNF.CloudflareConf.WireGuardConfDir)
 	return
 }
 

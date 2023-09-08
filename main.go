@@ -36,5 +36,6 @@ func main() {
 
 	// example.Start()
 	// wspeed.TestIPV4Download()
-	wspeed.TestIPv4Generator()
+	// wspeed.TestIPv4Generator()
+	wspeed.TestWPinger()
 }

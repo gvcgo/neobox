@@ -31,6 +31,7 @@ type CloudflareConf struct {
 	PortList          []int   `json,koanf:"port_list"`
 	MaxGoroutines     int     `json,koanf:"max_goroutines"`
 	MaxRTT            int64   `json,koanf:"max_rtt"`
+	MaxPingCount      int     `json,koanf:"max_ping_count"`
 	MaxLossRate       float32 `json,koanf:"max_loss_rate"`
 	MaxSaveToDB       int     `json,koanf:"max_saved"`
 }
@@ -87,10 +88,12 @@ func GetDefaultNeoConf() (n *NeoConf) {
 		CloudflareConf: &CloudflareConf{
 			CloudflareIPV4URL: "https://www.cloudflare.com/ips-v4",
 			PortList:          []int{443, 8443, 2053, 2096, 2087, 2083},
-			MaxGoroutines:     300,
-			MaxRTT:            500,
-			MaxLossRate:       0.0,
-			MaxSaveToDB:       100,
+			// PortList:      []int{443},
+			MaxPingCount:  4,
+			MaxGoroutines: 300,
+			MaxRTT:        500,
+			MaxLossRate:   0.0,
+			MaxSaveToDB:   1000,
 		},
 	}
 	n.LogDir = n.WorkDir

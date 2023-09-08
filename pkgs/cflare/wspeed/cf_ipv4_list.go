@@ -2,61 +2,58 @@ package wspeed
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"net"
 	"strconv"
 	"strings"
 
-	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/neobox/pkgs/conf"
 )
 
-func getRandomIPEnd(num byte) byte {
-	if num == 0 { // 对于 /32 这种单独的 IP
+func isIPv4(ip string) bool {
+	return strings.Contains(ip, ".")
+}
+
+func randIPEndWith(num byte) byte {
+	if num == 0 {
 		return byte(0)
 	}
 	return byte(rand.Intn(int(num)))
 }
 
-/*
-randomly choose IPs using IP range downloaded from Cloudflare official site.
-*/
-
-type IPv4ListGenerator struct {
-	ips        []*net.IPAddr
-	mask       string
-	firstIP    net.IP
-	ipNet      *net.IPNet
-	genAll     bool
-	CNF        *conf.NeoConf
-	downloader *CFIPV4RangeDownloader
+type CIDRParser struct {
+	ips     []*net.IPAddr
+	mask    string
+	firstIP net.IP
+	ipNet   *net.IPNet
+	path    string
+	genAll  bool
+	CNF     *conf.NeoConf
+	d       *CFIPV4RangeDownloader
 }
 
-func NewIPv4Generator(cnf *conf.NeoConf) (ig *IPv4ListGenerator) {
-	ig = &IPv4ListGenerator{
-		CNF:        cnf,
-		downloader: NewIPV4Downloader(cnf),
+func NewCIDRPaser(cnf *conf.NeoConf) (cp *CIDRParser) {
+	cp = &CIDRParser{
+		ips:  make([]*net.IPAddr, 0),
+		path: `C:\Users\moqsien\data\projects\go\src\play\ip.txt`,
+		CNF:  cnf,
+		d:    NewIPV4Downloader(cnf),
 	}
 	return
 }
 
-// generate all or not
-func (that *IPv4ListGenerator) SetToGetAllorNot(toGetAll bool) {
-	that.genAll = toGetAll
+func (that *CIDRParser) SetGenAll(genAll bool) {
+	that.genAll = genAll
 }
 
-// generate ip list
-func (that *IPv4ListGenerator) Run() []*net.IPAddr {
-	for _, cidrStr := range that.downloader.ReadIPV4File() {
-		that.parseCIDR(cidrStr)
-		that.genIPv4()
-	}
-	return that.ips
-}
-
-func (that *IPv4ListGenerator) fixCIDRStr(cidrStr string) string {
+func (that *CIDRParser) fixCIDRStr(cidrStr string) string {
 	if i := strings.IndexByte(cidrStr, '/'); i < 0 {
-		that.mask = "/32"
+		if isIPv4(cidrStr) {
+			that.mask = "/32"
+		} else {
+			that.mask = "/128"
+		}
 		cidrStr += that.mask
 	} else {
 		that.mask = cidrStr[i:]
@@ -64,22 +61,22 @@ func (that *IPv4ListGenerator) fixCIDRStr(cidrStr string) string {
 	return cidrStr
 }
 
-func (that *IPv4ListGenerator) parseCIDR(cidrStr string) {
+func (that *CIDRParser) parseCIDR(cidrStr string) {
 	var err error
 	if that.firstIP, that.ipNet, err = net.ParseCIDR(that.fixCIDRStr(cidrStr)); err != nil {
-		gtui.PrintFatal("ParseCIDR err", err)
+		log.Fatalln("ParseCIDR err", err)
 	}
 }
 
-func (that *IPv4ListGenerator) appendIP(ip net.IP) {
-	that.ips = append(that.ips, &net.IPAddr{IP: ip})
-}
-
-func (that *IPv4ListGenerator) appendIPv4(d byte) {
+func (that *CIDRParser) appendIPv4(d byte) {
 	that.appendIP(net.IPv4(that.firstIP[12], that.firstIP[13], that.firstIP[14], d))
 }
 
-func (that *IPv4ListGenerator) getIPRange() (minIP, count byte) {
+func (that *CIDRParser) appendIP(ip net.IP) {
+	that.ips = append(that.ips, &net.IPAddr{IP: ip})
+}
+
+func (that *CIDRParser) getIPRange() (minIP, count byte) {
 	minIP = that.firstIP[15] & that.ipNet.Mask[3]
 	m := net.IPv4Mask(255, 255, 255, 255)
 	for i, v := range that.ipNet.Mask {
@@ -94,19 +91,18 @@ func (that *IPv4ListGenerator) getIPRange() (minIP, count byte) {
 	return
 }
 
-func (that *IPv4ListGenerator) genIPv4() {
+func (that *CIDRParser) chooseIPv4() {
 	if that.mask == "/32" {
 		that.appendIP(that.firstIP)
 	} else {
-		minIP, count := that.getIPRange()
+		minIP, hosts := that.getIPRange()
 		for that.ipNet.Contains(that.firstIP) {
 			if that.genAll {
-				for i := 0; i <= int(count); i++ {
+				for i := 0; i <= int(hosts); i++ {
 					that.appendIPv4(byte(i) + minIP)
 				}
 			} else {
-				// randomly get 'X' in 0.0.0.X
-				that.appendIPv4(minIP + getRandomIPEnd(count))
+				that.appendIPv4(minIP + randIPEndWith(hosts))
 			}
 			that.firstIP[14]++ // 0.0.(X+1).X
 			if that.firstIP[14] == 0 {
@@ -119,9 +115,49 @@ func (that *IPv4ListGenerator) genIPv4() {
 	}
 }
 
+func (that *CIDRParser) chooseIPv6() {
+	if that.mask == "/128" {
+		that.appendIP(that.firstIP)
+	} else {
+		var tempIP uint8
+		for that.ipNet.Contains(that.firstIP) {
+			that.firstIP[15] = randIPEndWith(255)
+			that.firstIP[14] = randIPEndWith(255)
+
+			targetIP := make([]byte, len(that.firstIP))
+			copy(targetIP, that.firstIP)
+			that.appendIP(targetIP)
+
+			for i := 13; i >= 0; i-- {
+				tempIP = that.firstIP[i]
+				that.firstIP[i] += randIPEndWith(255)
+				if that.firstIP[i] >= tempIP {
+					break
+				}
+			}
+		}
+	}
+}
+
+func (that *CIDRParser) Run() []*net.IPAddr {
+	cidrStrList := that.d.ReadIPV4File()
+	for _, cidrStr := range cidrStrList {
+		cidrStr = strings.TrimSpace(cidrStr)
+		if cidrStr != "" {
+			that.parseCIDR(cidrStr)
+			if isIPv4(cidrStr) {
+				that.chooseIPv4()
+			} else {
+				that.chooseIPv6()
+			}
+		}
+	}
+	return that.ips
+}
+
 func TestIPv4Generator() {
 	cnf := conf.GetDefaultNeoConf()
-	ig := NewIPv4Generator(cnf)
+	ig := NewCIDRPaser(cnf)
 	ipList := ig.Run()
 	fmt.Println(len(ipList))
 }

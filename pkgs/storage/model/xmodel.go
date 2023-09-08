@@ -40,6 +40,9 @@ func NewDBEngine(cnf *conf.NeoConf) (db *gorm.DB, err error) {
 		if err := m.CreateTable(&Country{}); err != nil {
 			gtui.PrintError(err)
 		}
+		if err := m.CreateTable(&WireGuard{}); err != nil {
+			gtui.PrintError(err)
+		}
 	}
 	DBEngine = db
 	return

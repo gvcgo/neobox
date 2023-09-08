@@ -15,6 +15,7 @@ import (
 	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/goutils/pkgs/socks"
+	"github.com/moqsien/neobox/pkgs/cflare/wguard"
 	"github.com/moqsien/neobox/pkgs/client"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/proxy"
@@ -33,6 +34,7 @@ const (
 
 // index prefix for proxy
 const (
+	FromWireguard  string = "w"
 	FromEdgetunnel string = "e"
 	FromManually   string = "m"
 )
@@ -161,6 +163,10 @@ func (that *Runner) GetProxyByIndex(idxStr string) (p *outbound.ProxyItem) {
 			}
 			return mList[idx]
 		}
+	} else if strings.HasPrefix(idxStr, FromWireguard) {
+		wo := wguard.NewWireguardOutbound(that.CNF)
+		item, _ := wo.GetProxyItem()
+		return item
 	} else {
 		idx, _ := strconv.Atoi(idxStr)
 		if vList := that.verifier.GetResultListByReload(); len(vList) > 0 {

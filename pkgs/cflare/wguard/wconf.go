@@ -79,6 +79,7 @@ type WarpConf struct {
 	Endpoint   string   `koanf,json:"endpoint"`
 	ClientID   string   `koanf,json:"client_id"`
 	Reserved   []int    `koanf,json:"reserved"`
+	DeviceName string   `koanf,json:"device_name"`
 	path       string
 	koanfer    *koanfer.JsonKoanfer
 }

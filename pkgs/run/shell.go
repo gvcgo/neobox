@@ -268,6 +268,12 @@ func (that *Shell) show() {
 				str += utils.FormatLineForShell(r...)
 			}
 
+			wireguard := wguard.NewWireguardOutbound(that.CNF)
+			if item, _ := wireguard.GetProxyItem(); item != nil {
+				r := []string{fmt.Sprintf("%s%d", FromWireguard, 0), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "wireguard"}
+				str += utils.FormatLineForShell(r...)
+			}
+
 			for idx, item := range edgeTunnelList {
 				r := []string{fmt.Sprintf("%s%d", FromEdgetunnel, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeEdgeTunnel}
 				str += utils.FormatLineForShell(r...)

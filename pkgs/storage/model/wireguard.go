@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -41,10 +42,17 @@ func (that *WireGuard) GetByHost(db *gorm.DB) (*WireGuard, error) {
 
 func (that *WireGuard) GetIPListByPort(db *gorm.DB) (wList []*WireGuard, err error) {
 	fields := []string{"address", "port", "rtt"}
-	rows, err := db.Select(fields).Table(that.TableName()).
-		Where("port = ?", that.Port).
-		Order("rtt ASC").
-		Rows()
+	var rows *sql.Rows
+	if that.Port == 0 {
+		rows, err = db.Select(fields).Table(that.TableName()).
+			Order("rtt ASC").
+			Rows()
+	} else {
+		rows, err = db.Select(fields).Table(that.TableName()).
+			Where("port = ?", that.Port).
+			Order("rtt ASC").
+			Rows()
+	}
 	if err != nil {
 		return nil, err
 	}

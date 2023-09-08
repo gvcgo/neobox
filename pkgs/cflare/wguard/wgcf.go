@@ -221,6 +221,7 @@ func (that *WGaurd) Generate() (err error) {
 	that.warpConf.PublicKey = thisDevice.Config.Peers[0].PublicKey
 	that.warpConf.Endpoint = thisDevice.Config.Peers[0].Endpoint.Host
 	that.warpConf.ClientID = thisDevice.Config.ClientId
+	that.warpConf.DeviceName = *boundDevice.Name
 	that.parseReserved()
 	that.warpConf.Save()
 

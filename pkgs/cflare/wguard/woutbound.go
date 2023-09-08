@@ -1,0 +1,80 @@
+package wguard
+
+import (
+	"fmt"
+	"path/filepath"
+
+	json "github.com/bytedance/sonic"
+	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gutils"
+	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/neobox/pkgs/storage/dao"
+	"github.com/moqsien/vpnparser/pkgs/outbound"
+	"github.com/moqsien/vpnparser/pkgs/parser"
+)
+
+// prepare wireguard outbound
+type WireguardOutbound struct {
+	CNF          *conf.NeoConf
+	IPSelector   *dao.WireGuardIP
+	WarpConfig   *WarpConf
+	warpConfPath string
+}
+
+func NewWireguardOutbound(cnf *conf.NeoConf) (wo *WireguardOutbound) {
+	wo = &WireguardOutbound{
+		CNF:        cnf,
+		IPSelector: &dao.WireGuardIP{},
+	}
+	wo.warpConfPath = filepath.Join(cnf.CloudflareConf.WireGuardConfDir, WireGuardConfigFileName)
+	if ok, _ := gutils.PathIsExist(wo.warpConfPath); ok {
+		wo.WarpConfig = NewWarpConf(wo.warpConfPath)
+	}
+	return
+}
+
+func (that *WireguardOutbound) chooseHostRandomly() (addr string, port int, rtt int64) {
+	if len(that.CNF.CloudflareConf.PortList) > 0 {
+		if r, err := that.IPSelector.RandomlyGetOneIPByPort(0); err == nil && r != nil {
+			addr = r.Address
+			port = r.Port
+			rtt = r.RTT
+		} else {
+			gtui.PrintError(err)
+		}
+	}
+	return
+}
+
+func (that *WireguardOutbound) GetProxyItem() (pp *outbound.ProxyItem, err error) {
+	if ok, _ := gutils.PathIsExist(that.warpConfPath); !ok {
+		return nil, fmt.Errorf("warp config file does not exist: %s", that.warpConfPath)
+	}
+	addr, port, rtt := that.chooseHostRandomly()
+	if addr == "" || port == 0 {
+		return nil, fmt.Errorf("cannot find cloudflare ip")
+	}
+	p := &parser.ParserWirguard{}
+	p.Address = addr
+	p.Port = port
+	p.AddrV4 = that.WarpConfig.AddrV4
+	p.AddrV6 = that.WarpConfig.AddrV6
+	p.AllowedIPs = that.WarpConfig.AllowedIPs
+	p.ClientID = that.WarpConfig.ClientID
+	p.DNS = that.WarpConfig.DNS
+	p.DeviceName = that.WarpConfig.DeviceName
+	p.Endpoint = fmt.Sprintf("%s:%d", addr, port)
+	p.MTU = that.WarpConfig.MTU
+	p.PrivateKey = that.WarpConfig.PrivateKey
+	p.PublicKey = that.WarpConfig.PublicKey
+
+	if j, err := json.Marshal(p); err != nil {
+		return nil, err
+	} else {
+		rawUri := parser.SchemeWireguard + string(j)
+		pp = outbound.NewItem(rawUri)
+		pp.GetOutbound()
+		pp.RTT = rtt
+	}
+	return
+}

@@ -10,6 +10,8 @@ import (
 	"github.com/moqsien/goktrl"
 	"github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/neobox/pkgs/cflare/wguard"
+	"github.com/moqsien/neobox/pkgs/cflare/wspeed"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/proxy"
 	"github.com/moqsien/neobox/pkgs/storage/dao"
@@ -409,6 +411,42 @@ func (that *Shell) setKey() {
 	})
 }
 
+func (that *Shell) cloudflareIPv4() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "cfip",
+		Help: "Test speed for cloudflare IPv4s.",
+		Func: func(c *goktrl.Context) {
+			wpinger := wspeed.NewWPinger(that.CNF)
+			wpinger.Run()
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
+// register cloudflare wireguard account and update the account to Warp+.
+func (that *Shell) registerWireguardAndUpdateToWarpplus() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "wireguard",
+		Help: "Register wireguard account and update licenseKey to Warp+ [if a licenseKey is specified].",
+		Func: func(c *goktrl.Context) {
+			if len(c.Args) > 0 {
+				if len(c.Args[0]) == 26 {
+					w := wguard.NewWGuard(that.CNF)
+					w.Run(c.Args[0])
+				} else {
+					gtui.PrintWarning("invalid license key.")
+				}
+			} else {
+				w := wguard.NewWGuard(that.CNF)
+				w.Status()
+			}
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
 func (that *Shell) InitKtrl() {
 	that.start()
 	that.stop()
@@ -421,6 +459,8 @@ func (that *Shell) InitKtrl() {
 	that.setPing()
 	that.manualGC()
 	that.setKey()
+	that.cloudflareIPv4()
+	that.registerWireguardAndUpdateToWarpplus()
 }
 
 func (that *Shell) StartShell() {

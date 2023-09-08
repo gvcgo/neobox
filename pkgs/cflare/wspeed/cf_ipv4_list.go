@@ -47,26 +47,26 @@ func (that *IPv4ListGenerator) SetToGetAllorNot(toGetAll bool) {
 
 // generate ip list
 func (that *IPv4ListGenerator) Run() []*net.IPAddr {
-	for _, ipRangeStr := range that.downloader.ReadIPV4File() {
-		that.parseCIDR(ipRangeStr)
-		that.chooseIPv4()
+	for _, cidrStr := range that.downloader.ReadIPV4File() {
+		that.parseCIDR(cidrStr)
+		that.genIPv4()
 	}
 	return that.ips
 }
 
-func (that *IPv4ListGenerator) fixIPRange(ip string) string {
-	if i := strings.IndexByte(ip, '/'); i < 0 {
+func (that *IPv4ListGenerator) fixCIDRStr(cidrStr string) string {
+	if i := strings.IndexByte(cidrStr, '/'); i < 0 {
 		that.mask = "/32"
-		ip += that.mask
+		cidrStr += that.mask
 	} else {
-		that.mask = ip[i:]
+		that.mask = cidrStr[i:]
 	}
-	return ip
+	return cidrStr
 }
 
-func (that *IPv4ListGenerator) parseCIDR(ipRangeStr string) {
+func (that *IPv4ListGenerator) parseCIDR(cidrStr string) {
 	var err error
-	if that.firstIP, that.ipNet, err = net.ParseCIDR(that.fixIPRange(ipRangeStr)); err != nil {
+	if that.firstIP, that.ipNet, err = net.ParseCIDR(that.fixCIDRStr(cidrStr)); err != nil {
 		gtui.PrintFatal("ParseCIDR err", err)
 	}
 }
@@ -94,7 +94,7 @@ func (that *IPv4ListGenerator) getIPRange() (minIP, count byte) {
 	return
 }
 
-func (that *IPv4ListGenerator) chooseIPv4() {
+func (that *IPv4ListGenerator) genIPv4() {
 	if that.mask == "/32" {
 		that.appendIP(that.firstIP)
 	} else {

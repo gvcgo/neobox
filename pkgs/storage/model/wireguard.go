@@ -4,9 +4,10 @@ import "gorm.io/gorm"
 
 type WireGuard struct {
 	*Model
-	Address string `json:"address"`
-	Port    int    `json:"port"`
-	RTT     int64  `json:"rtt"`
+	Address    string  `json:"address"`
+	Port       int     `json:"port"`
+	RTT        int64   `json:"rtt"`
+	PacketLoss float32 `json:"packet_loss"`
 }
 
 func NewWireGuardItem() (w *WireGuard) {

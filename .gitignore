@@ -4,7 +4,6 @@
 *.conf
 *.dat
 *.db
-*.py
 temp_xx*
 neobox*.bat
 *.log

@@ -11,6 +11,7 @@ import (
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/storage/dao"
 	"github.com/moqsien/neobox/pkgs/storage/model"
+	"github.com/pterm/pterm"
 )
 
 type WPinger struct {
@@ -20,23 +21,25 @@ type WPinger struct {
 	CNF      *conf.NeoConf
 	sendChan chan *net.IPAddr
 	wg       *sync.WaitGroup
+	bar      *pterm.ProgressbarPrinter
+	barLock  *sync.Mutex
 }
 
+// TODO: progressbar
 func NewWPinger(cnf *conf.NeoConf) (wp *WPinger) {
 	wp = &WPinger{
-		CNF:    cnf,
-		Parser: NewCIDRPaser(cnf),
-		Result: NewWireResult(),
-		Saver:  &dao.WireGuardIP{},
-		wg:     &sync.WaitGroup{},
+		CNF:     cnf,
+		Parser:  NewCIDRPaser(cnf),
+		Result:  NewWireResult(),
+		Saver:   &dao.WireGuardIP{},
+		wg:      &sync.WaitGroup{},
+		barLock: &sync.Mutex{},
 	}
 	return
 }
 
-func (that *WPinger) send() {
+func (that *WPinger) send(ipList []*net.IPAddr) {
 	that.sendChan = make(chan *net.IPAddr, 300)
-	ipList := that.Parser.Run()
-	gtui.PrintInfof("generate cloudflare ips: %d\n", len(ipList))
 	for _, ip := range ipList {
 		that.sendChan <- ip
 	}
@@ -85,6 +88,9 @@ func (that *WPinger) ping() {
 					that.Result.AddItem(item)
 				}
 			}
+			that.barLock.Lock()
+			that.bar.Add(1)
+			that.barLock.Unlock()
 		default:
 			time.Sleep(time.Millisecond * 100)
 		}
@@ -92,18 +98,32 @@ func (that *WPinger) ping() {
 }
 
 func (that *WPinger) Run() {
-	go that.send()
-	time.Sleep(time.Second)
+	ipList := that.Parser.Run()
+	gtui.PrintInfof("generate cloudflare ips: %d\n", len(ipList))
+	that.bar = pterm.DefaultProgressbar.WithTotal(len(ipList)).WithTitle("[SelectIPs]").WithShowCount(true)
+	go that.send(ipList)
+	var err error
+	that.bar, err = (*that.bar).Start()
+	if err != nil {
+		gtui.PrintError(err)
+		return
+	}
+	time.Sleep(time.Millisecond * 100)
 	for i := 0; i < that.CNF.CloudflareConf.MaxGoroutines; i++ {
 		go that.ping()
 	}
 	that.wg.Wait()
 	if len(that.Result.ItemList) > 0 {
-		that.Saver.DeleteAll()
+		if err = that.Saver.DeleteAll(); err != nil {
+			gtui.PrintError(err)
+		}
 	}
 	that.Result.Sort()
 	gtui.PrintInfof("verified cloudflare ips: %d\n", len(that.Result.ItemList))
-	for _, item := range that.Result.ItemList {
+	for idx, item := range that.Result.ItemList {
+		if idx > that.CNF.CloudflareConf.MaxSaveToDB-1 {
+			break
+		}
 		if itm := item.(*Item); itm != nil {
 			that.Saver.Create(itm.IP.String(), itm.Port, itm.RTT)
 		}

@@ -100,6 +100,10 @@ func (that *Proxy) Delete(db *gorm.DB) error {
 }
 
 func (that *Proxy) DeleteAll(db *gorm.DB) (err error) {
-	db.Exec("TRUNCATE TABLE ?", that.TableName())
+	err = db.Exec(fmt.Sprintf("DELETE FROM %s", that.TableName())).Error
+	if err != nil {
+		return err
+	}
+	err = db.Exec("VACUUM").Error
 	return
 }

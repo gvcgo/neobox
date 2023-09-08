@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -72,5 +73,14 @@ func (that *Country) GetByNameCN(db *gorm.DB) (*Country, error) {
 
 func (that *Country) Count(db *gorm.DB) (count int64, err error) {
 	err = db.Table(that.TableName()).Count(&count).Error
+	return
+}
+
+func (that *Country) DeleteAll(db *gorm.DB) (err error) {
+	err = db.Exec(fmt.Sprintf("DELETE FROM %s", that.TableName())).Error
+	if err != nil {
+		return err
+	}
+	err = db.Exec("VACUUM").Error
 	return
 }

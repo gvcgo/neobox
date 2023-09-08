@@ -1,6 +1,10 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+
+	"gorm.io/gorm"
+)
 
 type Location struct {
 	*Model
@@ -34,6 +38,10 @@ func (that *Location) GetByIP(db *gorm.DB) (*Location, error) {
 }
 
 func (that *Location) DeleteAll(db *gorm.DB) (err error) {
-	db.Exec("TRUNCATE TABLE ?", that.TableName())
+	err = db.Exec(fmt.Sprintf("DELETE FROM %s", that.TableName())).Error
+	if err != nil {
+		return err
+	}
+	err = db.Exec("VACUUM").Error
 	return
 }

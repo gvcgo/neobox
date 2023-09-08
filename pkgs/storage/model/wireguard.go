@@ -1,6 +1,10 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+
+	"gorm.io/gorm"
+)
 
 type WireGuard struct {
 	*Model
@@ -56,6 +60,10 @@ func (that *WireGuard) GetIPListByPort(db *gorm.DB) (wList []*WireGuard, err err
 }
 
 func (that *WireGuard) DeleteAll(db *gorm.DB) (err error) {
-	db.Exec("TRUNCATE TABLE ?", that.TableName())
+	err = db.Exec(fmt.Sprintf("DELETE FROM %s", that.TableName())).Error
+	if err != nil {
+		return err
+	}
+	err = db.Exec("VACUUM").Error
 	return
 }

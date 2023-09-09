@@ -97,8 +97,8 @@ func (that *ProxyLocations) parseCountryName(cName string) (eName string) {
 	if nameISO3 := that.countryItemSaver.GetISO3ByNameCN(cName); nameISO3 != "" {
 		eName = nameISO3
 	}
-	if cName == `亚太地区` {
-		eName = "AP"
+	if eName == `亚太地区` {
+		eName = "APA"
 	}
 	return
 }

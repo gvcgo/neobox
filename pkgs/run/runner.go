@@ -150,13 +150,18 @@ func (that *Runner) getNextProxy(args ...string) *outbound.ProxyItem {
 	return nil
 }
 
-func (that *Runner) handleEdgeTunnel(p *outbound.ProxyItem) {
+func (that *Runner) handleEdgeTunnelVless(p *outbound.ProxyItem) {
 	wguard := &dao.WireGuardIP{}
 	if w, err := wguard.RandomlyGetOneIPByPort(p.Port); err == nil && w != nil {
+		j := gjson.New(p.GetOutbound())
+		// use optimized IPs
+		if p.OutboundType == outbound.SingBox {
+			j.Set("server", w.Address)
+		} else {
+			j.Set("settings.vnext.0.address", w.Address)
+		}
 		p.Address = w.Address
 		p.RTT = w.RTT
-		j := gjson.New(p.GetOutbound())
-		j.Set("server", p.Address)
 		p.Outbound = j.MustToJsonString()
 
 		reg := regexp.MustCompile(`@.+:`)
@@ -174,11 +179,11 @@ func (that *Runner) GetProxyByIndex(idxStr string) (p *outbound.ProxyItem) {
 		if eList := that.verifier.GetProxyFromDB(model.SourceTypeEdgeTunnel); len(eList) > 0 {
 			if idx < 0 || idx >= len(eList) {
 				p = eList[0]
-				that.handleEdgeTunnel(p)
+				that.handleEdgeTunnelVless(p)
 				return
 			}
 			p = eList[idx]
-			that.handleEdgeTunnel(p)
+			that.handleEdgeTunnelVless(p)
 			return
 		}
 	} else if strings.HasPrefix(idxStr, FromManually) {

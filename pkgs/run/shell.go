@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -84,7 +85,7 @@ func (that *Shell) Start() {
 func (that *Shell) downloadRawUri() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "graw",
-		Help: "Manually dowload rawUri list(conf.txt for gitlab) for neobox client.",
+		Help: "Manually dowload rawUri list(conf.txt from gitlab) for neobox client.",
 		Func: func(c *goktrl.Context) {
 			f := proxy.NewProxyFetcher(that.CNF)
 			f.Download()
@@ -113,7 +114,7 @@ func (that *Shell) restart() {
 	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "restart",
-		Help: "Restart the running neobox client with a chosen proxy. [restart vpn_index]",
+		Help: "Restart the running neobox client with a chosen proxy. [restart proxy_index]",
 		Opts: &Options{},
 		Func: func(c *goktrl.Context) {
 			opts := c.Options.(*Options)
@@ -214,9 +215,10 @@ func (that *Shell) addEdgeTunnel() {
 		Port    int    `alias:"p" required:"false" descr:"port for edge tunnel."`
 	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "added",
-		Help: "Add edgetunnel proxies to neobox.",
-		Opts: &Options{},
+		Name:            "added",
+		Help:            "Add edgetunnel proxies to neobox.",
+		ArgsDescription: "full raw_uri[vless://xxx@xxx?xxx]",
+		Opts:            &Options{},
 		Func: func(c *goktrl.Context) {
 			manual := proxy.NewMannualProxy(that.CNF)
 			opts := c.Options.(*Options)
@@ -228,6 +230,27 @@ func (that *Shell) addEdgeTunnel() {
 				rawUri := manual.FormatEdgeTunnelRawUri(opts.UUID, opts.Address, opts.Port)
 				gtui.PrintInfo(rawUri)
 				manual.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
+			}
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
+func (that *Shell) removeManually() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name:            "rmproxy",
+		Help:            "Remove a manually added proxy [manually or edgetunnel].",
+		ArgsDescription: "proxy host [address:port]",
+		Func: func(c *goktrl.Context) {
+			if len(c.Args) == 0 {
+				return
+			}
+			sList := strings.Split(c.Args[0], ":")
+			if len(sList) == 2 {
+				p := &dao.Proxy{}
+				port, _ := strconv.Atoi(sList[1])
+				p.DeleteOneRecord(sList[0], port)
 			}
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
@@ -494,6 +517,7 @@ func (that *Shell) InitKtrl() {
 	that.restart()
 	that.addMannually()
 	that.addEdgeTunnel()
+	that.removeManually()
 	that.show()
 	that.filter()
 	that.geoinfo()

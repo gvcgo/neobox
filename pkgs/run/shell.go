@@ -95,7 +95,7 @@ func (that *Shell) restart() {
 		Name: "restart",
 		Help: "Restart the running neobox client with a chosen proxy. [restart vpn_index]",
 		Func: func(c *goktrl.Context) {
-			fmt.Println(c.Args)
+			// fmt.Println(c.Args)
 			if that.runner.PingRunner() {
 				res, _ := c.GetResult()
 				gtui.PrintInfo(string(res))

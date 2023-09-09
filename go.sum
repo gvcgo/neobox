@@ -463,16 +463,12 @@ github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9G
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/moqsien/goktrl v1.3.8 h1:XU2tTM/dQfQMfx+b+UKJ6hFJO3xiVZbZmcbIcuxQW0c=
 github.com/moqsien/goktrl v1.3.8/go.mod h1:vtYPnSuyWeOGl7HSQ08SX8b8m/NdiVv9icf9gQhT07A=
-github.com/moqsien/goutils v0.3.2 h1:2y9JyYDZTC1ijoDt/JiL+vfvpyoy+2FbOOTWnY9c6dI=
-github.com/moqsien/goutils v0.3.2/go.mod h1:V9Yj1e5Qo292hqMyYVfX4/yTihpl6wFp7HhpPZMUvxg=
 github.com/moqsien/goutils v0.3.3 h1:8ZITvhqhrPhtJLHHFlzPOpYospPZalmeA4fjCK+AANE=
 github.com/moqsien/goutils v0.3.3/go.mod h1:V9Yj1e5Qo292hqMyYVfX4/yTihpl6wFp7HhpPZMUvxg=
 github.com/moqsien/hackbrowser v1.0.3 h1:HpXHg1goHU70YnifqPk8+ityK5/SpIu9e7BB5pN4TUY=
 github.com/moqsien/hackbrowser v1.0.3/go.mod h1:xsUuSbleSJn0vz5TOFMD0nDEmv5fDGgb65HQq8INLJc=
 github.com/moqsien/processes v1.0.3 h1:bV8vi4JZnwlhsxguyVAtUUv+zq4yvMSZIfjrsFGfmPE=
 github.com/moqsien/processes v1.0.3/go.mod h1:+jsV7YfT+24Ea7Ks8UXW4x8jcbqX7exKej/o5zlPEm0=
-github.com/moqsien/vpnparser v0.1.1 h1:pc3JoIBvUU25HsTYenoqQCxF9+JuWG2T4pTpGF0W3NI=
-github.com/moqsien/vpnparser v0.1.1/go.mod h1:Dcy/NtnfOIqkwdPDvuiU1gqGIoUhIYFiZSeWttTVd4s=
 github.com/moqsien/vpnparser v0.1.2 h1:YsmkWg+Z8XJ6GV3aFamgMc+K4l7BB2NeeyORzJX5tig=
 github.com/moqsien/vpnparser v0.1.2/go.mod h1:Dcy/NtnfOIqkwdPDvuiU1gqGIoUhIYFiZSeWttTVd4s=
 github.com/moqsien/wgcf v0.0.0-20230611034603-e29859e0cae2 h1:vhdokjT66JSaSrBZumSjTFtkNXzzNfhV8KJSI6vQqJY=

@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -88,12 +89,17 @@ func (that *Verifier) verify(httpClient *http.Client) bool {
 	if that.CNF.VerificationUrl == "" {
 		that.CNF.VerificationUrl = "https://www.google.com"
 	}
-	resp, err := httpClient.Head(that.CNF.VerificationUrl)
+	resp, err := httpClient.Get(that.CNF.VerificationUrl)
 	if err != nil || resp == nil || resp.Body == nil {
 		return false
 	}
 	defer resp.Body.Close()
-	return resp.StatusCode == 200
+	if resp.StatusCode == 200 {
+		r, _ := io.ReadAll(resp.Body)
+		result := string(r)
+		return strings.Contains(result, "</html>") && strings.Contains(result, "google")
+	}
+	return false
 }
 
 func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {

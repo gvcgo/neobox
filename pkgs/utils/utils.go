@@ -93,7 +93,7 @@ func FormatLineForShell(line ...string) string {
 	if len(line) < 4 {
 		return ""
 	}
-	pattern := "%6s. %-60s %12s %10s %10s\n"
+	pattern := "%8s %-80s %-10s %-10s %10s\n"
 	index := pterm.Yellow(line[0])
 	proxy := pterm.LightMagenta(line[1])
 	location := pterm.Cyan(line[2])

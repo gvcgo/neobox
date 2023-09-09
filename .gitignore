@@ -11,3 +11,4 @@ neobox*.bat
 temp_xxxx
 *.part*
 *.sql
+*.exe~

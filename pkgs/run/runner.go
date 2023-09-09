@@ -5,12 +5,14 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	json "github.com/bytedance/sonic"
 	"github.com/gin-gonic/gin"
+	"github.com/gogf/gf/encoding/gjson"
 	"github.com/moqsien/goutils/pkgs/daemon"
 	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/goutils/pkgs/logs"
@@ -19,6 +21,7 @@ import (
 	"github.com/moqsien/neobox/pkgs/client"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/proxy"
+	"github.com/moqsien/neobox/pkgs/storage/dao"
 	"github.com/moqsien/neobox/pkgs/storage/model"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 	cron "github.com/robfig/cron/v3"
@@ -146,14 +149,33 @@ func (that *Runner) getNextProxy(args ...string) *outbound.ProxyItem {
 	return nil
 }
 
+func (that *Runner) handleEdgeTunnel(p *outbound.ProxyItem) {
+	wguard := &dao.WireGuardIP{}
+	if w, err := wguard.RandomlyGetOneIPByPort(p.Port); err == nil && w != nil {
+		p.Address = w.Address
+		p.RTT = w.RTT
+		j := gjson.New(p.GetOutbound())
+		j.Set("server", p.Address)
+		p.Outbound = j.MustToJsonString()
+
+		reg := regexp.MustCompile(`@.+:`)
+		r := reg.ReplaceAll([]byte(p.RawUri), []byte(fmt.Sprintf("@%s:", p.Address)))
+		p.RawUri = string(r)
+	}
+}
+
 func (that *Runner) GetProxyByIndex(idxStr string) (p *outbound.ProxyItem) {
 	if strings.HasPrefix(idxStr, FromEdgetunnel) {
 		idx, _ := strconv.Atoi(strings.TrimLeft(idxStr, FromEdgetunnel))
 		if eList := that.verifier.GetProxyFromDB(model.SourceTypeEdgeTunnel); len(eList) > 0 {
 			if idx < 0 || idx >= len(eList) {
-				return eList[0]
+				p = eList[0]
+				that.handleEdgeTunnel(p)
+				return
 			}
-			return eList[idx]
+			p = eList[idx]
+			that.handleEdgeTunnel(p)
+			return
 		}
 	} else if strings.HasPrefix(idxStr, FromManually) {
 		idx, _ := strconv.Atoi(strings.TrimLeft(idxStr, FromManually))

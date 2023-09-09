@@ -25,7 +25,6 @@ type WPinger struct {
 	barLock  *sync.Mutex
 }
 
-// TODO: progressbar
 func NewWPinger(cnf *conf.NeoConf) (wp *WPinger) {
 	wp = &WPinger{
 		CNF:     cnf,

@@ -87,7 +87,7 @@ Add edgetunnel proxies to neobox.
 ## Install
 
 ```bash
-go install github.com/moqsien/neobox/example/neobox@latest
+go install -tags "with_wireguard with_shadowsocksr with_utls with_gvisor with_grpc with_ech with_dhcp" github.com/moqsien/neobox/example/neobox@latest
 ```
 
 ## Note

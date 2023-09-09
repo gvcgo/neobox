@@ -72,12 +72,6 @@ func GetHttpClient(inPort int, timeout int) (c *http.Client, err error) {
 	return
 }
 
-func ParseRawUri(rawUri string) (p *outbound.ProxyItem) {
-	p = outbound.NewItemByEncryptedRawUri(rawUri)
-	p.GetOutbound()
-	return
-}
-
 func FormatProxyItemForTable(p *outbound.ProxyItem) string {
 	if p == nil {
 		return ""

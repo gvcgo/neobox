@@ -9,7 +9,6 @@ import (
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/storage/dao"
 	"github.com/moqsien/neobox/pkgs/storage/model"
-	"github.com/moqsien/neobox/pkgs/utils"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 )
 
@@ -43,9 +42,14 @@ func (that *MannualProxy) AddRawUri(rawUri, sourceType string) {
 	if sourceType != model.SourceTypeEdgeTunnel && sourceType != model.SourceTypeManually {
 		return
 	}
-	if proxyItem := utils.ParseRawUri(rawUri); proxyItem != nil {
+	if proxyItem := outbound.ParseRawUriToProxyItem(rawUri, outbound.XrayCore); proxyItem != nil {
 		that.locFinder.Query(proxyItem)
 		that.manualProxySaver.CreateOrUpdateProxy(proxyItem, sourceType)
+	} else {
+		if proxyItem := outbound.ParseRawUriToProxyItem(rawUri, outbound.SingBox); proxyItem != nil {
+			that.locFinder.Query(proxyItem)
+			that.manualProxySaver.CreateOrUpdateProxy(proxyItem, sourceType)
+		}
 	}
 }
 
@@ -63,8 +67,13 @@ func (that *MannualProxy) AddFromFile(fPath, sourceType string) {
 			vList := strings.Split(string(content), "\n")
 			for _, rawUri := range vList {
 				rawUri = strings.TrimSpace(rawUri)
-				if proxyItem := utils.ParseRawUri(rawUri); proxyItem != nil {
+				if proxyItem := outbound.ParseRawUriToProxyItem(rawUri, outbound.XrayCore); proxyItem != nil {
 					that.manualProxySaver.CreateOrUpdateProxy(proxyItem, sourceType)
+				} else {
+					if proxyItem := outbound.ParseRawUriToProxyItem(rawUri, outbound.SingBox); proxyItem != nil {
+						that.locFinder.Query(proxyItem)
+						that.manualProxySaver.CreateOrUpdateProxy(proxyItem, sourceType)
+					}
 				}
 			}
 		}

@@ -10,3 +10,4 @@ neobox*.bat
 *.sock
 temp_xxxx
 *.part*
+*.sql

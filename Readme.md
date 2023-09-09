@@ -1,3 +1,7 @@
+[中文](https://github.com/moqsien/neobox/blob/main/docs/Readme_CN.md)
+
+---------------------------
+
 ## What's neobox?
 
 Neobox is a powerful free vpn manager.

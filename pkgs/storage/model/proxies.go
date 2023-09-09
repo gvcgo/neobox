@@ -79,16 +79,13 @@ func (that *Proxy) GetItemListBySourceType(db *gorm.DB) (pList []*outbound.Proxy
 }
 
 func (that *Proxy) CountBySchemeOrSourceType(db *gorm.DB) (count int64, err error) {
-	var whereStr string
 	if that.Scheme != "" {
-		whereStr += fmt.Sprintf("scheme = %s", that.Scheme)
+		db = db.Table(that.TableName()).Where("scheme = ?", that.Scheme)
 	}
 	if that.SourceType != "" {
-		whereStr += fmt.Sprintf("source_type = %s", that.SourceType)
+		db = db.Table(that.TableName()).Where("source_type = ?", that.SourceType)
 	}
-	err = db.Table(that.TableName()).
-		Where(whereStr).
-		Count(&count).Error
+	err = db.Table(that.TableName()).Count(&count).Error
 	return
 }
 

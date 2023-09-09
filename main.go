@@ -12,6 +12,8 @@ func main() {
 	// f.DecryptAndLoad()
 
 	// model.NewDBEngine(cnf)
+	// manual := &dao.Proxy{}
+	// fmt.Println(manual.CountBySchemeOrSourceType("vmess://", model.SourceTypeEdgeTunnel))
 
 	// v := proxy.NewVerifier(cnf)
 	// v.Run(true)

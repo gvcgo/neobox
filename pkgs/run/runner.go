@@ -247,13 +247,17 @@ func (that *Runner) Restart(args ...string) (result string) {
 	}
 	that.CurrentProxy = that.NextProxy
 	that.NextProxy = nil
-
+	if that.Client != nil {
+		that.Client.Close()
+		that.Client = nil
+	}
 	that.Client = client.NewClient(that.CNF, that.CNF.InboundPort, that.CurrentProxy.OutboundType, true)
 	that.Client.SetOutbound(that.CurrentProxy)
 	err := that.Client.Start()
 	if err == nil {
 		result = fmt.Sprintf("client restarted use: %s%s", that.CurrentProxy.Scheme, that.CurrentProxy.GetHost())
 	} else {
+		// TODO: escape
 		result = fmt.Sprintf("restart client failed: %+v\n%s", err, string(that.Client.GetConf()))
 		os.WriteFile("config.log", []byte(that.Client.GetConf()), os.ModePerm)
 		that.Client.Close()

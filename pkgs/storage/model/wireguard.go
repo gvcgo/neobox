@@ -45,12 +45,12 @@ func (that *WireGuard) GetIPListByPort(db *gorm.DB) (wList []*WireGuard, err err
 	var rows *sql.Rows
 	if that.Port == 0 {
 		rows, err = db.Select(fields).Table(that.TableName()).
-			Order("rtt ASC").
+			Order("rtt ASC").Limit(500).
 			Rows()
 	} else {
 		rows, err = db.Select(fields).Table(that.TableName()).
 			Where("port = ?", that.Port).
-			Order("rtt ASC").
+			Order("rtt ASC").Limit(500).
 			Rows()
 	}
 	if err != nil {

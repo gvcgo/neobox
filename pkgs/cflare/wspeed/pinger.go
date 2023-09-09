@@ -98,8 +98,8 @@ func (that *WPinger) ping() {
 
 func (that *WPinger) Run() {
 	ipList := that.Parser.Run()
-	gtui.PrintInfof("generate cloudflare ips: %d\n", len(ipList))
-	gtui.PrintInfof("port list to be verified: %+v\n", that.CNF.CloudflareConf.PortList)
+	gtui.PrintInfof("generate cloudflare ips: %d", len(ipList))
+	gtui.PrintInfof("port list to be verified: %+v", that.CNF.CloudflareConf.PortList)
 	that.bar = pterm.DefaultProgressbar.WithTotal(len(ipList)).WithTitle("[SelectIPs]").WithShowCount(true)
 	go that.send(ipList)
 	var err error
@@ -119,7 +119,7 @@ func (that *WPinger) Run() {
 		}
 	}
 	that.Result.Sort()
-	gtui.PrintInfof("verified cloudflare host(addr:port): %d\n", len(that.Result.ItemList))
+	gtui.PrintInfof("verified cloudflare host(addr:port): %d", len(that.Result.ItemList))
 	for idx, item := range that.Result.ItemList {
 		if idx > that.CNF.CloudflareConf.MaxSaveToDB-1 {
 			break

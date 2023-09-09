@@ -122,7 +122,7 @@ func (that *Shell) restart() {
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			if len(c.Args) == 0 {
-				c.Send("Cannot find specified proxy.", 200)
+				c.Send("Cannot find specified proxy", 200)
 			} else {
 				pxyStr := crypt.DecodeBase64(c.Args[0])
 				// os.WriteFile("config_arg_parsed.log", []byte(pxyStr), os.ModePerm)
@@ -334,12 +334,12 @@ func (that *Shell) filter() {
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			if that.runner.verifier.IsRunning() {
-				c.Send("verifier is already running.", 200)
+				c.Send("verifier is already running", 200)
 				return
 			}
 			v := that.runner.verifier
 			go v.Run(true)
-			c.Send("verifier starts running.", 200)
+			c.Send("verifier starts running", 200)
 		},
 		SocketName: that.ktrlSocks,
 	})
@@ -389,7 +389,7 @@ func (that *Shell) manualGC() {
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			runtime.GC()
-			c.Send("GC started.", 200)
+			c.Send("GC started", 200)
 		},
 		SocketName: that.ktrlSocks,
 	})

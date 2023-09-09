@@ -18,6 +18,7 @@ type XInstance struct {
 	logPath     string
 	outbound    IOutbound
 	conf        []byte
+	assetDir    string
 	*core.Instance
 }
 
@@ -30,12 +31,16 @@ func (that *XInstance) SetInPortAndLogFile(inboundPort int, logPath string) {
 	that.logPath = logPath
 }
 
+func (that *XInstance) SetAssetDir(geoinfoDir string) {
+	that.assetDir = geoinfoDir
+}
+
 func (that *XInstance) SetOutbound(out IOutbound) {
 	that.outbound = out
 }
 
 func (that *XInstance) Start() error {
-	that.conf = PrepareConfig(that.outbound, that.inboundPort, that.logPath)
+	that.conf = PrepareConfig(that.outbound, that.inboundPort, that.logPath, that.assetDir)
 	if config, err := serial.LoadJSONConfig(bytes.NewReader(that.conf)); err == nil {
 		that.Instance, err = core.New(config)
 		if err != nil {

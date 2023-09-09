@@ -3,6 +3,7 @@ package run
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
@@ -161,6 +162,9 @@ func (that *Runner) handleEdgeTunnel(p *outbound.ProxyItem) {
 		reg := regexp.MustCompile(`@.+:`)
 		r := reg.ReplaceAll([]byte(p.RawUri), []byte(fmt.Sprintf("@%s:", p.Address)))
 		p.RawUri = string(r)
+		if p.RTT == 0 {
+			p.RTT = 200
+		}
 	}
 }
 
@@ -255,11 +259,9 @@ func (that *Runner) Restart(args ...string) (result string) {
 	that.Client.SetOutbound(that.CurrentProxy)
 	err := that.Client.Start()
 	if err == nil {
-		result = fmt.Sprintf("client restarted use: %s%s", that.CurrentProxy.Scheme, that.CurrentProxy.GetHost())
+		result = fmt.Sprintf("client restarted use: %s%s___%s", that.CurrentProxy.Scheme, that.CurrentProxy.GetHost(), url.QueryEscape(string(that.Client.GetConf())))
 	} else {
-		// TODO: escape
-		result = fmt.Sprintf("restart client failed: %+v\n%s", err, string(that.Client.GetConf()))
-		os.WriteFile("config.log", []byte(that.Client.GetConf()), os.ModePerm)
+		result = fmt.Sprintf("restart client failed: %+v\nConfigString: %s", err, url.QueryEscape(string(that.Client.GetConf())))
 		that.Client.Close()
 	}
 	return

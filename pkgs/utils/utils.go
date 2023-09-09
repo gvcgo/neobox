@@ -37,7 +37,7 @@ func SetPingWithoutRootForLinux() {
 ENVs
 */
 const (
-	AssetDirEnvName    string = "XRAY_LOCATION_ASSET"
+	AssetDirEnvName    string = "xray.location.asset"
 	SockFileDirEnvName string = "NEOBOX_SOCK_FILE_DIR"
 )
 

@@ -17,6 +17,7 @@ type SInstance struct {
 	outbound    IOutbound
 	conf        []byte
 	cancel      context.CancelFunc
+	assetDir    string
 	*box.Box
 }
 
@@ -29,12 +30,16 @@ func (that *SInstance) SetInPortAndLogFile(inboundPort int, logPath string) {
 	that.logPath = logPath
 }
 
+func (that *SInstance) SetAssetDir(geoinfoDir string) {
+	that.assetDir = geoinfoDir
+}
+
 func (that *SInstance) SetOutbound(out IOutbound) {
 	that.outbound = out
 }
 
 func (that *SInstance) Start() (err error) {
-	that.conf = PrepareConfig(that.outbound, that.inboundPort, that.logPath)
+	that.conf = PrepareConfig(that.outbound, that.inboundPort, that.logPath, that.assetDir)
 	if len(that.conf) > 0 {
 		opt := &option.Options{}
 		if err = opt.UnmarshalJSON(that.conf); err != nil {

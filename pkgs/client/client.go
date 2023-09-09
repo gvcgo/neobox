@@ -9,6 +9,7 @@ import (
 
 type IClient interface {
 	SetInPortAndLogFile(int, string)
+	SetAssetDir(string)
 	SetOutbound(IOutbound)
 	GetConf() []byte
 	Start() error
@@ -29,5 +30,6 @@ func NewClient(cnf *conf.NeoConf, inboundPort int, cType outbound.ClientType, en
 		return nil
 	}
 	client.SetInPortAndLogFile(inboundPort, logPath)
+	client.SetAssetDir(cnf.GeoInfoDir)
 	return
 }

@@ -111,8 +111,8 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 		recChan    chan *outbound.ProxyItem
 		httpClient *http.Client
 	)
-	httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)
 	for {
+		httpClient, _ = utils.GetHttpClient(inboundPort, that.CNF.VerificationTimeout)
 		if recChan == nil {
 			switch cType {
 			case outbound.XrayCore:

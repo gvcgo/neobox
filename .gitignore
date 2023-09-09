@@ -8,3 +8,5 @@ temp_xx*
 neobox*.bat
 *.log
 *.sock
+temp_xxxx
+*.part*

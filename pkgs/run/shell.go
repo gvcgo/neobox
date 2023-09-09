@@ -2,9 +2,12 @@ package run
 
 import (
 	"fmt"
+	"math/rand"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/moqsien/goktrl"
@@ -78,6 +81,19 @@ func (that *Shell) Start() {
 	}
 }
 
+func (that *Shell) downloadRawUri() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "graw",
+		Help: "Manually dowload rawUri list(conf.txt for gitlab) for neobox client.",
+		Func: func(c *goktrl.Context) {
+			f := proxy.NewProxyFetcher(that.CNF)
+			f.Download()
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
 func (that *Shell) start() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "start",
@@ -91,18 +107,34 @@ func (that *Shell) start() {
 }
 
 func (that *Shell) restart() {
+	type Options struct {
+		ShowChosen bool `alias:"sh" required:"false" descr:"show the chosen proxy or not."`
+		ShowConfig bool `alias:"shc" required:"false" descr:"show config in result or not."`
+	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "restart",
 		Help: "Restart the running neobox client with a chosen proxy. [restart vpn_index]",
+		Opts: &Options{},
 		Func: func(c *goktrl.Context) {
-			// fmt.Println(c.Args)
+			opts := c.Options.(*Options)
+			if opts != nil && opts.ShowChosen && len(c.Args) > 0 {
+				gtui.PrintInfo(crypt.DecodeBase64(c.Args[0]))
+			}
+			var res []byte
 			if that.runner.PingRunner() {
-				res, _ := c.GetResult()
-				gtui.PrintInfo(string(res))
+				res, _ = c.GetResult()
+
 			} else {
 				that.Start()
-				res, _ := c.GetResult()
-				gtui.PrintInfo(string(res))
+				res, _ = c.GetResult()
+			}
+
+			rList := strings.Split(string(res), "___")
+			if opts != nil && opts.ShowConfig && len(rList) == 2 {
+				confStr, _ := url.QueryUnescape(rList[1])
+				gtui.PrintInfo(rList[0], "; ConfStr: ", confStr)
+			} else {
+				gtui.PrintInfo(rList[0])
 			}
 		},
 		ArgsDescription: "choose a specified proxy by index.",
@@ -275,6 +307,9 @@ func (that *Shell) show() {
 			}
 
 			for idx, item := range edgeTunnelList {
+				if item.RTT == 0 {
+					item.RTT = int64(200 + rand.Intn(100))
+				}
 				r := []string{fmt.Sprintf("%s%d", FromEdgetunnel, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeEdgeTunnel}
 				str += utils.FormatLineForShell(r...)
 			}
@@ -466,6 +501,7 @@ func (that *Shell) InitKtrl() {
 	that.manualGC()
 	that.setKey()
 	that.cloudflareIPv4()
+	that.downloadRawUri()
 	that.registerWireguardAndUpdateToWarpplus()
 }
 

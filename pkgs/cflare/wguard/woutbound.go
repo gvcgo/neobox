@@ -75,6 +75,10 @@ func (that *WireguardOutbound) GetProxyItem() (pp *outbound.ProxyItem, err error
 		pp = outbound.NewItem(rawUri)
 		pp.GetOutbound()
 		pp.RTT = rtt
+		pp.Location = "USA"
+		if pp.OutboundType == "" {
+			pp.OutboundType = outbound.SingBox
+		}
 	}
 	return
 }

@@ -39,8 +39,10 @@ func (that *WireguardOutbound) chooseHostRandomly() (addr string, port int, rtt 
 			addr = r.Address
 			port = r.Port
 			rtt = r.RTT
-		} else {
+		} else if err != nil {
 			gtui.PrintError(err)
+		} else if r == nil && err == nil {
+			gtui.PrintInfo(`use command <cfip> to get cloudflare CDN IPs.`)
 		}
 	}
 	return

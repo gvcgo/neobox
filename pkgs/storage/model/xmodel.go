@@ -17,7 +17,10 @@ var (
 )
 
 func NewDBEngine(cnf *conf.NeoConf) (db *gorm.DB, err error) {
-	dbPath := filepath.Join(cnf.WorkDir, conf.SQLiteDBFileName)
+	if cnf.DatabaseDir == "" {
+		cnf.DatabaseDir = cnf.WorkDir
+	}
+	dbPath := filepath.Join(cnf.DatabaseDir, conf.SQLiteDBFileName)
 	existed, _ := gutils.PathIsExist(dbPath)
 	db, err = gorm.Open(
 		hsqlite.Open(dbPath),

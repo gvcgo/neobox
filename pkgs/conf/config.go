@@ -39,8 +39,10 @@ type CloudflareConf struct {
 type NeoConf struct {
 	WorkDir               string            `json,koanf:"neobox_work_dir"`
 	LogDir                string            `json,koanf:"neobox_log_dir"`
-	DownloadUrl           string            `json,koanf:"download_url"`
 	SocketDir             string            `json,koanf:"socket_dir"`
+	GeoInfoDir            string            `json,koanf:"geo_info_dir"`
+	DatabaseDir           string            `json,koanf:"database_dir"`
+	DownloadUrl           string            `json,koanf:"download_url"`
 	MaxPingers            int               `json,koanf:"max_pingers"`
 	MaxPingAvgRTT         int64             `json,koanf:"max_ping_avgrtt"`
 	MaxPingPackLoss       float64           `json,koanf:"max_ping_packloss"`
@@ -53,7 +55,6 @@ type NeoConf struct {
 	CountryAbbrevsUrl     string            `json,koanf:"country_abbr_url"`
 	IPLocationQueryUrl    string            `json,koanf:"ip_location_url"`
 	GeoInfoUrls           map[string]string `json,koanf:"geo_info_urls"`
-	GeoInfoDir            string            `json,koanf:"geo_info_dir"`
 	GeoInfoSumUrl         string            `json,koanf:"geo_info_sum_url"`
 	KeeperCron            string            `json,koanf:"keeper_cron"`
 	CloudflareConf        *CloudflareConf   `json,koanf:"cloudflare_conf"`
@@ -99,6 +100,7 @@ func GetDefaultNeoConf() (n *NeoConf) {
 	n.LogDir = n.WorkDir
 	n.SocketDir = n.WorkDir
 	n.GeoInfoDir = n.WorkDir
+	n.DatabaseDir = n.WorkDir
 	n.CloudflareConf.WireGuardConfDir = filepath.Join(n.WorkDir, "wireguard")
 	return
 }

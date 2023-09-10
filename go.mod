@@ -17,6 +17,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sagernet/sing-box v1.4.1
 	github.com/urfave/cli/v2 v2.25.7
+	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 	gorm.io/gorm v1.25.1
 )
 
@@ -169,7 +170,6 @@ require (
 	go4.org/netipx v0.0.0-20230824141953-6213f710f925 // indirect
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
-	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect

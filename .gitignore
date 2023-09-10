@@ -12,3 +12,4 @@ temp_xxxx
 *.part*
 *.sql
 *.exe~
+test/main.go

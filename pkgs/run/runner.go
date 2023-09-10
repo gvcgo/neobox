@@ -150,27 +150,29 @@ func (that *Runner) getNextProxy(args ...string) *outbound.ProxyItem {
 	return nil
 }
 
-func (that *Runner) handleEdgeTunnelVless(p *outbound.ProxyItem) {
+func (that *Runner) handleEdgeTunnelVless(p *outbound.ProxyItem) (newProxy *outbound.ProxyItem) {
+	newProxy = proxy.RandomlyChooseEdgeTunnelByOldProxyItem(p)
 	wguard := &dao.WireGuardIP{}
-	if w, err := wguard.RandomlyGetOneIPByPort(p.Port); err == nil && w != nil {
-		j := gjson.New(p.GetOutbound())
+	if w, err := wguard.RandomlyGetOneIPByPort(newProxy.Port); err == nil && w != nil {
+		j := gjson.New(newProxy.GetOutbound())
 		// use optimized IPs
-		if p.OutboundType == outbound.SingBox {
+		if newProxy.OutboundType == outbound.SingBox {
 			j.Set("server", w.Address)
 		} else {
 			j.Set("settings.vnext.0.address", w.Address)
 		}
-		p.Address = w.Address
-		p.RTT = w.RTT
-		p.Outbound = j.MustToJsonString()
+		newProxy.Address = w.Address
+		newProxy.RTT = w.RTT
+		newProxy.Outbound = j.MustToJsonString()
 
 		reg := regexp.MustCompile(`@.+:`)
-		r := reg.ReplaceAll([]byte(p.RawUri), []byte(fmt.Sprintf("@%s:", p.Address)))
-		p.RawUri = string(r)
-		if p.RTT == 0 {
-			p.RTT = 200
+		r := reg.ReplaceAll([]byte(newProxy.RawUri), []byte(fmt.Sprintf("@%s:", newProxy.Address)))
+		newProxy.RawUri = string(r)
+		if newProxy.RTT == 0 {
+			newProxy.RTT = p.RTT
 		}
 	}
+	return
 }
 
 func (that *Runner) GetProxyByIndex(idxStr string) (p *outbound.ProxyItem) {
@@ -178,13 +180,9 @@ func (that *Runner) GetProxyByIndex(idxStr string) (p *outbound.ProxyItem) {
 		idx, _ := strconv.Atoi(strings.TrimLeft(idxStr, FromEdgetunnel))
 		if eList := that.verifier.GetProxyFromDB(model.SourceTypeEdgeTunnel); len(eList) > 0 {
 			if idx < 0 || idx >= len(eList) {
-				p = eList[0]
-				that.handleEdgeTunnelVless(p)
-				return
+				return that.handleEdgeTunnelVless(eList[0])
 			}
-			p = eList[idx]
-			that.handleEdgeTunnelVless(p)
-			return
+			return that.handleEdgeTunnelVless(eList[idx])
 		}
 	} else if strings.HasPrefix(idxStr, FromManually) {
 		idx, _ := strconv.Atoi(strings.TrimLeft(idxStr, FromManually))
@@ -266,7 +264,7 @@ func (that *Runner) Restart(args ...string) (result string) {
 	if err == nil {
 		result = fmt.Sprintf("client restarted use: %s%s___%s", that.CurrentProxy.Scheme, that.CurrentProxy.GetHost(), url.QueryEscape(string(that.Client.GetConf())))
 	} else {
-		result = fmt.Sprintf("restart client failed: %+v\nConfigString: %s", err, url.QueryEscape(string(that.Client.GetConf())))
+		result = fmt.Sprintf("restart client failed: %+v\nConfigString___%s", err, url.QueryEscape(string(that.Client.GetConf())))
 		that.Client.Close()
 	}
 	return

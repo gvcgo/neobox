@@ -14,6 +14,7 @@ import (
 	"github.com/moqsien/goktrl"
 	"github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/cflare/wguard"
 	"github.com/moqsien/neobox/pkgs/cflare/wspeed"
 	"github.com/moqsien/neobox/pkgs/conf"
@@ -21,6 +22,7 @@ import (
 	"github.com/moqsien/neobox/pkgs/storage/dao"
 	"github.com/moqsien/neobox/pkgs/storage/model"
 	"github.com/moqsien/neobox/pkgs/utils"
+	"github.com/moqsien/vpnparser/pkgs/parser"
 	"github.com/pterm/pterm"
 )
 
@@ -212,7 +214,6 @@ func (that *Shell) addEdgeTunnel() {
 	type Options struct {
 		UUID    string `alias:"u" required:"false" descr:"uuid for edge tunnel vless."`
 		Address string `alias:"a" required:"false" descr:"domain/ip for edge tunnel."`
-		Port    int    `alias:"p" required:"false" descr:"port for edge tunnel."`
 	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name:            "added",
@@ -224,13 +225,38 @@ func (that *Shell) addEdgeTunnel() {
 			opts := c.Options.(*Options)
 			if len(os.Args) > 0 {
 				for _, rawUri := range os.Args {
-					manual.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
+					if strings.HasPrefix(rawUri, parser.SchemeVless) {
+						manual.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
+					}
 				}
-			} else if opts.UUID != "" && opts.Address != "" && opts.Port != 0 {
-				rawUri := manual.FormatEdgeTunnelRawUri(opts.UUID, opts.Address, opts.Port)
-				gtui.PrintInfo(rawUri)
-				manual.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
+			} else if opts.UUID != "" && opts.Address != "" {
+				manual.AddEdgeTunnelByAddressUUID(opts.Address, opts.UUID)
 			}
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
+func (that *Shell) genUUID() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name:            "guuid",
+		Help:            "Generate UUIDs.",
+		ArgsDescription: "to generate how many uuids [num]",
+		Func: func(c *goktrl.Context) {
+			num := 1
+			if len(c.Args) > 0 {
+				num, _ = strconv.Atoi(c.Args[0])
+			}
+			if num == 0 {
+				num = 1
+			}
+			result := []string{}
+			for i := 0; i < num; i++ {
+				uu := gutils.NewUUID()
+				result = append(result, uu.String())
+			}
+			gtui.PrintInfo(strings.Join(result, ", "))
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
 		SocketName:  that.ktrlSocks,
@@ -246,7 +272,11 @@ func (that *Shell) removeManually() {
 			if len(c.Args) == 0 {
 				return
 			}
-			sList := strings.Split(c.Args[0], ":")
+			hostStr := c.Args[0]
+			if strings.Contains(hostStr, "://") {
+				hostStr = strings.Split(hostStr, "://")[1]
+			}
+			sList := strings.Split(hostStr, ":")
 			if len(sList) == 2 {
 				p := &dao.Proxy{}
 				port, _ := strconv.Atoi(sList[1])
@@ -517,6 +547,7 @@ func (that *Shell) InitKtrl() {
 	that.restart()
 	that.addMannually()
 	that.addEdgeTunnel()
+	that.genUUID()
 	that.removeManually()
 	that.show()
 	that.filter()

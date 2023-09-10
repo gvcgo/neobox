@@ -2,24 +2,26 @@ package proxy
 
 import (
 	"fmt"
+	"io"
+	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/moqsien/goutils/pkgs/gutils"
+	"github.com/moqsien/goutils/pkgs/request"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/storage/dao"
 	"github.com/moqsien/neobox/pkgs/storage/model"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
+	"github.com/moqsien/vpnparser/pkgs/parser"
+	"golang.org/x/exp/rand"
 )
 
 /*
 EdTunnel
 Mannually
 */
-
-const (
-	EdgeTunnelUriPattern = `vless://%s@%s:%d?security=tls&type=ws&sni=%s&path=/&encryption=none&headerType=none&host=%s&fp=random&alpn=h2&allowInsecure=1`
-)
 
 type MannualProxy struct {
 	CNF              *conf.NeoConf
@@ -53,11 +55,6 @@ func (that *MannualProxy) AddRawUri(rawUri, sourceType string) {
 	}
 }
 
-func (that *MannualProxy) FormatEdgeTunnelRawUri(uuid, addr string, port int) (rawUri string) {
-	rawUri = fmt.Sprintf(EdgeTunnelUriPattern, uuid, addr, port, addr, addr)
-	return
-}
-
 func (that *MannualProxy) AddFromFile(fPath, sourceType string) {
 	if sourceType != model.SourceTypeEdgeTunnel && sourceType != model.SourceTypeManually {
 		return
@@ -85,4 +82,44 @@ func (that *MannualProxy) RemoveMannualProxy(addr string, port int, sourceType s
 		return
 	}
 	that.manualProxySaver.DeleteOneRecord(addr, port)
+}
+
+func (that *MannualProxy) AddEdgeTunnelByAddressUUID(addr, uuid string) {
+	rawList := GetEdgeTunnelRawUriList(addr, uuid)
+	if len(rawList) == 0 {
+		return
+	}
+	rawUri, _ := url.QueryUnescape(rawList[rand.Intn(len(rawList))])
+	if rawUri != "" {
+		that.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
+	}
+}
+
+func GetEdgeTunnelRawUriList(addr, uuid string) (rawList []string) {
+	rUrl := fmt.Sprintf("https://%s/sub/%s", addr, uuid)
+	f := request.NewFetcher()
+	f.SetUrl(rUrl)
+	f.Timeout = 3 * time.Minute
+	if resp := f.Get(); resp != nil {
+		content, _ := io.ReadAll(resp.RawResponse.Body)
+		if len(content) > 0 {
+			rawList = strings.Split(string(content), "\n")
+		}
+	}
+	return
+}
+
+func RandomlyChooseEdgeTunnelByOldProxyItem(p *outbound.ProxyItem) (newItem *outbound.ProxyItem) {
+	newItem = p
+	vp := &parser.ParserVless{}
+	vp.Parse(p.RawUri)
+	if vp.UUID != "" && vp.Address != "" {
+		if rawList := GetEdgeTunnelRawUriList(vp.Address, vp.UUID); len(rawList) > 0 {
+			idx := rand.Intn(len(rawList))
+			rawUri := rawList[idx]
+			rawUri, _ = url.QueryUnescape(rawUri)
+			newItem = outbound.ParseRawUriToProxyItem(rawUri)
+		}
+	}
+	return
 }

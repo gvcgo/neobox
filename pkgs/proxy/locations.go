@@ -51,7 +51,7 @@ func NewLocations(cnf *conf.NeoConf) (pl *ProxyLocations) {
 		countryItemSaver: &dao.Country{},
 	}
 	pl.countryAbbrFilePath = filepath.Join(cnf.WorkDir, conf.CountryAbbrFileName)
-	pl.initCountries()
+	// pl.initCountries()
 	return
 }
 
@@ -104,6 +104,7 @@ func (that *ProxyLocations) parseCountryName(cName string) (eName string) {
 }
 
 func (that *ProxyLocations) Query(pxy *outbound.ProxyItem) (name string) {
+	that.initCountries()
 	ipStr := that.parseIP(pxy)
 	name = that.ipLocationSaver.GetLocatonByIP(ipStr)
 	if name != "" {

@@ -305,7 +305,7 @@ func (that *Shell) show() {
 			manualList := manual.GetItemListBySourceType(model.SourceTypeManually)
 			edgeTunnelList := manual.GetItemListBySourceType(model.SourceTypeEdgeTunnel)
 
-			paddedBox := pterm.DefaultBox.WithLeftPadding(1).WithRightPadding(1).WithTopPadding(1).WithBottomPadding(1)
+			// paddedBox := pterm.DefaultBox.WithLeftPadding(1).WithRightPadding(1).WithTopPadding(1).WithBottomPadding(1)
 
 			rawStatistics := fmt.Sprintf(
 				"RawList[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]\n",
@@ -344,9 +344,10 @@ func (that *Shell) show() {
 				pterm.Yellow(manual.CountBySchemeOrSourceType("", model.SourceTypeManually)),
 			)
 			str := rawStatistics + pingStatistics + verifiedStatistics + dbStatistics
+			fmt.Println(str)
 
-			headers := []string{"idx", "proxy", "location", "rtt(ms)", "source"}
-			str += utils.FormatLineForShell(headers...)
+			headers := []string{"idx", "pxy", "loc", "rtt", "src"}
+			str = utils.FormatLineForShell(headers...)
 
 			for idx, item := range verifiedResult.GetTotalList() {
 				r := []string{fmt.Sprintf("%d", idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "verified"}
@@ -371,6 +372,7 @@ func (that *Shell) show() {
 				r := []string{fmt.Sprintf("%s%d", FromManually, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeManually}
 				str += utils.FormatLineForShell(r...)
 			}
+			fmt.Println(str)
 
 			var (
 				currenVpnInfo  string
@@ -399,8 +401,10 @@ func (that *Shell) show() {
 			))
 			logInfo := pterm.Magenta(fmt.Sprintf("LogFileDir: %s\n", pterm.LightGreen(that.CNF.LogDir)))
 
-			str += nStatus + logInfo
-			pterm.Println(paddedBox.Sprintln(str))
+			str = nStatus + logInfo
+			// str = paddedBox.Sprintln(str)
+			// pterm.Println(str)
+			fmt.Println(str)
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			var m runtime.MemStats

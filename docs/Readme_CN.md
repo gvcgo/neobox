@@ -31,6 +31,7 @@ Commands:
   gc             Start GC manually. # 手动触发GC，降低内存占用
   geoinfo        Install/Update geoip&geosite for neobox client. # 手动下载/更新geoip和geosite信息
   graw           Manually dowload rawUri list(conf.txt from gitlab) for neobox client. # 手动触发原始的免费代理列表下载
+  guuid          Generate UUIDs. # 生成uuid
   help           display help # 显示帮助信息
   restart        Restart the running neobox client with a chosen proxy. [restart proxy_index] # 使用指定序号的代理重启
   rmproxy        Remove a manually added proxy [manually or edgetunnel]. # 删除指定的手动添加IP，格式rmproxy address:port
@@ -48,7 +49,6 @@ Add edgetunnel proxies to neobox.
  options:
   --uuid=xxx; alias:-{u}; description: uuid for edge tunnel vless.
   --address=xxx; alias:-{a}; description: domain/ip for edge tunnel.
-  --port=xxx; alias:-{p}; description: port for edge tunnel.
  args:
   full raw_uri[vless://xxx@xxx?xxx]
 ```
@@ -56,32 +56,32 @@ Add edgetunnel proxies to neobox.
 ## 在Shell中查看Neobox的运行状态
 
 ```bash
-
 >>> show
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────┐
-|                                                                                                     |
-| RawList[5381@2023-09-09 11:53:13] vmess[2752] vless[317] trojan[602] ss[1638] ssr[72]               |
-| Pinged[457@2023-09-09 20:50:44] vmess[291] vless[23] trojan[69] ss[73] ssr[1]                       |
-| Pinged[10@2023-09-09 20:52:29] vmess[4] vless[2] trojan[4] ss[0] ssr[0]                             |
-| Database: History[6] EdgeTunnel[1] Manually[0]                                                      |
-| idx proxy                                                                   location rtt(ms) source |
-| 0 vmess://jp6.lianpi.xyz:23234                                             USA  1278 verified       |
-| 1 vmess://172.67.83.191:80                                                 USA  2022 verified       |
-| 2 vmess://cdn.chigua.tk:80                                                 CHN  2193 verified       |
-| 3 vmess://46caadb.f2.gladns.com:3331                                       USA  1519 verified       |
-| 4 vless://172.66.47.84:443                                                 USA  1589 verified       |
-| 5 vless://realtu.skrspc.com:50339                                          JPN  1374 verified       |
-| 6 trojan://18.198.10.5:22222                                               DEU  1875 verified       |
-| 7 trojan://13.50.193.134:22222                                             USA  1403 verified       |
-| 8 trojan://20.212.51.48:443                                                USA  2043 verified       |
-| 9 trojan://1gzdx2.156786.xyz:37905                                         JPN  2456 verified       |
-| w0 wireguard://172.64.152.234:2053                                         USA  175  wireguard      |
-| e0 vless://xx-edtunnel-xxx.xxxxx.dev:443                                   USA  250  edtunnel       |
-| NeoBox[running @ (Mem: 4220MiB)] Verifier[completed] Keeper[running]                                |
-| LogFileDir: C:\home\.neobox\log_files                                                               |
-|                                                                                                     |
-|                                                                                                     |
-└─────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+RawList[5344@2023-09-10 10:06:44] vmess[2646] vless[317] trojan[660] ss[1638] ssr[83]
+Pinged[587@2023-09-10 12:38:53] vmess[348] vless[53] trojan[86] ss[96] ssr[4]
+Final[13@2023-09-10 12:41:13] vmess[4] vless[7] trojan[1] ss[1] ssr[0]
+Database: History[27] EdgeTunnel[1] Manually[0]
+
+idx  pxy                                       loc rtt  src
+0  vmess://19.kccic2pa.xyz:50019              CHN  1082  verified
+1  vmess://cfcdn2.sanfencdn.net:2052          USA  2336  verified
+2  vmess://172.67.135.195:443                 USA  1642  verified
+3  vmess://103.160.204.80:8080                APA  2435  verified
+4  vless://jp.caball.link:443                 USA  1445  verified
+5  vless://104.23.139.0:80                    USA  2622  verified
+6  vless://172.66.47.84:443                   USA  965  verified
+7  vless://fiberlike.aurorainiceland.com:443  USA  1869  verified
+8  vless://172.67.187.111:443                 USA  1756  verified
+9  vless://172.66.44.172:2096                 USA  2185  verified
+10  vless://729.outline-vpn.cloud:443          USA  2635  verified
+11  trojan://108.181.23.249:443                CAN  829  verified
+12  ss://54.169.127.65:443                     SGP  439  verified
+w0  wireguard://108.162.193.239:2096          USA 157  wireguard
+e0  vless://xxx.xxx.xx:8443                   USA  255  edtunnel
+
+NeoBox[running @vless://172.64.151.81:443 (Mem: 4098MiB)] Verifier[completed] Keeper[running]
+LogFileDir: C:\Users\moqsien\.neobox\log_files
 ```
 
 ## 如何安装？
@@ -110,3 +110,4 @@ go install -tags "with_wireguard with_shadowsocksr with_utls with_gvisor with_gr
 - [EDtunnel](https://github.com/3Kmfi6HP/EDtunnel)
 - [vpnparser](https://github.com/moqsien/vpnparser)
 - [gscraper](https://github.com/moqsien/gscraper)
+- [goktrl](https://github.com/moqsien/goktrl)

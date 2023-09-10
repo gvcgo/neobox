@@ -328,7 +328,7 @@ func (that *Shell) show() {
 				pterm.Yellow(pingResult.SSRTotal),
 			)
 			verifiedStatistics := fmt.Sprintf(
-				"Pinged[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]\n",
+				"Final[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]\n",
 				pterm.Green(verifiedResult.Len()),
 				pterm.LightGreen(verifiedResult.UpdateAt),
 				pterm.Yellow(verifiedResult.VmessTotal),

@@ -105,12 +105,11 @@ Defaul Local Inbound:
 http://localhost:2023
 ```
 
-gvc QQ group：
-
-<img src="https://github.com/moqsien/neobox/blob/main/docs/gvc_qq_group.jpg" width="25%">
-
 ## Special
-This project is only for study purposes.
+This project is only for study purposes. And no profit is made, neither misleading behaviour is introduced.
+Chinese users please consciously abide by the laws in China(Mainland).
+And do not share any info which would be detrimental to the insterests of Our Nation.
+
 
 ## Thanks to
 - [xray-core](https://github.com/XTLS/Xray-core)

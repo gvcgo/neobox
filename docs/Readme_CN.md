@@ -106,12 +106,10 @@ go install -tags "with_wireguard with_shadowsocksr with_utls with_gvisor with_gr
 http://localhost:2023
 ```
 
-gvc交流QQ群：
-
-<img src="https://github.com/moqsien/neobox/blob/main/docs/gvc_qq_group.jpg" width="25%">
-
 ## 特别声明
-本项目仅作学习研究使用。无意违反任何国家法律法规。请使用者谨慎使用。
+**本项目仅作学习研究使用，无任何谋利和不良引导行为。更无意违反任何国家的法律法规。**
+**请大陆使用者谨慎使用，切勿向大陆内网中分享一些有损国家利益的内容！**
+**学习强国，有你有我！**
 
 ## 感谢
 - [xray-core](https://github.com/XTLS/Xray-core)

@@ -294,6 +294,7 @@ func (that *Shell) show() {
 		Help: "Show neobox info.",
 		Func: func(c *goktrl.Context) {
 			fetcher := proxy.NewProxyFetcher(that.CNF)
+			fetcher.DecryptAndLoad()
 			pinger := proxy.NewPinger(that.CNF)
 			verifier := proxy.NewVerifier(that.CNF)
 			manual := &dao.Proxy{}

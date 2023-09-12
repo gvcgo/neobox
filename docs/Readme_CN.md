@@ -90,6 +90,8 @@ LogFileDir: C:\Users\moqsien\.neobox\log_files
 go install -tags "with_wireguard with_shadowsocksr with_utls with_gvisor with_grpc with_ech with_dhcp" github.com/moqsien/neobox/example/neobox@latest
 ```
 
+或者安装[gvc](https://github.com/moqsien/gvc)
+
 ## 注意事项
 想要使用免费代理，则必须获取解密Key. 当前用于解密的Key是 **5lR3hcN8Zzpo1nzI**.
 
@@ -103,6 +105,9 @@ go install -tags "with_wireguard with_shadowsocksr with_utls with_gvisor with_gr
 ```text
 http://localhost:2023
 ```
+
+gvc交流QQ群：
+<img src="https://github.com/moqsien/neobox/blob/main/docs/gvc_qq_group.jpg" width="25%">
 
 ## 特别声明
 本项目仅作学习研究使用。无意违反任何国家法律法规。请使用者谨慎使用。

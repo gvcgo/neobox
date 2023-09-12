@@ -90,6 +90,8 @@ LogFileDir: C:\Users\moqsien\.neobox\log_files
 go install -tags "with_wireguard with_shadowsocksr with_utls with_gvisor with_grpc with_ech with_dhcp" github.com/moqsien/neobox/example/neobox@latest
 ```
 
+Or you can install [gvc](https://github.com/moqsien/gvc) instead.
+
 ## Note
 You need to **Set A Key**, or the free-vpn-list cannot be decrypted.
 Currently, the Key is **5lR3hcN8Zzpo1nzI**.
@@ -102,6 +104,9 @@ Defaul Local Inbound:
 ```text
 http://localhost:2023
 ```
+
+gvc QQ group：
+<img src="https://github.com/moqsien/neobox/blob/main/docs/gvc_qq_group.jpg" width="25%">
 
 ## Special
 This project is only for study purposes.

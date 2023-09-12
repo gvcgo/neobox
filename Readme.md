@@ -106,9 +106,9 @@ http://localhost:2023
 ```
 
 ## Special
-This project is only for study purposes. And no profit is made, neither misleading behaviour is introduced.
-Chinese users please consciously abide by the laws in China(Mainland).
-And do not share any info which would be detrimental to the insterests of Our Nation.
+**This project is only for study purposes. And no profit is made, neither misleading behaviour is introduced.**
+**Chinese users please consciously abide by the laws in China(Mainland).**
+**And do not share any info which would be detrimental to the insterests of Our Nation.**
 
 
 ## Thanks to

@@ -98,6 +98,11 @@ Currently, the Key is **5lR3hcN8Zzpo1nzI**.
 
 ```
 
+Defaul Local Inbound: 
+```text
+http://localhost:2023
+```
+
 ## Special
 This project is only for study purposes.
 

@@ -99,6 +99,11 @@ go install -tags "with_wireguard with_shadowsocksr with_utls with_gvisor with_gr
 
 ```
 
+默认本地Inbound:
+```text
+http://localhost:2023
+```
+
 ## 特别声明
 本项目仅作学习研究使用。无意违反任何国家法律法规。请使用者谨慎使用。
 

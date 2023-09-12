@@ -99,6 +99,7 @@ Currently, the Key is **5lR3hcN8Zzpo1nzI**.
 >>>setkey 5lR3hcN8Zzpo1nzI
 
 ```
+[Get Latest Neobox Key](https://github.com/moqsien/neobox/raw/main/docs/gvc_qq_group.jpg)
 
 Defaul Local Inbound: 
 ```text

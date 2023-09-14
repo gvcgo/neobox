@@ -195,6 +195,30 @@ func (that *Shell) stop() {
 	})
 }
 
+func (that *Shell) genQRCode() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "qcode",
+		Help: "Generate QRCode for a chosen proxy. [qcode proxy_index]",
+		Func: func(c *goktrl.Context) {
+			args := c.Args
+			idxStr := "0"
+			if len(args) > 0 {
+				idxStr = args[0]
+			}
+			if proxyItem := that.runner.GetProxyByIndex(idxStr); proxyItem != nil {
+				qrc := proxy.NewQRCodeProxy(that.CNF)
+				qrc.SetProxyItem(proxyItem)
+				qrc.GenQRCode()
+			} else {
+				gtui.PrintError("Can not find a ProxyItem!")
+			}
+		},
+		ArgsDescription: "choose a specified proxy by index.",
+		KtrlHandler:     func(c *goktrl.Context) {},
+		SocketName:      that.ktrlSocks,
+	})
+}
+
 func (that *Shell) addMannually() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "add",
@@ -552,6 +576,7 @@ func (that *Shell) InitKtrl() {
 	that.restart()
 	that.addMannually()
 	that.addEdgeTunnel()
+	that.genQRCode()
 	that.genUUID()
 	that.removeManually()
 	that.show()

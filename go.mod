@@ -16,6 +16,7 @@ require (
 	github.com/pterm/pterm v0.12.62
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sagernet/sing-box v1.4.1
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/urfave/cli/v2 v2.25.7
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 	gorm.io/gorm v1.25.1

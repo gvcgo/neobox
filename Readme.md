@@ -58,7 +58,7 @@ Add edgetunnel proxies to neobox.
 
 You can use subcommand "qcode" to generate a QRCode for a certain verifed or manually added proxy.
 Then you can scan the generated QRCode with NekoBox on your cell phone.
-At now, your cell phone will share the proxies verified by noebox.
+At now, your cell phone will share the proxies verified by neobox.
 
 ## Example
 

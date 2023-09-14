@@ -33,6 +33,7 @@ Commands:
   graw           Manually dowload rawUri list(conf.txt from gitlab) for neobox client.
   guuid          Generate UUIDs.
   help           display help
+  qrcode         Generate QRCode for a chosen proxy. [qrcode proxy_index]
   restart        Restart the running neobox client with a chosen proxy. [restart proxy_index]
   rmproxy        Remove a manually added proxy [manually or edgetunnel].
   setkey         Setup rawlist encrytion key for neobox. [With no args will set key to default value]

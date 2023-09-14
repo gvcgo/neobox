@@ -33,6 +33,7 @@ Commands:
   graw           Manually dowload rawUri list(conf.txt from gitlab) for neobox client. # 手动触发原始的免费代理列表下载
   guuid          Generate UUIDs. # 生成uuid
   help           display help # 显示帮助信息
+  qrcode         Generate QRCode for a chosen proxy. [qrcode proxy_index] # 为指定序号的代理生成二维码，方便手机端(例如, NekoBox等)进行扫码
   restart        Restart the running neobox client with a chosen proxy. [restart proxy_index] # 使用指定序号的代理重启
   rmproxy        Remove a manually added proxy [manually or edgetunnel]. # 删除指定的手动添加IP，格式rmproxy address:port
   setkey         Setup rawlist encrytion key for neobox. [With no args will set key to default value] # 必须！！！设置key，用于解密原始列表

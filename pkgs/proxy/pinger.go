@@ -23,6 +23,7 @@ type Pinger struct {
 	sendChan          chan *outbound.ProxyItem
 	wg                *sync.WaitGroup
 	dProxy            *dao.Proxy
+	dlock             *sync.Mutex
 }
 
 func NewPinger(cnf *conf.NeoConf) (p *Pinger) {
@@ -30,6 +31,7 @@ func NewPinger(cnf *conf.NeoConf) (p *Pinger) {
 		CNF:    cnf,
 		Result: outbound.NewResult(),
 		wg:     &sync.WaitGroup{},
+		dlock:  &sync.Mutex{},
 	}
 	p.ProxyFetcher = NewProxyFetcher(cnf)
 	p.pingSucceededFile = filepath.Join(cnf.WorkDir, conf.PingSucceededFileName)
@@ -66,7 +68,11 @@ func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 				}
 				if s.PacketLoss > that.CNF.MaxPingPackLoss && s.AvgRtt == 0.0 {
 					// if ping failed, try to delete the record from db, only for history items.
-					that.dProxy.DeleteOneRecord(proxyItem.Address, proxyItem.Port)
+					if that.dProxy.GetProxy(proxyItem.Address, proxyItem.Port) != nil {
+						that.dlock.Lock()
+						that.dProxy.DeleteOneRecord(proxyItem.Address, proxyItem.Port)
+						that.dlock.Unlock()
+					}
 				}
 				// gtui.PrintInfo(s.Addr, s.AvgRtt.Microseconds(), s.PacketLoss)
 			}

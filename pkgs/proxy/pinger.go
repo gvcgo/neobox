@@ -96,7 +96,12 @@ func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 
 func (that *Pinger) send(force ...bool) {
 	that.sendChan = make(chan *outbound.ProxyItem, 100)
-	that.ProxyFetcher.DownAndLoad(force...)
+	if len(force) > 1 {
+		// load history list
+		that.ProxyFetcher.LoadHistoryListToRawDecrypted()
+	} else {
+		that.ProxyFetcher.DownAndLoad(force...)
+	}
 	gtui.PrintInfof("Find %v raw proxies.\n", that.ProxyFetcher.Result.Len())
 	filter := map[string]struct{}{}
 	itemList := that.ProxyFetcher.Result.GetTotalList()

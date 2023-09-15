@@ -21,9 +21,9 @@ type Pinger struct {
 	Result            *outbound.Result
 	pingSucceededFile string
 	sendChan          chan *outbound.ProxyItem
+	pingFailedChan    chan *outbound.ProxyItem
 	wg                *sync.WaitGroup
 	dProxy            *dao.Proxy
-	dlock             *sync.Mutex
 }
 
 func NewPinger(cnf *conf.NeoConf) (p *Pinger) {
@@ -31,7 +31,6 @@ func NewPinger(cnf *conf.NeoConf) (p *Pinger) {
 		CNF:    cnf,
 		Result: outbound.NewResult(),
 		wg:     &sync.WaitGroup{},
-		dlock:  &sync.Mutex{},
 	}
 	p.ProxyFetcher = NewProxyFetcher(cnf)
 	p.pingSucceededFile = filepath.Join(cnf.WorkDir, conf.PingSucceededFileName)
@@ -42,6 +41,23 @@ func NewPinger(cnf *conf.NeoConf) (p *Pinger) {
 func (that *Pinger) GetResultByReload() *outbound.Result {
 	that.Result.Load(that.pingSucceededFile)
 	return that.Result
+}
+
+func (that *Pinger) handlePingFailed() {
+	for {
+		select {
+		case p, ok := <-that.pingFailedChan:
+			if !ok {
+				return
+			}
+			// if ping failed, try to delete the record from db, only for history items.
+			if that.dProxy.GetProxy(p.Address, p.Port) != nil {
+				that.dProxy.DeleteOneRecord(p.Address, p.Port)
+			}
+		default:
+			time.Sleep(time.Millisecond * 100)
+		}
+	}
 }
 
 func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
@@ -66,13 +82,8 @@ func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 						return
 					}
 				}
-				if s.PacketLoss > that.CNF.MaxPingPackLoss && s.AvgRtt == 0.0 {
-					// if ping failed, try to delete the record from db, only for history items.
-					if that.dProxy.GetProxy(proxyItem.Address, proxyItem.Port) != nil {
-						that.dlock.Lock()
-						that.dProxy.DeleteOneRecord(proxyItem.Address, proxyItem.Port)
-						that.dlock.Unlock()
-					}
+				if s.PacketLoss > that.CNF.MaxPingPackLoss && s.AvgRtt == 0.0 && that.pingFailedChan != nil {
+					that.pingFailedChan <- proxyItem
 				}
 				// gtui.PrintInfo(s.Addr, s.AvgRtt.Microseconds(), s.PacketLoss)
 			}
@@ -118,10 +129,13 @@ func (that *Pinger) Run(force ...bool) {
 	go that.send(force...)
 	time.Sleep(time.Millisecond * 100)
 	that.Result.Clear()
+	that.pingFailedChan = make(chan *outbound.ProxyItem, 100)
+	go that.handlePingFailed()
 	for i := 0; i < that.CNF.MaxPingers; i++ {
 		go that.startPing()
 	}
 	that.wg.Wait()
+	close(that.pingFailedChan)
 	if that.Result.Len() > 0 {
 		that.Result.UpdateAt = time.Now().Format("2006-01-02 15:04:05")
 		that.Result.Save(that.pingSucceededFile)

@@ -33,7 +33,6 @@ Commands:
   graw           Manually dowload rawUri list(conf.txt from gitlab) for neobox client.
   guuid          Generate UUIDs.
   help           display help
-  loadhis        Manually load history verified items to rawList.
   parse          Parse rawUri of a proxy to xray-core/sing-box outbound string [xray-core by default].
   qcode          Generate QRCode for a chosen proxy. [qcode proxy_index]
   restart        Restart the running neobox client with a chosen proxy. [restart proxy_index]

@@ -33,7 +33,6 @@ Commands:
   graw           Manually dowload rawUri list(conf.txt from gitlab) for neobox client. # 手动触发原始的免费代理列表下载
   guuid          Generate UUIDs. # 生成uuid
   help           display help # 显示帮助信息
-  loadhis        Manually load history verified items to rawList. # 当免费资源很少时，可以手动将历史列表加入到rawList中参与筛选
   parse          Parse rawUri of a proxy to xray-core/sing-box outbound string [xray-core by default]. # 将某个rawUri解析成xray-core或者sing-box的outbound字符串并显示
   qcode          Generate QRCode for a chosen proxy. [qcode proxy_index] # 为指定序号的代理生成二维码，方便手机端(例如, NekoBox等)进行扫码
   restart        Restart the running neobox client with a chosen proxy. [restart proxy_index] # 使用指定序号的代理重启

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gogf/gf/encoding/gjson"
+	"github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/conf"
@@ -51,7 +52,8 @@ func (that *ProxyQRCode) GenQRCode() {
 	case parser.SchemeVmess:
 		rawUri = strings.ReplaceAll(that.proxy.RawUri, scheme, "")
 		j := gjson.New(rawUri)
-		rawUri = scheme + j.MustToJsonString()
+		res := crypt.EncodeBase64(j.MustToJsonString())
+		rawUri = scheme + res
 	case parser.SchemeVless, parser.SchemeSS, parser.SchemeTrojan, parser.SchemeSSR:
 		rawUri = that.proxy.RawUri
 	default:
@@ -61,7 +63,22 @@ func (that *ProxyQRCode) GenQRCode() {
 	if rawUri == "" {
 		return
 	}
-	code, err := qrcode.NewWithForcedVersion(rawUri, 16, qrcode.High)
+	count := 0
+	version := 16
+	var (
+		code *qrcode.QRCode
+		err  error
+	)
+
+	for {
+		count++
+		code, err = qrcode.NewWithForcedVersion(rawUri, version, qrcode.High)
+		if err == nil || count >= 30 {
+			break
+		}
+		version++
+	}
+
 	if err != nil {
 		gtui.PrintError(err)
 		return

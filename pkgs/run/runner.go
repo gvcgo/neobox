@@ -167,7 +167,7 @@ func (that *Runner) handleEdgeTunnelVless(p *outbound.ProxyItem) (newProxy *outb
 
 		reg := regexp.MustCompile(`@.+:`)
 		r := reg.ReplaceAll([]byte(newProxy.RawUri), []byte(fmt.Sprintf("@%s:", newProxy.Address)))
-		newProxy.RawUri = string(r)
+		newProxy.RawUri = string(r) + "#EdgeTunnel"
 		if newProxy.RTT == 0 {
 			newProxy.RTT = p.RTT
 		}

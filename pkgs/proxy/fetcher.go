@@ -7,10 +7,13 @@ import (
 
 	json "github.com/bytedance/sonic"
 	"github.com/moqsien/goutils/pkgs/crypt"
+	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/goutils/pkgs/request"
 	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/neobox/pkgs/storage/dao"
+	"github.com/moqsien/neobox/pkgs/storage/model"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 )
 
@@ -48,17 +51,20 @@ func (that *ProxyFetcher) DecryptAndLoad() {
 	if ok, _ := gutils.PathIsExist(that.downloadedFile); ok && that.Key.Key != "" {
 		if content, err := os.ReadFile(that.downloadedFile); err == nil {
 			c := crypt.NewCrptWithKey([]byte(that.Key.Key))
-			if result, err := c.AesDecrypt(content); err == nil {
-				if err := os.WriteFile(that.decryptedFile, result, os.ModePerm); err == nil {
-					err = json.Unmarshal(result, that.Result)
-					if err != nil {
-						logs.Error(err.Error())
-					}
-				} else {
-					logs.Error(err.Error())
-				}
-			} else {
-				logs.Error(err.Error())
+			result, err := c.AesDecrypt(content)
+			if err != nil {
+				logs.Error(err)
+				return
+			}
+			err = os.WriteFile(that.decryptedFile, result, os.ModePerm)
+			if err != nil {
+				logs.Error(err)
+				return
+			}
+			err = json.Unmarshal(result, that.Result)
+			if err != nil {
+				logs.Error(err)
+				return
 			}
 		} else {
 			logs.Error(err.Error())
@@ -77,4 +83,18 @@ func (that *ProxyFetcher) DownAndLoad(force ...bool) {
 	}
 	that.Download()
 	that.DecryptAndLoad()
+}
+
+// load history verified list items to rawlist.
+func (that *ProxyFetcher) LoadHistoryListToRawDecrypted() {
+	that.DownAndLoad(true)
+	pxy := &dao.Proxy{}
+	historyList := pxy.GetItemListBySourceType(model.SourceTypeHistory)
+	gtui.PrintInfof("%v ProxyItmes to be loaded to rawlist", len(historyList))
+	for _, p := range historyList {
+		if p != nil {
+			that.Result.AddItem(p)
+		}
+	}
+	that.Result.Save(that.decryptedFile)
 }

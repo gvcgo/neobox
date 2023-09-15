@@ -10,6 +10,7 @@ import (
 	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/moqsien/neobox/pkgs/storage/dao"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 	probing "github.com/prometheus-community/pro-bing"
 )
@@ -21,6 +22,7 @@ type Pinger struct {
 	pingSucceededFile string
 	sendChan          chan *outbound.ProxyItem
 	wg                *sync.WaitGroup
+	dProxy            *dao.Proxy
 }
 
 func NewPinger(cnf *conf.NeoConf) (p *Pinger) {
@@ -31,6 +33,7 @@ func NewPinger(cnf *conf.NeoConf) (p *Pinger) {
 	}
 	p.ProxyFetcher = NewProxyFetcher(cnf)
 	p.pingSucceededFile = filepath.Join(cnf.WorkDir, conf.PingSucceededFileName)
+	p.dProxy = &dao.Proxy{}
 	return
 }
 
@@ -60,6 +63,10 @@ func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 						that.Result.AddItem(proxyItem)
 						return
 					}
+				}
+				if s.PacketLoss > that.CNF.MaxPingPackLoss && s.AvgRtt == 0.0 {
+					// if ping failed, try to delete the record from db, only for history items.
+					that.dProxy.DeleteOneRecord(proxyItem.Address, proxyItem.Port)
 				}
 				// gtui.PrintInfo(s.Addr, s.AvgRtt.Microseconds(), s.PacketLoss)
 			}

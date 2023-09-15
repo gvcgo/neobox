@@ -287,6 +287,19 @@ func (that *Shell) genUUID() {
 	})
 }
 
+func (that *Shell) loadHistoryToRawList() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "loadhis",
+		Help: "Manually load history verified items to rawList.",
+		Func: func(c *goktrl.Context) {
+			pf := proxy.NewProxyFetcher(that.CNF)
+			pf.LoadHistoryListToRawDecrypted()
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
 func (that *Shell) removeManually() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name:            "rmproxy",
@@ -578,6 +591,7 @@ func (that *Shell) InitKtrl() {
 	that.addEdgeTunnel()
 	that.genQRCode()
 	that.genUUID()
+	that.loadHistoryToRawList()
 	that.removeManually()
 	that.show()
 	that.filter()

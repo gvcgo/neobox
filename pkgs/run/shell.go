@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gogf/gf/encoding/gjson"
 	"github.com/moqsien/goktrl"
 	"github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/goutils/pkgs/gtui"
@@ -22,6 +23,7 @@ import (
 	"github.com/moqsien/neobox/pkgs/storage/dao"
 	"github.com/moqsien/neobox/pkgs/storage/model"
 	"github.com/moqsien/neobox/pkgs/utils"
+	"github.com/moqsien/vpnparser/pkgs/outbound"
 	"github.com/moqsien/vpnparser/pkgs/parser"
 	"github.com/pterm/pterm"
 )
@@ -325,6 +327,47 @@ func (that *Shell) removeManually() {
 	})
 }
 
+func (that *Shell) parseRawUriToOutboundStr() {
+	type Options struct {
+		IsSingBox bool `alias:"s" required:"false" descr:"Output sing-box outbound string or not."`
+	}
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name:            "parse",
+		Help:            "Parse rawUri of a proxy to xray-core/sing-box outbound string [xray-core by default].",
+		ArgsDescription: "rawUri or proxyIndex",
+		Opts:            &Options{},
+		Func: func(c *goktrl.Context) {
+			if len(c.Args) == 0 {
+				gtui.PrintError("No rawUri is specified!")
+				return
+			}
+			rawUri := c.Args[0]
+			if !strings.Contains(rawUri, "://") {
+				proxyItem := that.runner.GetProxyByIndex(rawUri)
+				if proxyItem == nil {
+					gtui.PrintError("Can not find specified proxy!")
+				} else {
+					rawUri = proxyItem.RawUri
+				}
+			}
+			opts := c.Options.(*Options)
+			var p *outbound.ProxyItem
+			if opts.IsSingBox {
+				p = outbound.ParseRawUriToProxyItem(rawUri, outbound.SingBox)
+			} else {
+				p = outbound.ParseRawUriToProxyItem(rawUri, outbound.XrayCore)
+			}
+
+			if p != nil {
+				j := gjson.New(p.GetOutbound())
+				gtui.Cyan(j.MustToJsonIndentString())
+			}
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
 func (that *Shell) show() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "show",
@@ -602,6 +645,7 @@ func (that *Shell) InitKtrl() {
 	that.cloudflareIPv4()
 	that.downloadRawUri()
 	that.registerWireguardAndUpdateToWarpplus()
+	that.parseRawUriToOutboundStr()
 }
 
 func (that *Shell) StartShell() {

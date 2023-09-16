@@ -2,12 +2,13 @@ package proxy
 
 import (
 	"fmt"
-	"io"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/request"
 	"github.com/moqsien/neobox/pkgs/conf"
@@ -85,41 +86,108 @@ func (that *MannualProxy) RemoveMannualProxy(addr string, port int, sourceType s
 }
 
 func (that *MannualProxy) AddEdgeTunnelByAddressUUID(addr, uuid string) {
-	rawList := GetEdgeTunnelRawUriList(addr, uuid)
-	if len(rawList) == 0 {
+	edt := NewEdgeTunnelProxy(that.CNF)
+	newItem := edt.RandomlyChooseEdgeTunnel(addr, uuid)
+	if newItem == nil {
 		return
 	}
-	rawUri, _ := url.QueryUnescape(rawList[rand.Intn(len(rawList))])
+	rawUri := newItem.RawUri
 	if rawUri != "" {
 		that.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
 	}
 }
 
-func GetEdgeTunnelRawUriList(addr, uuid string) (rawList []string) {
-	rUrl := fmt.Sprintf("https://%s/sub/%s", addr, uuid)
-	f := request.NewFetcher()
-	f.SetUrl(rUrl)
-	f.Timeout = 3 * time.Minute
-	if resp := f.Get(); resp != nil {
-		content, _ := io.ReadAll(resp.RawResponse.Body)
-		if len(content) > 0 {
-			rawList = strings.Split(string(content), "\n")
+/*
+Handle edgetunnel rawList
+see: https://github.com/3Kmfi6HP/EDtunnel
+
+https://edtunnel.pages.dev/sub/uui
+https port: 443, 8443, 2053, 2096, 2087, 2083
+*/
+type EdgeTunnelProxy struct {
+	CNF           *conf.NeoConf
+	proxyListPath string
+}
+
+func NewEdgeTunnelProxy(cnf *conf.NeoConf) (etp *EdgeTunnelProxy) {
+	etp = &EdgeTunnelProxy{CNF: cnf}
+	return
+}
+
+func (that *EdgeTunnelProxy) DownloadAndSaveRawList(addr, uuid string) {
+	if that.proxyListPath == "" {
+		that.proxyListPath = filepath.Join(that.CNF.WorkDir, fmt.Sprintf("edge-tunnel-%s.txt", uuid))
+	}
+	if addr != "" && uuid != "" && that.proxyListPath != "" {
+		f := request.NewFetcher()
+		f.SetUrl(fmt.Sprintf("https://%s/sub/%s", addr, uuid))
+		f.Timeout = 3 * time.Minute
+		if strContent, _ := f.GetString(); strContent != "" {
+			if err := os.WriteFile(that.proxyListPath, []byte(strContent), os.ModePerm); err != nil {
+				gtui.PrintError(err)
+			}
+		}
+	}
+}
+
+func (that *EdgeTunnelProxy) RandomlyChooseEdgeTunnel(addr, uuid string) (newItem *outbound.ProxyItem) {
+	if that.proxyListPath == "" {
+		that.proxyListPath = filepath.Join(that.CNF.WorkDir, fmt.Sprintf("edge-tunnel-%s.txt", uuid))
+	}
+
+	if addr != "" && uuid != "" {
+		if ok, _ := gutils.PathIsExist(that.proxyListPath); !ok {
+			that.DownloadAndSaveRawList(addr, uuid)
+		}
+
+		if ok, _ := gutils.PathIsExist(that.proxyListPath); ok {
+			if content, _ := os.ReadFile(that.proxyListPath); len(content) > 0 {
+				rawList := strings.Split(string(content), "\n")
+				idx := rand.Intn(len(rawList))
+				rawUri := rawList[idx]
+				rawUri, _ = url.QueryUnescape(rawUri)
+				newItem = outbound.ParseRawUriToProxyItem(rawUri)
+			}
 		}
 	}
 	return
 }
 
-func RandomlyChooseEdgeTunnelByOldProxyItem(p *outbound.ProxyItem) (newItem *outbound.ProxyItem) {
+func (that *EdgeTunnelProxy) RandomlyChooseEdgeTunnelByOldProxyItem(p *outbound.ProxyItem) (newItem *outbound.ProxyItem) {
 	newItem = p
 	vp := &parser.ParserVless{}
 	vp.Parse(p.RawUri)
-	if vp.UUID != "" && vp.Address != "" {
-		if rawList := GetEdgeTunnelRawUriList(vp.Address, vp.UUID); len(rawList) > 0 {
-			idx := rand.Intn(len(rawList))
-			rawUri := rawList[idx]
-			rawUri, _ = url.QueryUnescape(rawUri)
-			newItem = outbound.ParseRawUriToProxyItem(rawUri)
-		}
+	if vp.Address != "" && vp.UUID != "" {
+		newItem = that.RandomlyChooseEdgeTunnel(vp.Address, vp.UUID)
 	}
 	return
 }
+
+// func GetEdgeTunnelRawUriList(addr, uuid string) (rawList []string) {
+// 	rUrl := fmt.Sprintf("https://%s/sub/%s", addr, uuid)
+// 	f := request.NewFetcher()
+// 	f.SetUrl(rUrl)
+// 	f.Timeout = 3 * time.Minute
+// 	if resp := f.Get(); resp != nil {
+// 		content, _ := io.ReadAll(resp.RawResponse.Body)
+// 		if len(content) > 0 {
+// 			rawList = strings.Split(string(content), "\n")
+// 		}
+// 	}
+// 	return
+// }
+
+// func RandomlyChooseEdgeTunnelByOldProxyItem(p *outbound.ProxyItem) (newItem *outbound.ProxyItem) {
+// 	newItem = p
+// 	vp := &parser.ParserVless{}
+// 	vp.Parse(p.RawUri)
+// 	if vp.UUID != "" && vp.Address != "" {
+// 		if rawList := GetEdgeTunnelRawUriList(vp.Address, vp.UUID); len(rawList) > 0 {
+// 			idx := rand.Intn(len(rawList))
+// 			rawUri := rawList[idx]
+// 			rawUri, _ = url.QueryUnescape(rawUri)
+// 			newItem = outbound.ParseRawUriToProxyItem(rawUri)
+// 		}
+// 	}
+// 	return
+// }

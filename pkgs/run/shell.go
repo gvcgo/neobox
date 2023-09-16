@@ -249,14 +249,14 @@ func (that *Shell) addEdgeTunnel() {
 		Func: func(c *goktrl.Context) {
 			manual := proxy.NewMannualProxy(that.CNF)
 			opts := c.Options.(*Options)
-			if len(os.Args) > 0 {
+			if opts.UUID != "" && opts.Address != "" {
+				manual.AddEdgeTunnelByAddressUUID(opts.Address, opts.UUID)
+			} else if len(os.Args) > 0 {
 				for _, rawUri := range os.Args {
 					if strings.HasPrefix(rawUri, parser.SchemeVless) {
 						manual.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
 					}
 				}
-			} else if opts.UUID != "" && opts.Address != "" {
-				manual.AddEdgeTunnelByAddressUUID(opts.Address, opts.UUID)
 			}
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
@@ -291,7 +291,7 @@ func (that *Shell) genUUID() {
 
 func (that *Shell) removeManually() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name:            "rmproxy",
+		Name:            "remove",
 		Help:            "Remove a manually added proxy [manually or edgetunnel].",
 		ArgsDescription: "proxy host [address:port]",
 		Func: func(c *goktrl.Context) {
@@ -307,6 +307,35 @@ func (that *Shell) removeManually() {
 				p := &dao.Proxy{}
 				port, _ := strconv.Atoi(sList[1])
 				p.DeleteOneRecord(sList[0], port)
+			}
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
+func (that *Shell) downloadRawlistForEdgeTunnel() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name:            "dedge",
+		Help:            "Download rawList for a specified edgeTunnel proxy [dedge proxy_index].",
+		ArgsDescription: "edgeTunnel proxy index",
+		Func: func(c *goktrl.Context) {
+			if len(c.Args) == 0 {
+				return
+			}
+			idxStr := os.Args[0]
+			if strings.HasPrefix(idxStr, FromEdgetunnel) {
+				idx, _ := strconv.Atoi(strings.TrimLeft(idxStr, FromEdgetunnel))
+				dProxy := &dao.Proxy{}
+				proxyList := dProxy.GetItemListBySourceType(model.SourceTypeEdgeTunnel)
+				if idx < 0 || idx > len(proxyList)-1 {
+					return
+				}
+				p := proxyList[idx]
+				edt := proxy.NewEdgeTunnelProxy(that.CNF)
+				vp := &parser.ParserVless{}
+				vp.Parse(p.RawUri)
+				edt.DownloadAndSaveRawList(vp.Address, vp.UUID)
 			}
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
@@ -641,6 +670,7 @@ func (that *Shell) InitKtrl() {
 	that.downloadRawUri()
 	that.registerWireguardAndUpdateToWarpplus()
 	that.parseRawUriToOutboundStr()
+	that.downloadRawlistForEdgeTunnel()
 }
 
 func (that *Shell) StartShell() {

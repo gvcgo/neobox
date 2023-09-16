@@ -151,7 +151,8 @@ func (that *Runner) getNextProxy(args ...string) *outbound.ProxyItem {
 }
 
 func (that *Runner) handleEdgeTunnelVless(p *outbound.ProxyItem) (newProxy *outbound.ProxyItem) {
-	newProxy = proxy.RandomlyChooseEdgeTunnelByOldProxyItem(p)
+	edt := proxy.NewEdgeTunnelProxy(that.CNF)
+	newProxy = edt.RandomlyChooseEdgeTunnelByOldProxyItem(p)
 	wguard := &dao.WireGuardIP{}
 	if w, err := wguard.RandomlyGetOneIPByPort(newProxy.Port); err == nil && w != nil {
 		j := gjson.New(newProxy.GetOutbound())

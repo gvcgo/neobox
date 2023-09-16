@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO: add New Type for cloudflare domains.
 type WireGuard struct {
 	*Model
 	Address    string  `json:"address"`
@@ -67,6 +68,8 @@ func (that *WireGuard) GetIPListByPort(db *gorm.DB) (wList []*WireGuard, err err
 	return
 }
 
+// TODO: only delete ips no domains
+// TODO: only delete domains no ips
 func (that *WireGuard) DeleteAll(db *gorm.DB) (err error) {
 	err = db.Exec(fmt.Sprintf("DELETE FROM %s", that.TableName())).Error
 	if err != nil {

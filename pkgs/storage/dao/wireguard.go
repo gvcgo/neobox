@@ -7,6 +7,7 @@ import (
 	"github.com/moqsien/neobox/pkgs/storage/model"
 )
 
+// TODO: add New Type for cloudflare domains.
 type WireGuardIP struct{}
 
 func (that *WireGuardIP) Create(address string, port int, rtt int64) error {

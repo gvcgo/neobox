@@ -67,9 +67,9 @@ func (that *Shell) Start() {
 	time.Sleep(2 * time.Second)
 
 	if that.runner.PingRunner() {
-		gtui.PrintSuccess("start sing-box succeeded.")
+		gtui.PrintSuccess("start NeoBox succeeded.")
 	} else {
-		gtui.PrintError("start sing-box failed")
+		gtui.PrintError("start NeoBox failed")
 	}
 
 	if that.runner.PingKeeper() {

@@ -26,6 +26,7 @@ Commands:
   added          Add edgetunnel proxies to neobox.
   cfip           Test speed for cloudflare IPv4s.
   clear          clear the screen
+  dedge          Download rawList for a specified edgeTunnel proxy [dedge proxy_index].
   exit           exit the program
   filter         Start filtering proxies by verifier manually.
   gc             Start GC manually.
@@ -35,8 +36,8 @@ Commands:
   help           display help
   parse          Parse rawUri of a proxy to xray-core/sing-box outbound string [xray-core by default].
   qcode          Generate QRCode for a chosen proxy. [qcode proxy_index]
+  remove         Remove a manually added proxy [manually or edgetunnel].
   restart        Restart the running neobox client with a chosen proxy. [restart proxy_index]
-  rmproxy        Remove a manually added proxy [manually or edgetunnel].
   setkey         Setup rawlist encrytion key for neobox. [With no args will set key to default value]
   setping        Setup ping without root for Linux.
   show           Show neobox info.

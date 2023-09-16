@@ -26,6 +26,7 @@ Commands:
   added          Add edgetunnel proxies to neobox. # 添加EdgeTunnel的vless代理
   cfip           Test speed for cloudflare IPv4s. # 筛选cloudflare CDN节点
   clear          clear the screen # 清屏
+  dedge          Download rawList for a specified edgeTunnel proxy [dedge proxy_index]. # 为指定的EdgeTunnel下载rawList
   exit           exit the program # 退出shell
   filter         Start filtering proxies by verifier manually. # 手动开启免费IP筛选
   gc             Start GC manually. # 手动触发GC，降低内存占用
@@ -35,8 +36,8 @@ Commands:
   help           display help # 显示帮助信息
   parse          Parse rawUri of a proxy to xray-core/sing-box outbound string [xray-core by default]. # 将某个rawUri解析成xray-core或者sing-box的outbound字符串并显示
   qcode          Generate QRCode for a chosen proxy. [qcode proxy_index] # 为指定序号的代理生成二维码，方便手机端(例如, NekoBox等)进行扫码
+  remove         Remove a manually added proxy [manually or edgetunnel]. # 删除指定的手动添加IP，格式rmproxy address:port
   restart        Restart the running neobox client with a chosen proxy. [restart proxy_index] # 使用指定序号的代理重启
-  rmproxy        Remove a manually added proxy [manually or edgetunnel]. # 删除指定的手动添加IP，格式rmproxy address:port
   setkey         Setup rawlist encrytion key for neobox. [With no args will set key to default value] # 必须！！！设置key，用于解密原始列表
   setping        Setup ping without root for Linux. ## Linux系统下，免root权限的ping设置
   show           Show neobox info. # 展示可用代理列表和统计信息，neobox当前运行状态等等

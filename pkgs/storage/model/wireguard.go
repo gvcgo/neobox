@@ -7,6 +7,11 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	WireGuardTypeIP     string = "ip"
+	WireGuardTypeDomain string = "domain"
+)
+
 // TODO: add New Type for cloudflare domains.
 type WireGuard struct {
 	*Model
@@ -14,6 +19,7 @@ type WireGuard struct {
 	Port       int     `json:"port"`
 	RTT        int64   `json:"rtt"`
 	PacketLoss float32 `json:"packet_loss"`
+	Type       string  `json:"type"`
 }
 
 func NewWireGuardItem() (w *WireGuard) {
@@ -68,8 +74,30 @@ func (that *WireGuard) GetIPListByPort(db *gorm.DB) (wList []*WireGuard, err err
 	return
 }
 
-// TODO: only delete ips no domains
-// TODO: only delete domains no ips
+func (that *WireGuard) GetIPListByType(db *gorm.DB) (wList []*WireGuard, err error) {
+	fields := []string{"address", "port", "rtt"}
+	var rows *sql.Rows
+	if that.Type == "" {
+		that.Type = WireGuardTypeDomain
+	}
+	rows, err = db.Select(fields).Table(that.TableName()).
+		Where("type = ?", that.Type).
+		Order("rtt ASC").Limit(30).
+		Rows()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		w := &WireGuard{}
+		if err := rows.Scan(&w.Address, &w.Port, &w.RTT); err != nil {
+			return nil, err
+		}
+		wList = append(wList, w)
+	}
+	return
+}
+
 func (that *WireGuard) DeleteAll(db *gorm.DB) (err error) {
 	err = db.Exec(fmt.Sprintf("DELETE FROM %s", that.TableName())).Error
 	if err != nil {
@@ -77,4 +105,13 @@ func (that *WireGuard) DeleteAll(db *gorm.DB) (err error) {
 	}
 	err = db.Exec("VACUUM").Error
 	return
+}
+
+func (that *WireGuard) DeleteByType(db *gorm.DB) (err error) {
+	err = db.Exec(fmt.Sprintf("DELETE FROM %s WHERE type = ?", that.TableName()), that.Type).Error
+	if err != nil {
+		return
+	}
+	err = db.Exec("VACUUM").Error
+	return err
 }

@@ -89,11 +89,12 @@ func (that *Proxy) CountBySchemeOrSourceType(db *gorm.DB) (count int64, err erro
 	return
 }
 
-func (that *Proxy) Delete(db *gorm.DB) error {
-	// if err := db.Where("address = ? AND port = ?", that.Address, that.Port).Delete(that).Error; err != nil {
-	// 	return err
-	// }
-	err := db.Exec(fmt.Sprintf("DELETE FROM %s WHERE address = ? AND port = ?", that.TableName()), that.Address, that.Port).Error
+func (that *Proxy) Delete(db *gorm.DB) (err error) {
+	err = db.Exec(fmt.Sprintf("DELETE FROM %s WHERE address = ? AND port = ?", that.TableName()), that.Address, that.Port).Error
+	if err != nil {
+		return
+	}
+	err = db.Exec("VACUUM").Error
 	return err
 }
 

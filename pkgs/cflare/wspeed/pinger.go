@@ -114,7 +114,8 @@ func (that *WPinger) Run() {
 	}
 	that.wg.Wait()
 	if len(that.Result.ItemList) > 0 {
-		if err = that.Saver.DeleteAll(); err != nil {
+		// delete only IPs
+		if err = that.Saver.DeleteByType(model.WireGuardTypeIP); err != nil {
 			gtui.PrintError(err)
 		}
 	}

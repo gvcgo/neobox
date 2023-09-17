@@ -150,11 +150,35 @@ func (that *Runner) getNextProxy(args ...string) *outbound.ProxyItem {
 	return nil
 }
 
-func (that *Runner) handleEdgeTunnelVless(p *outbound.ProxyItem) (newProxy *outbound.ProxyItem) {
+func (that *Runner) handleEdgeTunnelVless(p *outbound.ProxyItem, useDomain ...bool) (newProxy *outbound.ProxyItem) {
 	edt := proxy.NewEdgeTunnelProxy(that.CNF)
 	newProxy = edt.RandomlyChooseEdgeTunnelByOldProxyItem(p)
 	wguard := &dao.WireGuardIP{}
-	// TODO: use IP or Domain
+	if len(useDomain) > 0 && useDomain[0] {
+		if w, err := wguard.RandomlyGetOneIPByType(model.WireGuardTypeDomain); err == nil && w != nil {
+			j := gjson.New(newProxy.GetOutbound())
+			// use optimized IPs
+			if newProxy.OutboundType == outbound.SingBox {
+				j.Set("server", w.Address)
+				j.Set("server_port", w.Port)
+			} else {
+				j.Set("settings.vnext.0.address", w.Address)
+				j.Set("port", w.Port)
+			}
+			newProxy.Address = w.Address
+			newProxy.Port = w.Port
+			newProxy.RTT = w.RTT
+			newProxy.Outbound = j.MustToJsonString()
+
+			reg := regexp.MustCompile(`@.+:`)
+			r := reg.ReplaceAll([]byte(newProxy.RawUri), []byte(fmt.Sprintf("@%s:", newProxy.Address)))
+			newProxy.RawUri = string(r) + "#EdgeTunnel"
+			if newProxy.RTT == 0 {
+				newProxy.RTT = p.RTT
+			}
+		}
+		return
+	}
 	if w, err := wguard.RandomlyGetOneIPByPort(newProxy.Port); err == nil && w != nil {
 		j := gjson.New(newProxy.GetOutbound())
 		// use optimized IPs
@@ -177,14 +201,14 @@ func (that *Runner) handleEdgeTunnelVless(p *outbound.ProxyItem) (newProxy *outb
 	return
 }
 
-func (that *Runner) GetProxyByIndex(idxStr string) (p *outbound.ProxyItem) {
+func (that *Runner) GetProxyByIndex(idxStr string, useDomain ...bool) (p *outbound.ProxyItem) {
 	if strings.HasPrefix(idxStr, FromEdgetunnel) {
 		idx, _ := strconv.Atoi(strings.TrimLeft(idxStr, FromEdgetunnel))
 		if eList := that.verifier.GetProxyFromDB(model.SourceTypeEdgeTunnel); len(eList) > 0 {
 			if idx < 0 || idx >= len(eList) {
-				return that.handleEdgeTunnelVless(eList[0])
+				return that.handleEdgeTunnelVless(eList[0], useDomain...)
 			}
-			return that.handleEdgeTunnelVless(eList[idx])
+			return that.handleEdgeTunnelVless(eList[idx], useDomain...)
 		}
 	} else if strings.HasPrefix(idxStr, FromManually) {
 		idx, _ := strconv.Atoi(strings.TrimLeft(idxStr, FromManually))

@@ -16,6 +16,7 @@ import (
 	"github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/goutils/pkgs/gtui"
 	"github.com/moqsien/goutils/pkgs/gutils"
+	"github.com/moqsien/neobox/pkgs/cflare/domain"
 	"github.com/moqsien/neobox/pkgs/cflare/wguard"
 	"github.com/moqsien/neobox/pkgs/cflare/wspeed"
 	"github.com/moqsien/neobox/pkgs/conf"
@@ -115,16 +116,32 @@ func (that *Shell) restart() {
 	type Options struct {
 		ShowChosen bool `alias:"sh" required:"false" descr:"show the chosen proxy or not."`
 		ShowConfig bool `alias:"shc" required:"false" descr:"show config in result or not."`
+		UseDomains bool `alias:"dom" required:"false" descr:"use selected domains for edgetunnels."`
 	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "restart",
 		Help: "Restart the running neobox client with a chosen proxy. [restart proxy_index]",
 		Opts: &Options{},
 		Func: func(c *goktrl.Context) {
+			// prepare args
 			opts := c.Options.(*Options)
-			if opts != nil && opts.ShowChosen && len(c.Args) > 0 {
+			args := c.Args
+			idxStr := "0"
+			if len(args) > 0 {
+				idxStr = args[0]
+			}
+			r := []string{}
+			if proxyItem := that.runner.GetProxyByIndex(idxStr, opts.UseDomains); proxyItem != nil {
+				r = append(r, crypt.EncodeBase64(proxyItem.String()))
+			}
+			c.Args = r
+
+			// show proxyItem
+			if opts.ShowChosen && len(c.Args) > 0 {
 				gtui.PrintInfo(crypt.DecodeBase64(c.Args[0]))
 			}
+
+			// send request
 			var res []byte
 			if that.runner.PingRunner() {
 				res, _ = c.GetResult()
@@ -135,7 +152,7 @@ func (that *Shell) restart() {
 			}
 
 			rList := strings.Split(string(res), "___")
-			if opts != nil && opts.ShowConfig && len(rList) == 2 {
+			if opts.ShowConfig && len(rList) == 2 {
 				confStr, _ := url.QueryUnescape(rList[1])
 				gtui.PrintInfo(rList[0], "; ConfStr: ", confStr)
 			} else {
@@ -143,20 +160,6 @@ func (that *Shell) restart() {
 			}
 		},
 		ArgsDescription: "choose a specified proxy by index.",
-		ArgsHook: func(args []string) (r []string) {
-			/*
-				hook: to choose a proxy at shell-side and then pass to server-side.
-				This will avoid verified-list changes when restarting.
-			*/
-			idxStr := "0"
-			if len(args) > 0 {
-				idxStr = args[0]
-			}
-			if proxyItem := that.runner.GetProxyByIndex(idxStr); proxyItem != nil {
-				r = append(r, crypt.EncodeBase64(proxyItem.String()))
-			}
-			return
-		},
 		KtrlHandler: func(c *goktrl.Context) {
 			if len(c.Args) == 0 {
 				c.Send("Cannot find specified proxy", 200)
@@ -198,16 +201,21 @@ func (that *Shell) stop() {
 }
 
 func (that *Shell) genQRCode() {
+	type Options struct {
+		UseDomains bool `alias:"dom" required:"false" descr:"use selected domains for edgetunnels."`
+	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "qcode",
 		Help: "Generate QRCode for a chosen proxy. [qcode proxy_index]",
+		Opts: &Options{},
 		Func: func(c *goktrl.Context) {
 			args := c.Args
 			idxStr := "0"
 			if len(args) > 0 {
 				idxStr = args[0]
 			}
-			if proxyItem := that.runner.GetProxyByIndex(idxStr); proxyItem != nil {
+			opts := c.Options.(*Options)
+			if proxyItem := that.runner.GetProxyByIndex(idxStr, opts.UseDomains); proxyItem != nil {
 				qrc := proxy.NewQRCodeProxy(that.CNF)
 				qrc.SetProxyItem(proxyItem)
 				qrc.GenQRCode()
@@ -343,9 +351,36 @@ func (that *Shell) downloadRawlistForEdgeTunnel() {
 	})
 }
 
+func (that *Shell) downloadDomainFileForEdgeTunnel() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "domain",
+		Help: "Download selected domains file for edgeTunnels.",
+		Func: func(c *goktrl.Context) {
+			dom := domain.NewCPinger(that.CNF)
+			dom.Download()
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
+func (that *Shell) pingDomainsForEdgeTunnel() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name: "pingd",
+		Help: "Ping selected domains for edgeTunnels.",
+		Func: func(c *goktrl.Context) {
+			dom := domain.NewCPinger(that.CNF)
+			dom.Run()
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
 func (that *Shell) parseRawUriToOutboundStr() {
 	type Options struct {
-		IsSingBox bool `alias:"s" required:"false" descr:"Output sing-box outbound string or not."`
+		IsSingBox  bool `alias:"s" required:"false" descr:"Output sing-box outbound string or not."`
+		UseDomains bool `alias:"dom" required:"false" descr:"use selected domains for edgetunnels."`
 	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name:            "parse",
@@ -359,7 +394,8 @@ func (that *Shell) parseRawUriToOutboundStr() {
 			}
 			rawUri := c.Args[0]
 			if !strings.Contains(rawUri, "://") {
-				proxyItem := that.runner.GetProxyByIndex(rawUri)
+				opts := c.Options.(*Options)
+				proxyItem := that.runner.GetProxyByIndex(rawUri, opts.UseDomains)
 				if proxyItem == nil {
 					gtui.PrintError("Can not find specified proxy!")
 				} else {
@@ -671,6 +707,8 @@ func (that *Shell) InitKtrl() {
 	that.registerWireguardAndUpdateToWarpplus()
 	that.parseRawUriToOutboundStr()
 	that.downloadRawlistForEdgeTunnel()
+	that.downloadDomainFileForEdgeTunnel()
+	that.pingDomainsForEdgeTunnel()
 }
 
 func (that *Shell) StartShell() {

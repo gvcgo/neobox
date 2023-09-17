@@ -107,6 +107,9 @@ func (that *CPinger) ping() {
 			that.barLock.Lock()
 			that.bar.Add(1)
 			that.barLock.Unlock()
+			if count == 0 {
+				continue
+			}
 			item := &wspeed.Item{
 				Addr:     address,
 				Port:     port,

@@ -27,6 +27,7 @@ Commands:
   cfip           Test speed for cloudflare IPv4s.
   clear          clear the screen
   dedge          Download rawList for a specified edgeTunnel proxy [dedge proxy_index].
+  domain         Download selected domains file for edgeTunnels.
   exit           exit the program
   filter         Start filtering proxies by verifier manually.
   gc             Start GC manually.
@@ -35,6 +36,7 @@ Commands:
   guuid          Generate UUIDs.
   help           display help
   parse          Parse rawUri of a proxy to xray-core/sing-box outbound string [xray-core by default].
+  pingd          Ping selected domains for edgeTunnels.
   qcode          Generate QRCode for a chosen proxy. [qcode proxy_index]
   remove         Remove a manually added proxy [manually or edgetunnel].
   restart        Restart the running neobox client with a chosen proxy. [restart proxy_index]
@@ -54,6 +56,17 @@ Add edgetunnel proxies to neobox.
   --address=xxx; alias:-{a}; description: domain/ip for edge tunnel.
  args:
   full raw_uri[vless://xxx@xxx?xxx]
+
+
+>>> restart help
+
+Restart the running neobox client with a chosen proxy. [restart proxy_index]
+ options:
+  -showchosen; alias:-{sh}; description: show the chosen proxy or not.
+  -showconfig; alias:-{shc}; description: show config in result or not.
+  -usedomains; alias:-{dom}; description: use selected domains for edgetunnels.
+ args:
+  choose a specified proxy by index.
 ```
 
 **Note:**

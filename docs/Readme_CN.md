@@ -27,6 +27,7 @@ Commands:
   cfip           Test speed for cloudflare IPv4s. # 筛选cloudflare CDN节点
   clear          clear the screen # 清屏
   dedge          Download rawList for a specified edgeTunnel proxy [dedge proxy_index]. # 为指定的EdgeTunnel下载rawList
+  domain         Download selected domains file for edgeTunnels. # 下载edgeTunnels的domains列表
   exit           exit the program # 退出shell
   filter         Start filtering proxies by verifier manually. # 手动开启免费IP筛选
   gc             Start GC manually. # 手动触发GC，降低内存占用
@@ -35,6 +36,7 @@ Commands:
   guuid          Generate UUIDs. # 生成uuid
   help           display help # 显示帮助信息
   parse          Parse rawUri of a proxy to xray-core/sing-box outbound string [xray-core by default]. # 将某个rawUri解析成xray-core或者sing-box的outbound字符串并显示
+  pingd          Ping selected domains for edgeTunnels. # 优选edgeTunnels的domain列表
   qcode          Generate QRCode for a chosen proxy. [qcode proxy_index] # 为指定序号的代理生成二维码，方便手机端(例如, NekoBox等)进行扫码
   remove         Remove a manually added proxy [manually or edgetunnel]. # 删除指定的手动添加IP，格式rmproxy address:port
   restart        Restart the running neobox client with a chosen proxy. [restart proxy_index] # 使用指定序号的代理重启
@@ -54,6 +56,17 @@ Add edgetunnel proxies to neobox.
   --address=xxx; alias:-{a}; description: domain/ip for edge tunnel.
  args:
   full raw_uri[vless://xxx@xxx?xxx]
+
+
+>>> restart help # 选择一个代理重启neobox
+
+Restart the running neobox client with a chosen proxy. [restart proxy_index]
+ options:
+  -showchosen; alias:-{sh}; description: show the chosen proxy or not. # 是否显示选择的proxyItem
+  -showconfig; alias:-{shc}; description: show config in result or not. # 是否显示最终的config字符串
+  -usedomains; alias:-{dom}; description: use selected domains for edgetunnels. # 使用edgeTunnel重启时使用优选domain，否则使用优选IP
+ args:
+  choose a specified proxy by index.
 ```
 
 **注意**：

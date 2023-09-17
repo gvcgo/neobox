@@ -77,7 +77,7 @@ func (that *CPinger) send(rawList []string) {
 
 func (that *CPinger) tcpReq(addr string, port int) (time.Duration, bool) {
 	startTime := time.Now()
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", addr, port), time.Second*1)
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", addr, port), time.Second*3)
 	if err != nil {
 		return 0, false
 	}
@@ -96,9 +96,6 @@ func (that *CPinger) ping() {
 			if !ok {
 				return
 			}
-			that.barLock.Lock()
-			that.bar.Add(1)
-			that.barLock.Unlock()
 			count := int64(0)
 			totalDuration := time.Duration(0)
 			for i := 0; i < that.CNF.CloudflareConf.MaxPingCount; i++ {
@@ -107,16 +104,16 @@ func (that *CPinger) ping() {
 					totalDuration += d
 				}
 			}
-			if count == 0 {
-				continue
-			}
+			that.barLock.Lock()
+			that.bar.Add(1)
+			that.barLock.Unlock()
 			item := &wspeed.Item{
 				Addr:     address,
 				Port:     port,
 				RTT:      int64(totalDuration.Milliseconds() / count),
 				LossRate: (float32(that.CNF.CloudflareConf.MaxPingCount) - float32(count)) / float32(that.CNF.CloudflareConf.MaxPingCount),
 			}
-			if item.RTT <= that.CNF.CloudflareConf.MaxRTT && item.LossRate <= that.CNF.CloudflareConf.MaxLossRate {
+			if item.RTT <= 3*1000 && item.LossRate <= 50.0 {
 				that.Result.AddItem(item)
 			}
 		default:

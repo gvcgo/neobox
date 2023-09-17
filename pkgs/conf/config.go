@@ -13,27 +13,29 @@ type PortRange struct {
 }
 
 const (
-	LogFileName            string = "neobox.log"
-	DownloadedFileName     string = "neobox_vpns_encrypted.txt"
-	DecryptedFileName      string = "neobox_vpns_decrypted.json"
-	PingSucceededFileName  string = "neobox_ping_succeeded.json"
-	VerifiedFileName       string = "neobox_verified.json"
-	CountryAbbrFileName    string = "neobox_country_abbr.json"
-	SQLiteDBFileName       string = "neobox_sqlite.db"
-	EncryptKeyFileName     string = ".neobox_encrypt_key.json"
-	DefaultKey             string = "5lR3hcN8Zzpo1nzI"
-	CloudflareIPV4FileName string = "cloudflare_ipv4.txt"
+	LogFileName              string = "neobox.log"
+	DownloadedFileName       string = "neobox_vpns_encrypted.txt"
+	DecryptedFileName        string = "neobox_vpns_decrypted.json"
+	PingSucceededFileName    string = "neobox_ping_succeeded.json"
+	VerifiedFileName         string = "neobox_verified.json"
+	CountryAbbrFileName      string = "neobox_country_abbr.json"
+	SQLiteDBFileName         string = "neobox_sqlite.db"
+	EncryptKeyFileName       string = ".neobox_encrypt_key.json"
+	DefaultKey               string = "5lR3hcN8Zzpo1nzI"
+	CloudflareIPV4FileName   string = "cloudflare_ipv4.txt"
+	CloudflareDomainFileName string = "cloudflare_domains.txt"
 )
 
 type CloudflareConf struct {
-	WireGuardConfDir  string  `json,koanf:"wireguard_conf_dir"`
-	CloudflareIPV4URL string  `json,koanf:"cloudflare_ipv4_url"`
-	PortList          []int   `json,koanf:"port_list"`
-	MaxGoroutines     int     `json,koanf:"max_goroutines"`
-	MaxRTT            int64   `json,koanf:"max_rtt"`
-	MaxPingCount      int     `json,koanf:"max_ping_count"`
-	MaxLossRate       float32 `json,koanf:"max_loss_rate"`
-	MaxSaveToDB       int     `json,koanf:"max_saved"`
+	WireGuardConfDir        string  `json,koanf:"wireguard_conf_dir"`
+	CloudflareIPV4URL       string  `json,koanf:"cloudflare_ipv4_url"`
+	PortList                []int   `json,koanf:"port_list"`
+	MaxGoroutines           int     `json,koanf:"max_goroutines"`
+	MaxRTT                  int64   `json,koanf:"max_rtt"`
+	MaxPingCount            int     `json,koanf:"max_ping_count"`
+	MaxLossRate             float32 `json,koanf:"max_loss_rate"`
+	MaxSaveToDB             int     `json,koanf:"max_saved"`
+	CloudflareDomainFileUrl string  `json,koanf:"cloudflare_domain_url"`
 }
 
 type NeoConf struct {
@@ -90,11 +92,12 @@ func GetDefaultNeoConf() (n *NeoConf) {
 			CloudflareIPV4URL: "https://www.cloudflare.com/ips-v4",
 			PortList:          []int{443, 8443, 2053, 2096, 2087, 2083},
 			// PortList:      []int{443},
-			MaxPingCount:  4,
-			MaxGoroutines: 300,
-			MaxRTT:        500,
-			MaxLossRate:   0.0,
-			MaxSaveToDB:   1000,
+			MaxPingCount:            4,
+			MaxGoroutines:           300,
+			MaxRTT:                  800,
+			MaxLossRate:             30.0,
+			MaxSaveToDB:             1000,
+			CloudflareDomainFileUrl: "https://gitlab.com/moqsien/gvc_resources/-/raw/main/cloudflare_domains.txt?ref_type=heads",
 		},
 	}
 	n.LogDir = n.WorkDir

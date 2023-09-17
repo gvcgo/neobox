@@ -9,6 +9,7 @@ import (
 
 type Item struct {
 	IP       *net.IPAddr
+	Addr     string
 	Port     int
 	RTT      int64
 	LossRate float32

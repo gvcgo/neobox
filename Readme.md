@@ -71,9 +71,17 @@ Restart the running neobox client with a chosen proxy. [restart proxy_index]
 
 **Note:**
 
-You can use subcommand "qcode" to generate a QRCode for a certain verifed or manually added proxy.
+- **QRCode**: You can use subcommand "qcode" to generate a QRCode for a certain verifed or manually added proxy.
 Then you can scan the generated QRCode with NekoBox on your cell phone.
 At now, your cell phone will share the proxies verified by neobox.
+
+- **Wireguard**: You can register a wireguard account using subcommand "wireguard". If you specify a Warp+ License Key using "wireguard xxx", 
+then you can upgrade your wireguard account to Warp+. Warp+ License Key can be found at Warp+Bot in Telegram App.  The Warp+ License Key is like "Key: 8YK01D7V-Ij6z50g7-eZ5l2R36 (24598562 GB)".
+
+- **Cloudflare EdgeTunnel**: use [pages/workers](https://dash.cloudflare.com/login) to deploy [EdgeTunnel](https://github.com/3Kmfi6HP/EDtunnel). 
+
+- **Cloudflare IP/Domain**: Selected cloudflare IPs/Domains support Warp+ and EdgeTunnel, which can accelerate your visitings through proxies.
+  
 
 ## Example
 

@@ -71,7 +71,15 @@ Restart the running neobox client with a chosen proxy. [restart proxy_index]
 
 **注意**：
 
-你可以用qcode子命令来生成某个代理的二维码。然后在手机端使用诸如NekoBox之类的App扫描二维码，就可以分享neobox的代理筛选结果了。
+- **二维码**: 你可以用qcode子命令来生成某个代理的二维码。然后在手机端使用诸如NekoBox之类的App扫描二维码，就可以分享neobox的代理筛选结果了。
+
+- **Wireguard**: 你可以通过"wireguard"子命令来自动注册免费的wireguard账户，免费的wireguard账户有流量限制. 如果使用"wireguard xxx"来指定一个Warp+注册码, 
+你注册的wireguard免费账号就可以升级到Warp+账号，Warp+账号总流量24.6PB，约等于不限流量. Warp+账号可以从Telegram的[@generatewarpplusbot](https://t.me/generatewarpplusbot)机器人获取.
+Warp+注册码长这样："Key: 8YK01D7V-Ij6z50g7-eZ5l2R36 (24598562 GB)".
+
+- **Cloudflare EdgeTunnel**: 使用Cloudflare的[pages/workers](https://dash.cloudflare.com/login)部署[EdgeTunnel](https://github.com/3Kmfi6HP/EDtunnel).具体自行使用搜索引擎检索. 
+
+- **Cloudflare IP/Domain**: Cloudflare相关的IP/Domain优选，支持Warp+和EdgeTunnel的IP/Domain优选，实现网络加速.
 
 ## 在Shell中查看Neobox的运行状态
 

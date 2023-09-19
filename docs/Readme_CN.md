@@ -130,7 +130,7 @@ go install -tags "with_wireguard with_shadowsocksr with_utls with_gvisor with_gr
 ```
 [获取最新的Neobox Key](https://github.com/moqsien/neobox/raw/main/docs/gvc_qq_group.jpg)
 
-默认本地Inbound:
+**默认本地Inbound**:
 ```text
 http://localhost:2023
 ```

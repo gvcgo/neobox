@@ -86,14 +86,17 @@ func (that *MannualProxy) RemoveMannualProxy(addr string, port int, sourceType s
 }
 
 func (that *MannualProxy) AddEdgeTunnelByAddressUUID(addr, uuid string) {
-	edt := NewEdgeTunnelProxy(that.CNF)
-	newItem := edt.RandomlyChooseEdgeTunnel(addr, uuid)
-	if newItem == nil {
-		return
-	}
-	rawUri := newItem.RawUri
+	urlPattern := `vless://%s@%s:443?encryption=none&security=tls&sni=%s&fp=random&type=ws&host=%s&path=/?ed=2048#CF-EdgeTunnel`
+	// edt := NewEdgeTunnelProxy(that.CNF)
+	// newItem := edt.RandomlyChooseEdgeTunnel(addr, uuid)
+	// if newItem == nil {
+	// 	return
+	// }
+	// rawUri := newItem.RawUri
+	rawUri := fmt.Sprintf(urlPattern, uuid, addr, addr, addr)
 	if rawUri != "" {
 		that.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
+		gtui.PrintInfof("You can find more subscribe RawUris at: https://%s/sub/%s", addr, uuid)
 	}
 }
 

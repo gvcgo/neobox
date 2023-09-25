@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/moqsien/goutils/pkgs/gtea/bar"
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/request"
@@ -16,7 +17,6 @@ import (
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/storage/dao"
 	"github.com/moqsien/neobox/pkgs/storage/model"
-	"github.com/pterm/pterm"
 )
 
 type CPinger struct {
@@ -25,7 +25,7 @@ type CPinger struct {
 	CNF      *conf.NeoConf
 	sendChan chan string
 	wg       *sync.WaitGroup
-	bar      *pterm.ProgressbarPrinter
+	obar     *bar.OrdinaryBar
 	barLock  *sync.Mutex
 	fetcher  *request.Fetcher
 	rawList  []string
@@ -104,9 +104,7 @@ func (that *CPinger) ping() {
 					totalDuration += d
 				}
 			}
-			that.barLock.Lock()
-			that.bar.Add(1)
-			that.barLock.Unlock()
+			that.obar.AddOnlyProcessed(1)
 			if count == 0 {
 				continue
 			}
@@ -118,6 +116,7 @@ func (that *CPinger) ping() {
 			}
 			if item.RTT <= 3*1000 && item.LossRate <= 50.0 {
 				that.Result.AddItem(item)
+				that.obar.Add(0, 1)
 			}
 		default:
 			time.Sleep(time.Millisecond * 100)
@@ -127,11 +126,14 @@ func (that *CPinger) ping() {
 
 func (that *CPinger) Run() {
 	that.GetRawList()
-	gprint.PrintInfo("get cloudflare domains: %d", len(that.rawList))
-	that.bar = pterm.DefaultProgressbar.WithTotal(len(that.rawList)).WithTitle("[SelectDomains]").WithShowCount(true)
+	that.obar = bar.NewOrdinaryBar(
+		bar.WithTitle("select domains for cloudflare"),
+		bar.WithDefaultGradient(),
+	)
+	that.obar.SetTotal(int64(len(that.rawList)))
+	that.obar.EnableSucceeded()
 	go that.send(that.rawList)
 	var err error
-	that.bar, err = (*that.bar).Start()
 	if err != nil {
 		gprint.PrintError("%+v", err)
 		return
@@ -140,6 +142,7 @@ func (that *CPinger) Run() {
 	for i := 0; i < 50; i++ {
 		go that.ping()
 	}
+	that.obar.Run()
 	that.wg.Wait()
 	if len(that.Result.ItemList) > 0 {
 		// delete only IPs
@@ -148,7 +151,6 @@ func (that *CPinger) Run() {
 		}
 	}
 	that.Result.Sort()
-	gprint.PrintInfo("verified cloudflare domains(addr:port): %d", len(that.Result.ItemList))
 	for idx, item := range that.Result.ItemList {
 		if idx > that.CNF.CloudflareConf.MaxSaveToDB-1 {
 			break

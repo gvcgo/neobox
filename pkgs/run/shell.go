@@ -11,10 +11,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/bubbles/table"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/moqsien/goktrl"
 	"github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
+	"github.com/moqsien/goutils/pkgs/gtea/gtable"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/cflare/domain"
 	"github.com/moqsien/neobox/pkgs/cflare/wguard"
@@ -478,34 +480,7 @@ func (that *Shell) show() {
 			)
 			str := rawStatistics + pingStatistics + verifiedStatistics + dbStatistics
 			fmt.Println(str)
-
-			headers := []string{"idx", "pxy", "loc", "rtt", "src"}
-			str = utils.FormatLineForShell(headers...)
-
-			for idx, item := range verifiedResult.GetTotalList() {
-				r := []string{fmt.Sprintf("%d", idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "verified"}
-				str += utils.FormatLineForShell(r...)
-			}
-
-			wireguard := wguard.NewWireguardOutbound(that.CNF)
-			if item, _ := wireguard.GetProxyItem(); item != nil {
-				r := []string{fmt.Sprintf("%s%d", FromWireguard, 0), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "wireguard"}
-				str += utils.FormatLineForShell(r...)
-			}
-
-			for idx, item := range edgeTunnelList {
-				if item.RTT == 0 {
-					item.RTT = int64(200 + rand.Intn(100))
-				}
-				r := []string{fmt.Sprintf("%s%d", FromEdgetunnel, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeEdgeTunnel}
-				str += utils.FormatLineForShell(r...)
-			}
-
-			for idx, item := range manualList {
-				r := []string{fmt.Sprintf("%s%d", FromManually, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeManually}
-				str += utils.FormatLineForShell(r...)
-			}
-			fmt.Println(str)
+			gprint.Cyan("========================================================================")
 
 			var (
 				currenVpnInfo  string
@@ -538,6 +513,52 @@ func (that *Shell) show() {
 			// str = paddedBox.Sprintln(str)
 			// pterm.Println(str)
 			fmt.Println(str)
+
+			gprint.Cyan("========================================================================")
+			columns := []table.Column{
+				{Title: "Index", Width: 5},
+				{Title: "Proxy", Width: 60},
+				{Title: "Location", Width: 8},
+				{Title: "RTT", Width: 6},
+				{Title: "Source", Width: 15},
+			}
+			rows := []table.Row{}
+			// headers := []string{"idx", "pxy", "loc", "rtt", "src"}
+			// str = utils.FormatLineForShell(headers...)
+
+			for idx, item := range verifiedResult.GetTotalList() {
+				r := []string{fmt.Sprintf("%d", idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "verified"}
+				// str += utils.FormatLineForShell(r...)
+				rows = append(rows, table.Row(r))
+			}
+
+			wireguard := wguard.NewWireguardOutbound(that.CNF)
+			if item, _ := wireguard.GetProxyItem(); item != nil {
+				r := []string{fmt.Sprintf("%s%d", FromWireguard, 0), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "wireguard"}
+				// str += utils.FormatLineForShell(r...)
+				rows = append(rows, table.Row(r))
+			}
+
+			for idx, item := range edgeTunnelList {
+				if item.RTT == 0 {
+					item.RTT = int64(200 + rand.Intn(100))
+				}
+				r := []string{fmt.Sprintf("%s%d", FromEdgetunnel, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeEdgeTunnel}
+				// str += utils.FormatLineForShell(r...)
+				rows = append(rows, table.Row(r))
+			}
+
+			for idx, item := range manualList {
+				r := []string{fmt.Sprintf("%s%d", FromManually, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeManually}
+				// str += utils.FormatLineForShell(r...)
+				rows = append(rows, table.Row(r))
+			}
+			tHeight := len(rows) / 3
+			if tHeight < 7 {
+				tHeight = 7
+			}
+			t := gtable.NewTable(table.WithColumns(columns), table.WithRows(rows), table.WithFocused(true), table.WithHeight(tHeight), table.WithWidth(100))
+			t.Run()
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			var m runtime.MemStats

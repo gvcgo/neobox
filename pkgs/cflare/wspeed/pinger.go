@@ -6,12 +6,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/moqsien/goutils/pkgs/gtea/bar"
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/storage/dao"
 	"github.com/moqsien/neobox/pkgs/storage/model"
-	"github.com/pterm/pterm"
 )
 
 type WPinger struct {
@@ -21,7 +21,7 @@ type WPinger struct {
 	CNF      *conf.NeoConf
 	sendChan chan *net.IPAddr
 	wg       *sync.WaitGroup
-	bar      *pterm.ProgressbarPrinter
+	obar     *bar.OrdinaryBar
 	barLock  *sync.Mutex
 }
 
@@ -65,6 +65,7 @@ func (that *WPinger) ping() {
 			if !ok {
 				return
 			}
+			that.obar.AddOnlyProcessed(1)
 			for _, port := range that.CNF.CloudflareConf.PortList {
 				count := int64(0)
 				totalDuration := time.Duration(0)
@@ -87,9 +88,6 @@ func (that *WPinger) ping() {
 					that.Result.AddItem(item)
 				}
 			}
-			that.barLock.Lock()
-			that.bar.Add(1)
-			that.barLock.Unlock()
 		default:
 			time.Sleep(time.Millisecond * 100)
 		}
@@ -100,19 +98,20 @@ func (that *WPinger) Run() {
 	ipList := that.Parser.Run()
 	gprint.PrintInfo("generate cloudflare ips: %d", len(ipList))
 	gprint.PrintInfo("port list to be verified: %+v", that.CNF.CloudflareConf.PortList)
-	that.bar = pterm.DefaultProgressbar.WithTotal(len(ipList)).WithTitle("[SelectIPs]").WithShowCount(true)
+	that.obar = bar.NewOrdinaryBar(
+		bar.WithDefaultGradient(),
+		bar.WithTitle("select ips for cloudflare"),
+	)
+	that.obar.SetTotal(int64(len(ipList)))
 	go that.send(ipList)
-	var err error
-	that.bar, err = (*that.bar).Start()
-	if err != nil {
-		gprint.PrintError("%+v", err)
-		return
-	}
+
 	time.Sleep(time.Millisecond * 100)
 	for i := 0; i < that.CNF.CloudflareConf.MaxGoroutines; i++ {
 		go that.ping()
 	}
+	that.obar.Run()
 	that.wg.Wait()
+	var err error
 	if len(that.Result.ItemList) > 0 {
 		// delete only IPs
 		if err = that.Saver.DeleteByType(model.WireGuardTypeIP); err != nil {

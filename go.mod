@@ -4,10 +4,11 @@ go 1.21
 
 require (
 	github.com/bytedance/sonic v1.8.8
+	github.com/charmbracelet/bubbles v0.16.1
 	github.com/gin-gonic/gin v1.9.0
 	github.com/gogf/gf v1.16.9
 	github.com/moqsien/goktrl v1.3.8
-	github.com/moqsien/goutils v0.4.3
+	github.com/moqsien/goutils v0.4.8
 	github.com/moqsien/hackbrowser v1.0.3
 	github.com/moqsien/vpnparser v0.2.2
 	github.com/moqsien/wgcf v0.0.0-20230611034603-e29859e0cae2

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"runtime"
 
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/xraycore/core"
 	"github.com/moqsien/xraycore/infra/conf/serial"
@@ -52,9 +52,9 @@ func (that *XInstance) Start() error {
 			logs.Error("[Start Xray Instance Failed] ", err)
 			return err
 		}
-		gtui.PrintInfof("Xray-core started successfully [%s]", that.outbound.GetHost())
+		gprint.PrintInfo("Xray-core started successfully [%s]", that.outbound.GetHost())
 	} else {
-		gtui.PrintError(err)
+		gprint.PrintError("%+v", err)
 		logs.Error("[Load JSON Config failed] ", err)
 		return err
 	}

@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/moqsien/goutils/pkgs/daemon"
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/socks"
 	"github.com/moqsien/neobox/pkgs/conf"
 	cron "github.com/robfig/cron/v3"
@@ -66,7 +66,7 @@ func (that *Keeper) startKeeperServer() {
 		c.String(http.StatusOK, OkStr)
 	})
 	if err := server.Start(); err != nil {
-		gtui.PrintErrorf("[start server failed] %+v", err)
+		gprint.PrintError("[start server failed] %+v", err)
 	}
 }
 

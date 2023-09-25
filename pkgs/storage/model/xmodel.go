@@ -3,7 +3,7 @@ package model
 import (
 	"path/filepath"
 
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/hackbrowser/utils/hsqlite"
@@ -35,16 +35,16 @@ func NewDBEngine(cnf *conf.NeoConf) (db *gorm.DB, err error) {
 	if !existed {
 		m := db.Migrator()
 		if err := m.CreateTable(&Proxy{}); err != nil {
-			gtui.PrintError(err)
+			gprint.PrintError("%+v", err)
 		}
 		if err := m.CreateTable(&Location{}); err != nil {
-			gtui.PrintError(err)
+			gprint.PrintError("%+v", err)
 		}
 		if err := m.CreateTable(&Country{}); err != nil {
-			gtui.PrintError(err)
+			gprint.PrintError("%+v", err)
 		}
 		if err := m.CreateTable(&WireGuard{}); err != nil {
-			gtui.PrintError(err)
+			gprint.PrintError("%+v", err)
 		}
 	}
 	DBEngine = db

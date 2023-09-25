@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/request"
 	"github.com/moqsien/neobox/pkgs/conf"
@@ -96,7 +96,7 @@ func (that *MannualProxy) AddEdgeTunnelByAddressUUID(addr, uuid string) {
 	rawUri := fmt.Sprintf(urlPattern, uuid, addr, addr, addr)
 	if rawUri != "" {
 		that.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
-		gtui.PrintInfof("You can find more subscribe RawUris at: https://%s/sub/%s", addr, uuid)
+		gprint.PrintInfo("You can find more subscribe RawUris at: https://%s/sub/%s", addr, uuid)
 	}
 }
 
@@ -127,7 +127,7 @@ func (that *EdgeTunnelProxy) DownloadAndSaveRawList(addr, uuid string) {
 		f.Timeout = 3 * time.Minute
 		if strContent, _ := f.GetString(); strContent != "" {
 			if err := os.WriteFile(that.proxyListPath, []byte(strContent), os.ModePerm); err != nil {
-				gtui.PrintError(err)
+				gprint.PrintError("%+v", err)
 			}
 		}
 	}

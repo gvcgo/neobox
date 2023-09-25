@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/logs"
 	box "github.com/sagernet/sing-box"
 	"github.com/sagernet/sing-box/option"
@@ -66,7 +66,7 @@ func (that *SInstance) Start() (err error) {
 			logs.Error("[Start Sing-Box Failed] ", err)
 			return
 		}
-		gtui.PrintInfof("Sing-box started successfully [%s]", that.outbound.GetHost())
+		gprint.PrintInfo("Sing-box started successfully [%s]", that.outbound.GetHost())
 		return
 	} else {
 		logs.Error("[Parse config file failed]")

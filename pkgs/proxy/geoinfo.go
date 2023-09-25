@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/request"
 	"github.com/moqsien/neobox/pkgs/conf"
@@ -52,7 +52,7 @@ func (that *GeoInfo) Download() {
 	sumFilePath := filepath.Join(that.CNF.WorkDir, "sum_info.json")
 	size := that.fetcher.GetFile(sumFilePath, true)
 	if size <= 0 {
-		gtui.PrintError("download failed")
+		gprint.PrintError("download failed")
 		return
 	}
 

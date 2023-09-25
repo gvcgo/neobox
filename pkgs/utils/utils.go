@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/moqsien/goktrl"
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 	"github.com/pterm/pterm"
 )
@@ -29,7 +29,7 @@ func SetPingWithoutRootForLinux() {
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	if err := cmd.Run(); err != nil {
-		gtui.PrintError("[execute cmd failed]", err)
+		gprint.PrintError("[execute cmd failed] %+v", err)
 	}
 }
 

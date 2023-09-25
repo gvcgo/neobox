@@ -14,7 +14,7 @@ import (
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/moqsien/goktrl"
 	"github.com/moqsien/goutils/pkgs/crypt"
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/cflare/domain"
 	"github.com/moqsien/neobox/pkgs/cflare/wguard"
@@ -60,7 +60,7 @@ func (that *Shell) Start() {
 	}
 
 	if that.runner.PingRunner() {
-		gtui.PrintInfo("NeoBox is already running.")
+		gprint.PrintInfo("NeoBox is already running.")
 		return
 	}
 	starter := that.runner.GetStarter()
@@ -68,22 +68,22 @@ func (that *Shell) Start() {
 	time.Sleep(2 * time.Second)
 
 	if that.runner.PingRunner() {
-		gtui.PrintSuccess("start NeoBox succeeded.")
+		gprint.PrintSuccess("start NeoBox succeeded.")
 	} else {
-		gtui.PrintError("start NeoBox failed")
+		gprint.PrintError("start NeoBox failed")
 	}
 
 	if that.runner.PingKeeper() {
-		gtui.PrintInfo("NeoBox keeper is already running.")
+		gprint.PrintInfo("NeoBox keeper is already running.")
 		return
 	}
 	starter = that.runner.GetKeeperStarter()
 	starter.Run()
 	time.Sleep(2 * time.Second)
 	if that.runner.PingKeeper() {
-		gtui.PrintSuccess("start keeper succeeded.")
+		gprint.PrintSuccess("start keeper succeeded.")
 	} else {
-		gtui.PrintError("start keeper failed")
+		gprint.PrintError("start keeper failed")
 	}
 }
 
@@ -138,7 +138,7 @@ func (that *Shell) restart() {
 
 			// show proxyItem
 			if opts.ShowChosen && len(c.Args) > 0 {
-				gtui.PrintInfo(crypt.DecodeBase64(c.Args[0]))
+				gprint.PrintInfo(crypt.DecodeBase64(c.Args[0]))
 			}
 
 			// send request
@@ -154,9 +154,9 @@ func (that *Shell) restart() {
 			rList := strings.Split(string(res), "___")
 			if opts.ShowConfig && len(rList) == 2 {
 				confStr, _ := url.QueryUnescape(rList[1])
-				gtui.PrintInfo(rList[0], "; ConfStr: ", confStr)
+				gprint.PrintInfo(rList[0], "; ConfStr: ", confStr)
 			} else {
-				gtui.PrintInfo(rList[0])
+				gprint.PrintInfo(rList[0])
 			}
 		},
 		ArgsDescription: "choose a specified proxy by index.",
@@ -181,15 +181,15 @@ func (that *Shell) stop() {
 		Func: func(c *goktrl.Context) {
 			if that.runner.PingRunner() {
 				res, _ := c.GetResult()
-				gtui.PrintWarning(string(res))
+				gprint.PrintWarning(string(res))
 			} else {
-				gtui.PrintInfo("Neobox is not running for now.")
+				gprint.PrintInfo("Neobox is not running for now.")
 			}
 			if that.runner.PingKeeper() {
 				r := that.runner.StopKeeperByRequest()
-				gtui.PrintWarning(r)
+				gprint.PrintWarning(r)
 			} else {
-				gtui.PrintInfo("Keeper is not running for now.")
+				gprint.PrintInfo("Keeper is not running for now.")
 			}
 		},
 		KtrlHandler: func(c *goktrl.Context) {
@@ -220,7 +220,7 @@ func (that *Shell) genQRCode() {
 				qrc.SetProxyItem(proxyItem)
 				qrc.GenQRCode()
 			} else {
-				gtui.PrintError("Can not find a ProxyItem!")
+				gprint.PrintError("Can not find a ProxyItem!")
 			}
 		},
 		ArgsDescription: "choose a specified proxy by index.",
@@ -290,7 +290,7 @@ func (that *Shell) genUUID() {
 				uu := gutils.NewUUID()
 				result = append(result, uu.String())
 			}
-			gtui.PrintInfo(strings.Join(result, ", "))
+			gprint.PrintInfo(strings.Join(result, ", "))
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
 		SocketName:  that.ktrlSocks,
@@ -389,7 +389,7 @@ func (that *Shell) parseRawUriToOutboundStr() {
 		Opts:            &Options{},
 		Func: func(c *goktrl.Context) {
 			if len(c.Args) == 0 {
-				gtui.PrintError("No rawUri is specified!")
+				gprint.PrintError("No rawUri is specified!")
 				return
 			}
 			rawUri := c.Args[0]
@@ -397,7 +397,7 @@ func (that *Shell) parseRawUriToOutboundStr() {
 				opts := c.Options.(*Options)
 				proxyItem := that.runner.GetProxyByIndex(rawUri, opts.UseDomains)
 				if proxyItem == nil {
-					gtui.PrintError("Can not find specified proxy!")
+					gprint.PrintError("Can not find specified proxy!")
 				} else {
 					rawUri = proxyItem.RawUri
 				}
@@ -412,7 +412,7 @@ func (that *Shell) parseRawUriToOutboundStr() {
 
 			if p != nil {
 				j := gjson.New(p.GetOutbound())
-				gtui.Cyan(j.MustToJsonIndentString())
+				gprint.Cyan(j.MustToJsonIndentString())
 			}
 		},
 		KtrlHandler: func(c *goktrl.Context) {},
@@ -559,7 +559,7 @@ func (that *Shell) filter() {
 		Opts: &Options{},
 		Func: func(c *goktrl.Context) {
 			result, _ := c.GetResult()
-			gtui.PrintInfo(string(result))
+			gprint.PrintInfo(string(result))
 		},
 		KtrlHandler: func(c *goktrl.Context) {
 			if that.runner.verifier.IsRunning() {
@@ -588,7 +588,7 @@ func (that *Shell) geoinfo() {
 			g.Download()
 			if dList, err := os.ReadDir(g.GetGeoDir()); err == nil {
 				for _, d := range dList {
-					gtui.PrintInfo(filepath.Join(g.GetGeoDir(), d.Name()))
+					gprint.PrintInfo(filepath.Join(g.GetGeoDir(), d.Name()))
 				}
 			}
 		},
@@ -617,7 +617,7 @@ func (that *Shell) manualGC() {
 			if that.runner.PingRunner() {
 				result, _ := c.GetResult()
 				if len(result) > 0 {
-					gtui.PrintInfo(string(result))
+					gprint.PrintInfo(string(result))
 				}
 			}
 		},
@@ -675,7 +675,7 @@ func (that *Shell) registerWireguardAndUpdateToWarpplus() {
 					w := wguard.NewWGuard(that.CNF)
 					w.Run(c.Args[0])
 				} else {
-					gtui.PrintWarning("invalid license key.")
+					gprint.PrintWarning("invalid license key.")
 				}
 			} else {
 				w := wguard.NewWGuard(that.CNF)

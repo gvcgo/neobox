@@ -12,7 +12,6 @@ const (
 	WireGuardTypeDomain string = "domain"
 )
 
-// TODO: add New Type for cloudflare domains.
 type WireGuard struct {
 	*Model
 	Address    string  `json:"address"`

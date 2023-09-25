@@ -9,7 +9,7 @@ import (
 
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/moqsien/goutils/pkgs/crypt"
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
@@ -36,11 +36,11 @@ func (that *ProxyQRCode) SetProxyItem(p *outbound.ProxyItem) {
 
 func (that *ProxyQRCode) GenQRCode() {
 	if that.proxy == nil {
-		gtui.PrintError("ProxyItem is nil!")
+		gprint.PrintError("ProxyItem is nil!")
 		return
 	}
 	if that.proxy.RawUri == "" {
-		gtui.PrintError("RawUri is empty!")
+		gprint.PrintError("RawUri is empty!")
 		return
 	}
 	scheme := that.proxy.Scheme
@@ -57,7 +57,7 @@ func (that *ProxyQRCode) GenQRCode() {
 	case parser.SchemeVless, parser.SchemeSS, parser.SchemeTrojan, parser.SchemeSSR:
 		rawUri = that.proxy.RawUri
 	default:
-		gtui.PrintWarningf("Unsupported scheme: %s", scheme)
+		gprint.PrintWarning("Unsupported scheme: %s", scheme)
 		return
 	}
 	if rawUri == "" {
@@ -80,24 +80,24 @@ func (that *ProxyQRCode) GenQRCode() {
 	}
 
 	if err != nil {
-		gtui.PrintError(err)
+		gprint.PrintError("%+v", err)
 		return
 	}
 
 	if code == nil {
-		gtui.PrintError("Nil qrcode!")
+		gprint.PrintError("Nil qrcode!")
 		return
 	}
 
 	os.RemoveAll(that.imgPath)
 	content, err := code.PNG(360)
 	if err != nil {
-		gtui.PrintError(err)
+		gprint.PrintError("%+v", err)
 		return
 	}
 	err = os.WriteFile(that.imgPath, content, os.ModePerm)
 	if err != nil {
-		gtui.PrintError(err)
+		gprint.PrintError("%+v", err)
 		return
 	}
 	that.openQRCodeByBrowser()
@@ -116,7 +116,7 @@ func (that *ProxyQRCode) openQRCodeByBrowser() {
 			return
 		}
 		if err := cmd.Run(); err != nil {
-			gtui.PrintErrorf("Execution failed: %+v", err)
+			gprint.PrintError("Execution failed: %+v", err)
 		}
 	}
 }

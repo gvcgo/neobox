@@ -11,7 +11,7 @@ import (
 
 	json "github.com/bytedance/sonic"
 	"github.com/gogf/gf/encoding/gjson"
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/goutils/pkgs/request"
@@ -114,7 +114,7 @@ func (that *ProxyLocations) Query(pxy *outbound.ProxyItem) (name string) {
 
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(that.CNF.IPLocationQueryUrl, ipStr), nil)
 	if err != nil {
-		gtui.PrintError(err)
+		gprint.PrintError("%+v", err)
 		return
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43")
@@ -125,7 +125,7 @@ func (that *ProxyLocations) Query(pxy *outbound.ProxyItem) (name string) {
 	req.Header.Set("Sec-Ch-Ua-Platform", `"Windows"`)
 
 	if resp, err := http.DefaultClient.Do(req); err != nil {
-		gtui.PrintError(err)
+		gprint.PrintError("%+v", err)
 		return
 	} else {
 		defer resp.Body.Close()

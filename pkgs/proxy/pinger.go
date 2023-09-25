@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/storage/dao"
@@ -85,7 +85,7 @@ func (that *Pinger) ping(proxyItem *outbound.ProxyItem) {
 				if s.PacketLoss > that.CNF.MaxPingPackLoss && s.AvgRtt == 0.0 && that.pingFailedChan != nil {
 					that.pingFailedChan <- proxyItem
 				}
-				// gtui.PrintInfo(s.Addr, s.AvgRtt.Microseconds(), s.PacketLoss)
+				// gprint.PrintInfo(s.Addr, s.AvgRtt.Microseconds(), s.PacketLoss)
 			}
 			if err := pinger.Run(); err != nil {
 				logs.Error("[Ping failed]", err, ", Addr: ", proxyItem.Address)
@@ -102,7 +102,7 @@ func (that *Pinger) send(force ...bool) {
 	} else {
 		that.ProxyFetcher.DownAndLoad(force...)
 	}
-	gtui.PrintInfof("Find %v raw proxies.\n", that.ProxyFetcher.Result.Len())
+	gprint.PrintInfo("Find %v raw proxies.\n", that.ProxyFetcher.Result.Len())
 	filter := map[string]struct{}{}
 	itemList := that.ProxyFetcher.Result.GetTotalList()
 	for _, item := range itemList {

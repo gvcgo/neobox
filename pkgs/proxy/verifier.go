@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/neobox/pkgs/client"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/storage/dao"
@@ -78,7 +78,7 @@ func (that *Verifier) send() {
 		case outbound.XrayCore:
 			that.sendXrayChan <- proxyItem
 		default:
-			gtui.PrintWarningf("unsupported outbound type: %v", proxyItem.GetOutboundType())
+			gprint.PrintWarning("unsupported outbound type: %v", proxyItem.GetOutboundType())
 		}
 	}
 	close(that.sendSingChan)
@@ -130,14 +130,14 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 			pClient.SetOutbound(p)
 			start := time.Now()
 			if err := pClient.Start(); err != nil {
-				gtui.PrintErrorf("%s_Client[%s] start failed. Error: %+v\n", cType, p.RawUri, err)
+				gprint.PrintError("%s_Client[%s] start failed. Error: %+v\n", cType, p.RawUri, err)
 				if strings.Contains(err.Error(), "proxyman.InboundConfig is not registered") {
 					fmt.Println(string(pClient.GetConf()))
 				}
 				pClient.Close()
 				return
 			}
-			gtui.PrintInfof("Proxy[%s] time consumed: %vs", p.GetHost(), time.Since(start).Seconds())
+			gprint.PrintInfo("Proxy[%s] time consumed: %vs", p.GetHost(), time.Since(start).Seconds())
 
 			startTime := time.Now()
 			ok = that.verify(httpClient)
@@ -158,7 +158,7 @@ func (that *Verifier) Run(force ...bool) {
 	that.isRunning = true
 	that.Pinger.Run(force...)
 	s, x := that.Pinger.Statistics()
-	gtui.PrintInfof("Ping succeeded proxies: %v, singBox: %v, xrayCore: %v", that.Pinger.Result.Len(), s, x)
+	gprint.PrintInfo("Ping succeeded proxies: %v, singBox: %v, xrayCore: %v", that.Pinger.Result.Len(), s, x)
 	if that.Result.Len() > 0 {
 		that.Result.Clear()
 	}
@@ -172,13 +172,13 @@ func (that *Verifier) Run(force ...bool) {
 	for i := start; i <= end; i++ {
 		go that.startClient(i, outbound.XrayCore)
 	}
-	gtui.PrintInfo("filters for [vmess/ss/vless/trojan] started.")
+	gprint.PrintInfo("filters for [vmess/ss/vless/trojan] started.")
 
 	for i := 1; i <= 10; i++ {
 		go that.startClient(end+i, outbound.SingBox)
 	}
 
-	gtui.PrintInfo("filters for [ssr/ss-obfs] started.")
+	gprint.PrintInfo("filters for [ssr/ss-obfs] started.")
 	that.wg.Wait()
 
 	if that.Result.Len() > 0 {

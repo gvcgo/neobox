@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/storage/dao"
@@ -98,14 +98,14 @@ func (that *WPinger) ping() {
 
 func (that *WPinger) Run() {
 	ipList := that.Parser.Run()
-	gtui.PrintInfof("generate cloudflare ips: %d", len(ipList))
-	gtui.PrintInfof("port list to be verified: %+v", that.CNF.CloudflareConf.PortList)
+	gprint.PrintInfo("generate cloudflare ips: %d", len(ipList))
+	gprint.PrintInfo("port list to be verified: %+v", that.CNF.CloudflareConf.PortList)
 	that.bar = pterm.DefaultProgressbar.WithTotal(len(ipList)).WithTitle("[SelectIPs]").WithShowCount(true)
 	go that.send(ipList)
 	var err error
 	that.bar, err = (*that.bar).Start()
 	if err != nil {
-		gtui.PrintError(err)
+		gprint.PrintError("%+v", err)
 		return
 	}
 	time.Sleep(time.Millisecond * 100)
@@ -116,11 +116,11 @@ func (that *WPinger) Run() {
 	if len(that.Result.ItemList) > 0 {
 		// delete only IPs
 		if err = that.Saver.DeleteByType(model.WireGuardTypeIP); err != nil {
-			gtui.PrintError(err)
+			gprint.PrintError("%+v", err)
 		}
 	}
 	that.Result.Sort()
-	gtui.PrintInfof("verified cloudflare host(addr:port): %d", len(that.Result.ItemList))
+	gprint.PrintInfo("verified cloudflare host(addr:port): %d", len(that.Result.ItemList))
 	for idx, item := range that.Result.ItemList {
 		if idx > that.CNF.CloudflareConf.MaxSaveToDB-1 {
 			break

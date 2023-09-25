@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/wgcf/cloudflare"
@@ -56,7 +56,7 @@ func (that *WGaurd) GetWarpConf() *WarpConf {
 
 func (that *WGaurd) Register() (err error) {
 	if that.wguardConf.DeviceId != "" && that.wguardConf.AccessToken != "" && that.wguardConf.LicenseKey != "" {
-		gtui.PrintInfof("wireguard account already exists: %s", that.wAccountConfPath)
+		gprint.PrintInfo("wireguard account already exists: %s", that.wAccountConfPath)
 		return
 	}
 	privateKey, err := wireguard.NewPrivateKey()
@@ -92,13 +92,13 @@ func (that *WGaurd) Register() (err error) {
 		return fmt.Errorf("failed to activate device")
 	}
 	PrintDevice(thisDevice, boundDevice)
-	gtui.PrintSuccess("Successfully created Cloudflare Warp account")
+	gprint.PrintSuccess("Successfully created Cloudflare Warp account")
 	return
 }
 
 func (that *WGaurd) IsAccountValid() bool {
 	if that.wguardConf.DeviceId == "" || that.wguardConf.AccessToken == "" || that.wguardConf.PrivateKey == "" {
-		gtui.PrintWarning("no valid account detected.")
+		gprint.PrintWarning("no valid account detected.")
 		return false
 	}
 	return true
@@ -109,7 +109,7 @@ func (that *WGaurd) Update(licenseKey, deviceName string) (err error) {
 		return fmt.Errorf("invalid account")
 	}
 	if licenseKey == "" {
-		gtui.PrintWarning("you have entered an invalid license key.")
+		gprint.PrintWarning("you have entered an invalid license key.")
 		return
 	}
 	that.wguardConf.LicenseKey = licenseKey
@@ -128,7 +128,7 @@ func (that *WGaurd) Update(licenseKey, deviceName string) (err error) {
 		return err
 	}
 	if boundDevice.Name == nil || (deviceName != "" && deviceName != *boundDevice.Name) {
-		gtui.PrintInfo("Setting device name")
+		gprint.PrintInfo("Setting device name")
 		if _, err := SetDeviceName(ctx, deviceName); err != nil {
 			return err
 		}
@@ -143,13 +143,13 @@ func (that *WGaurd) Update(licenseKey, deviceName string) (err error) {
 	}
 
 	PrintDevice(thisDevice, boundDevice)
-	gtui.PrintSuccess("Successfully updated Cloudflare Warp account")
+	gprint.PrintSuccess("Successfully updated Cloudflare Warp account")
 	return nil
 }
 
 func (that *WGaurd) ensureLicenseKeyUpToDate(ctx *config.Context, thisDevice *cloudflare.Device) (*cloudflare.Account, *cloudflare.Device, error) {
 	if thisDevice.Account.License != ctx.LicenseKey {
-		gtui.PrintInfo("Updated license key detected, re-binding device to new account.")
+		gprint.PrintInfo("Updated license key detected, re-binding device to new account.")
 		return that.updateLicenseKey(ctx)
 	}
 	return nil, thisDevice, nil
@@ -226,7 +226,7 @@ func (that *WGaurd) Generate() (err error) {
 	that.warpConf.Save()
 
 	PrintDevice(thisDevice, boundDevice)
-	gtui.PrintSuccess("Successfully generated WireGuard profile in:", that.CNF.CloudflareConf.WireGuardConfDir)
+	gprint.PrintSuccess("Successfully generated WireGuard profile in: %s", that.CNF.CloudflareConf.WireGuardConfDir)
 	return
 }
 
@@ -269,7 +269,7 @@ func (that *WGaurd) Status() (err error) {
 
 	PrintDevice(thisDevice, boundDevice)
 	if ok, _ := gutils.PathIsExist(that.wConfPath); !ok {
-		gtui.PrintWarning("You need to update to a Warp+ license by providing license key.")
+		gprint.PrintWarning("You need to update to a Warp+ license by providing license key.")
 	}
 	return nil
 }

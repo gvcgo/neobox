@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/koanfer"
 	"github.com/moqsien/wgcf/cloudflare"
@@ -149,13 +149,13 @@ func F32ToHumanReadable(number float32) string {
 }
 
 func PrintDevice(thisDevice *cloudflare.Device, boundDevice *cloudflare.BoundDevice) {
-	gtui.Green("=======================================")
-	gtui.Cyan(fmt.Sprintf("%-13s : %s", "Device name", *boundDevice.Name))
-	gtui.Cyan(fmt.Sprintf("%-13s : %s", "Device model", thisDevice.Model))
-	gtui.Cyan(fmt.Sprintf("%-13s : %t", "Device active", boundDevice.Active))
-	gtui.Cyan(fmt.Sprintf("%-13s : %s", "Account type", thisDevice.Account.AccountType))
-	gtui.Cyan(fmt.Sprintf("%-13s : %s", "Role", thisDevice.Account.Role))
-	gtui.Cyan(fmt.Sprintf("%-13s : %s", "Premium data", F32ToHumanReadable(thisDevice.Account.PremiumData)))
-	gtui.Cyan(fmt.Sprintf("%-13s : %s", "Quota", F32ToHumanReadable(thisDevice.Account.Quota)))
-	gtui.Green("=======================================")
+	gprint.Green("=======================================")
+	gprint.Cyan(fmt.Sprintf("%-13s : %s", "Device name", *boundDevice.Name))
+	gprint.Cyan(fmt.Sprintf("%-13s : %s", "Device model", thisDevice.Model))
+	gprint.Cyan(fmt.Sprintf("%-13s : %t", "Device active", boundDevice.Active))
+	gprint.Cyan(fmt.Sprintf("%-13s : %s", "Account type", thisDevice.Account.AccountType))
+	gprint.Cyan(fmt.Sprintf("%-13s : %s", "Role", thisDevice.Account.Role))
+	gprint.Cyan(fmt.Sprintf("%-13s : %s", "Premium data", F32ToHumanReadable(thisDevice.Account.PremiumData)))
+	gprint.Cyan(fmt.Sprintf("%-13s : %s", "Quota", F32ToHumanReadable(thisDevice.Account.Quota)))
+	gprint.Green("=======================================")
 }

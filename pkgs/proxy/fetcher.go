@@ -7,7 +7,7 @@ import (
 
 	json "github.com/bytedance/sonic"
 	"github.com/moqsien/goutils/pkgs/crypt"
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/goutils/pkgs/request"
@@ -90,7 +90,7 @@ func (that *ProxyFetcher) LoadHistoryListToRawDecrypted() {
 	that.DownAndLoad(true)
 	pxy := &dao.Proxy{}
 	historyList := pxy.GetItemListBySourceType(model.SourceTypeHistory)
-	gtui.PrintInfof("%v ProxyItmes to be loaded to rawlist", len(historyList))
+	gprint.PrintInfo("%v ProxyItmes to be loaded to rawlist", len(historyList))
 	for _, p := range historyList {
 		if p != nil {
 			that.Result.AddItem(p)

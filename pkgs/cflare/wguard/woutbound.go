@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	json "github.com/bytedance/sonic"
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/storage/dao"
@@ -40,9 +40,9 @@ func (that *WireguardOutbound) chooseHostRandomly() (addr string, port int, rtt 
 			port = r.Port
 			rtt = r.RTT
 		} else if err != nil {
-			gtui.PrintError(err)
+			gprint.PrintError("%+v", err)
 		} else if r == nil && err == nil {
-			gtui.PrintInfo(`use command <cfip> to get cloudflare CDN IPs.`)
+			gprint.PrintInfo(`use command <cfip> to get cloudflare CDN IPs.`)
 		}
 	}
 	return

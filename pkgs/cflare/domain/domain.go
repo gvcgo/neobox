@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/request"
 	"github.com/moqsien/neobox/pkgs/cflare/wspeed"
@@ -127,13 +127,13 @@ func (that *CPinger) ping() {
 
 func (that *CPinger) Run() {
 	that.GetRawList()
-	gtui.PrintInfof("get cloudflare domains: %d", len(that.rawList))
+	gprint.PrintInfo("get cloudflare domains: %d", len(that.rawList))
 	that.bar = pterm.DefaultProgressbar.WithTotal(len(that.rawList)).WithTitle("[SelectDomains]").WithShowCount(true)
 	go that.send(that.rawList)
 	var err error
 	that.bar, err = (*that.bar).Start()
 	if err != nil {
-		gtui.PrintError(err)
+		gprint.PrintError("%+v", err)
 		return
 	}
 	time.Sleep(time.Millisecond * 100)
@@ -144,11 +144,11 @@ func (that *CPinger) Run() {
 	if len(that.Result.ItemList) > 0 {
 		// delete only IPs
 		if err = that.Saver.DeleteByType(model.WireGuardTypeDomain); err != nil {
-			gtui.PrintError(err)
+			gprint.PrintError("%+v", err)
 		}
 	}
 	that.Result.Sort()
-	gtui.PrintInfof("verified cloudflare domains(addr:port): %d", len(that.Result.ItemList))
+	gprint.PrintInfo("verified cloudflare domains(addr:port): %d", len(that.Result.ItemList))
 	for idx, item := range that.Result.ItemList {
 		if idx > that.CNF.CloudflareConf.MaxSaveToDB-1 {
 			break

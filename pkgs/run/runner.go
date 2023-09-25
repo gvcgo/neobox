@@ -15,7 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/moqsien/goutils/pkgs/daemon"
-	"github.com/moqsien/goutils/pkgs/gtui"
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/goutils/pkgs/socks"
 	"github.com/moqsien/neobox/pkgs/cflare/wguard"
@@ -237,7 +237,7 @@ func (that *Runner) GetProxyByIndex(idxStr string, useDomain ...bool) (p *outbou
 // start runner
 func (that *Runner) Start(args ...string) {
 	if that.PingRunner() {
-		gtui.PrintInfo("neobox is already running.")
+		gprint.PrintInfo("neobox is already running.")
 		return
 	}
 	that.daemon.Run(os.Args...)
@@ -265,7 +265,7 @@ func (that *Runner) Start(args ...string) {
 	that.cron.Start()
 	that.Restart(args...)
 	<-StopChan
-	gtui.PrintWarning("exiting...")
+	gprint.PrintWarning("exiting...")
 	os.Exit(0)
 }
 

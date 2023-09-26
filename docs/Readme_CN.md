@@ -45,6 +45,7 @@ Commands:
   show           Show neobox info. # 展示可用代理列表和统计信息，neobox当前运行状态等等
   start          Start a neobox client/keeper. # 开启neobox
   stop           Stop neobox client. # 停止neobox
+  sys-proxy      To enable or disable System Proxy. # 开启/停止  以neobox作为系统代理(即全局代理)
   wireguard      Register wireguard account and update licenseKey to Warp+ [if a licenseKey is specified]. # 注册wireguard，如果指定了warp+的license key，则升级到warp+账户，配合cloudflare节点筛选，可以加速github、google等的访问
 
 

@@ -20,7 +20,6 @@ It supports protocols like vmess/vless/trojan/shadowsocks/shadowsocksr/wireguard
 ```bash
 $neobox shell
 >>> help
-
 Commands:
   add            Add proxies to neobox mannually.
   added          Add edgetunnel proxies to neobox.
@@ -45,8 +44,8 @@ Commands:
   show           Show neobox info.
   start          Start a neobox client/keeper.
   stop           Stop neobox client.
+  sys-proxy      To enable or disable System Proxy.
   wireguard      Register wireguard account and update licenseKey to Warp+ [if a licenseKey is specified].
-
 
 >>> added help
 

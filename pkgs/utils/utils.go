@@ -12,7 +12,6 @@ import (
 	"github.com/moqsien/goktrl"
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
-	"github.com/pterm/pterm"
 )
 
 /*
@@ -81,20 +80,4 @@ func FormatProxyItemForTable(p *outbound.ProxyItem) string {
 		addr = addr[:30] + "..."
 	}
 	return fmt.Sprintf("%s%s:%d", p.Scheme, addr, p.Port)
-}
-
-func FormatLineForShell(line ...string) string {
-	if len(line) < 4 {
-		return ""
-	}
-	// "%-5s  %-30s%-9s%-5s%-5s\n"
-	pattern := "%-5s  %-50s %-6s %-6s  %8s\n\r"
-
-	index := pterm.Yellow(line[0])
-	proxy := pterm.LightMagenta(line[1])
-	location := pterm.Cyan(line[2])
-	rtt := pterm.LightGreen(line[3])
-	source := pterm.LightCyan(line[4])
-	// return fmt.Sprintf("%-5s   ", index) + fmt.Sprintf("%-56s", proxy) + fmt.Sprintf(" %-6s", location) + fmt.Sprintf(" %-6s", rtt) + fmt.Sprintf(" %6s", source) + "\n\r"
-	return fmt.Sprintf(pattern, index, proxy, location, rtt, source)
 }

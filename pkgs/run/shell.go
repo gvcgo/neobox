@@ -28,7 +28,6 @@ import (
 	"github.com/moqsien/neobox/pkgs/utils"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 	"github.com/moqsien/vpnparser/pkgs/parser"
-	"github.com/pterm/pterm"
 )
 
 const (
@@ -440,43 +439,41 @@ func (that *Shell) show() {
 			manualList := manual.GetItemListBySourceType(model.SourceTypeManually)
 			edgeTunnelList := manual.GetItemListBySourceType(model.SourceTypeEdgeTunnel)
 
-			// paddedBox := pterm.DefaultBox.WithLeftPadding(1).WithRightPadding(1).WithTopPadding(1).WithBottomPadding(1)
-
 			rawStatistics := fmt.Sprintf(
 				"RawList[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]\n",
-				pterm.Green(rawResult.Len()),
-				pterm.LightGreen(rawResult.UpdateAt),
-				pterm.Yellow(rawResult.VmessTotal),
-				pterm.Yellow(rawResult.VlessTotal),
-				pterm.Yellow(rawResult.TrojanTotal),
-				pterm.Yellow(rawResult.SSTotal),
-				pterm.Yellow(rawResult.SSRTotal),
+				gprint.GreenStr("%d", rawResult.Len()),
+				gprint.BrownStr(rawResult.UpdateAt),
+				gprint.YellowStr("%d", rawResult.VmessTotal),
+				gprint.YellowStr("%d", rawResult.VlessTotal),
+				gprint.YellowStr("%d", rawResult.TrojanTotal),
+				gprint.YellowStr("%d", rawResult.SSTotal),
+				gprint.YellowStr("%d", rawResult.SSRTotal),
 			)
 			pingStatistics := fmt.Sprintf(
 				"Pinged[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]\n",
-				pterm.Green(pingResult.Len()),
-				pterm.LightGreen(pingResult.UpdateAt),
-				pterm.Yellow(pingResult.VmessTotal),
-				pterm.Yellow(pingResult.VlessTotal),
-				pterm.Yellow(pingResult.TrojanTotal),
-				pterm.Yellow(pingResult.SSTotal),
-				pterm.Yellow(pingResult.SSRTotal),
+				gprint.GreenStr("%d", pingResult.Len()),
+				gprint.BrownStr(pingResult.UpdateAt),
+				gprint.YellowStr("%d", pingResult.VmessTotal),
+				gprint.YellowStr("%d", pingResult.VlessTotal),
+				gprint.YellowStr("%d", pingResult.TrojanTotal),
+				gprint.YellowStr("%d", pingResult.SSTotal),
+				gprint.YellowStr("%d", pingResult.SSRTotal),
 			)
 			verifiedStatistics := fmt.Sprintf(
 				"Final[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]\n",
-				pterm.Green(verifiedResult.Len()),
-				pterm.LightGreen(verifiedResult.UpdateAt),
-				pterm.Yellow(verifiedResult.VmessTotal),
-				pterm.Yellow(verifiedResult.VlessTotal),
-				pterm.Yellow(verifiedResult.TrojanTotal),
-				pterm.Yellow(verifiedResult.SSTotal),
-				pterm.Yellow(verifiedResult.SSRTotal),
+				gprint.GreenStr("%d", verifiedResult.Len()),
+				gprint.BrownStr(verifiedResult.UpdateAt),
+				gprint.YellowStr("%d", verifiedResult.VmessTotal),
+				gprint.YellowStr("%d", verifiedResult.VlessTotal),
+				gprint.YellowStr("%d", verifiedResult.TrojanTotal),
+				gprint.YellowStr("%d", verifiedResult.SSTotal),
+				gprint.YellowStr("%d", verifiedResult.SSRTotal),
 			)
 			dbStatistics := fmt.Sprintf(
 				"Database: History[%s] EdgeTunnel[%s] Manually[%s]\n",
-				pterm.Yellow(manual.CountBySchemeOrSourceType("", model.SourceTypeHistory)),
-				pterm.Yellow(manual.CountBySchemeOrSourceType("", model.SourceTypeEdgeTunnel)),
-				pterm.Yellow(manual.CountBySchemeOrSourceType("", model.SourceTypeManually)),
+				gprint.YellowStr("%d", manual.CountBySchemeOrSourceType("", model.SourceTypeHistory)),
+				gprint.YellowStr("%d", manual.CountBySchemeOrSourceType("", model.SourceTypeEdgeTunnel)),
+				gprint.YellowStr("%d", manual.CountBySchemeOrSourceType("", model.SourceTypeManually)),
 			)
 			str := rawStatistics + pingStatistics + verifiedStatistics + dbStatistics
 			fmt.Println(str)
@@ -484,34 +481,32 @@ func (that *Shell) show() {
 
 			var (
 				currenVpnInfo  string
-				neoboxStatus   string = pterm.LightRed("stopped")
-				keeperStatus   string = pterm.LightRed("stopped")
-				verifierStatus string = pterm.LightRed("stopped")
+				neoboxStatus   string = gprint.RedStr("stopped")
+				keeperStatus   string = gprint.RedStr("stopped")
+				verifierStatus string = gprint.RedStr("stopped")
 			)
 			if that.runner.PingRunner() {
-				neoboxStatus = pterm.LightGreen("running")
+				neoboxStatus = gprint.GreenStr("running")
 				result, _ := c.GetResult()
 
-				currenVpnInfo = pterm.Yellow(string(result))
-				verifierStatus = pterm.LightMagenta("completed")
+				currenVpnInfo = gprint.YellowStr(string(result))
+				verifierStatus = gprint.MagentaStr("completed")
 			}
 			if that.runner.PingKeeper() {
-				keeperStatus = pterm.LightGreen("running")
+				keeperStatus = gprint.GreenStr("running")
 			}
 			if that.runner.PingVerifier() {
-				verifierStatus = pterm.LightGreen("running")
+				verifierStatus = gprint.GreenStr("running")
 			}
-			nStatus := pterm.Cyan(fmt.Sprintf("NeoBox[%s @%s] Verifier[%s] Keeper[%s]\n",
+			nStatus := gprint.CyanStr(fmt.Sprintf("NeoBox[%s @%s] Verifier[%s] Keeper[%s]\n",
 				neoboxStatus,
 				currenVpnInfo,
 				verifierStatus,
 				keeperStatus,
 			))
-			logInfo := pterm.Magenta(fmt.Sprintf("LogFileDir: %s\n", pterm.LightGreen(that.CNF.LogDir)))
+			logInfo := gprint.PinkStr(fmt.Sprintf("LogFileDir: %s\n", gprint.BrownStr(that.CNF.LogDir)))
 
 			str = nStatus + logInfo
-			// str = paddedBox.Sprintln(str)
-			// pterm.Println(str)
 			fmt.Println(str)
 
 			gprint.Cyan("========================================================================")

@@ -82,6 +82,7 @@ then you can upgrade your wireguard account to Warp+. Warp+ License Key can be f
 
 - **Cloudflare IP/Domain**: Selected cloudflare IPs/Domains support Warp+ and EdgeTunnel, which can accelerate your visitings through proxies.
   
+- **Some Free Resources**: [cloudflare](https://github.com/moqsien/neobox/blob/main/docs/cloudflare.md)
 
 ## Example
 

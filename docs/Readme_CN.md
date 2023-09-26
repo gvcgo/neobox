@@ -81,6 +81,8 @@ Warp+注册码长这样："Key: 8YK01D7V-Ij6z50g7-eZ5l2R36 (24598562 GB)".
 
 - **Cloudflare IP/Domain**: Cloudflare相关的IP/Domain优选，支持Warp+和EdgeTunnel的IP/Domain优选，实现网络加速.
 
+- **一些强大的免费资源**: [cloudflare](https://github.com/moqsien/neobox/blob/main/docs/cloudflare.md)
+
 ## 在Shell中查看Neobox的运行状态
 
 ```bash

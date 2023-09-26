@@ -22,6 +22,7 @@ import (
 	"github.com/moqsien/neobox/pkgs/cflare/domain"
 	"github.com/moqsien/neobox/pkgs/cflare/wguard"
 	"github.com/moqsien/neobox/pkgs/cflare/wspeed"
+	"github.com/moqsien/neobox/pkgs/client/sysproxy"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/proxy"
 	"github.com/moqsien/neobox/pkgs/storage/dao"
@@ -708,6 +709,32 @@ func (that *Shell) registerWireguardAndUpdateToWarpplus() {
 	})
 }
 
+func (that *Shell) enableSystemProxy() {
+	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
+		Name:            "sys-proxy",
+		Help:            "To enable or disable System Proxy.",
+		ArgsDescription: "If there is an arg, it means to disable the System Proxy.",
+		Func: func(c *goktrl.Context) {
+			if len(c.Args) == 0 {
+				localProxyUrl := fmt.Sprintf("http://127.0.0.1:%d", that.CNF.InboundPort)
+				if err := sysproxy.SetSystemProxy(localProxyUrl, ""); err != nil {
+					gprint.PrintError("%+v", err)
+				} else {
+					gprint.PrintSuccess("System Proxy enabled.")
+				}
+			} else {
+				if err := sysproxy.ClearSystemProxy(); err != nil {
+					gprint.PrintError("%+v", err)
+				} else {
+					gprint.PrintSuccess("System Proxy disabled.")
+				}
+			}
+		},
+		KtrlHandler: func(c *goktrl.Context) {},
+		SocketName:  that.ktrlSocks,
+	})
+}
+
 func (that *Shell) InitKtrl() {
 	that.start()
 	that.stop()
@@ -730,6 +757,7 @@ func (that *Shell) InitKtrl() {
 	that.downloadRawlistForEdgeTunnel()
 	that.downloadDomainFileForEdgeTunnel()
 	that.pingDomainsForEdgeTunnel()
+	that.enableSystemProxy()
 }
 
 func (that *Shell) StartShell() {

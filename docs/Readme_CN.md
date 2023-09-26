@@ -84,32 +84,31 @@ Warp+注册码长这样："Key: 8YK01D7V-Ij6z50g7-eZ5l2R36 (24598562 GB)".
 ## 在Shell中查看Neobox的运行状态
 
 ```bash
+
 >>> show
+RawList[3804@2023-09-25 12:58:59] vmess[2163] vless[544] trojan[368] ss[682] ssr[47]
+Pinged[359@2023-09-26 13:27:04] vmess[192] vless[40] trojan[51] ss[75] ssr[1]
+Final[13@2023-09-26 13:28:28] vmess[1] vless[12] trojan[0] ss[0] ssr[0]
+Database: History[341] EdgeTunnel[2] Manually[0]
 
-RawList[5344@2023-09-10 10:06:44] vmess[2646] vless[317] trojan[660] ss[1638] ssr[83]
-Pinged[587@2023-09-10 12:38:53] vmess[348] vless[53] trojan[86] ss[96] ssr[4]
-Final[13@2023-09-10 12:41:13] vmess[4] vless[7] trojan[1] ss[1] ssr[0]
-Database: History[27] EdgeTunnel[1] Manually[0]
+========================================================================
+NeoBox[running @vless://www.wongnai.com:443 (Mem: 4991MiB)] Verifier[running] Keeper[running]
+LogFileDir: C:\Users\xxxxxx\.gvc\proxy_files\neobox_logs
 
-idx  pxy                                       loc rtt  src
-0  vmess://19.kccic2pa.xyz:50019              CHN  1082  verified
-1  vmess://cfcdn2.sanfencdn.net:2052          USA  2336  verified
-2  vmess://172.67.135.195:443                 USA  1642  verified
-3  vmess://103.160.204.80:8080                APA  2435  verified
-4  vless://jp.caball.link:443                 USA  1445  verified
-5  vless://104.23.139.0:80                    USA  2622  verified
-6  vless://172.66.47.84:443                   USA  965  verified
-7  vless://fiberlike.aurorainiceland.com:443  USA  1869  verified
-8  vless://172.67.187.111:443                 USA  1756  verified
-9  vless://172.66.44.172:2096                 USA  2185  verified
-10  vless://729.outline-vpn.cloud:443          USA  2635  verified
-11  trojan://108.181.23.249:443                CAN  829  verified
-12  ss://54.169.127.65:443                     SGP  439  verified
-w0  wireguard://108.162.193.239:2096          USA 157  wireguard
-e0  vless://xxx.xxx.xx:8443                   USA  255  edtunnel
-
-NeoBox[running @vless://172.64.151.81:443 (Mem: 4098MiB)] Verifier[completed] Keeper[running]
-LogFileDir: C:\Users\moqsien\.neobox\log_files
+========================================================================
+Press 'Up/k · Down/j' to move up/down or 'q' to quit.
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Index   Proxy                                                         Location  RTT     Source           │
+│──────────────────────────────────────────────────────────────────────────────────────────────────────────│
+│ 0      vmess://mf01fx.micloud.buzz:46001                              CHN      1618    verified          │
+│ 1      vless://colonelcy.aurorainiceland.com:443                      USA      2076    verified          │
+│ 2      vless://104.17.64.0:2096                                       USA      1580    verified          │
+│ 3      vless://104.18.32.0:2096                                       USA      1685    verified          │
+│ 4      vless://6234.outline-vpn.cloud:2096                            USA      1342    verified          │
+│ 5      vless://104.18.36.81:8080                                      USA      1568    verified          │
+│ 6      vless://104.17.96.0:2096                                       USA      1396    verified          │
+│ 7      vless://104.19.164.12:8080                                     USA      1162    verified          │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## 如何安装？
@@ -149,3 +148,4 @@ http://localhost:2023
 - [vpnparser](https://github.com/moqsien/vpnparser)
 - [gscraper](https://github.com/moqsien/gscraper)
 - [goktrl](https://github.com/moqsien/goktrl)
+- [go-qrcode](https://github.com/skip2/go-qrcode)

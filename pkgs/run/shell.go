@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/moqsien/goktrl"
 	"github.com/moqsien/goutils/pkgs/crypt"
@@ -498,18 +499,19 @@ func (that *Shell) show() {
 			if that.runner.PingVerifier() {
 				verifierStatus = gprint.GreenStr("running")
 			}
-			nStatus := gprint.CyanStr(fmt.Sprintf("NeoBox[%s @%s] Verifier[%s] Keeper[%s]\n",
+
+			nStatus := gprint.CyanStr(fmt.Sprintf("NeoBox[%s @%s] Verifier[%s] Keeper[%s]",
 				neoboxStatus,
 				currenVpnInfo,
 				verifierStatus,
 				keeperStatus,
 			))
-			logInfo := gprint.PinkStr(fmt.Sprintf("LogFileDir: %s\n", gprint.BrownStr(that.CNF.LogDir)))
-
-			str = nStatus + logInfo
-			fmt.Println(str)
+			logInfo := gprint.PinkStr(fmt.Sprintf("LogFileDir: %s\n", that.CNF.LogDir))
+			fmt.Printf("%s\n%s\n", nStatus, logInfo)
 
 			gprint.Cyan("========================================================================")
+			helpStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render
+			fmt.Println(helpStyle("Press 'Up/k · Down/j' to move up/down or 'q' to quit."))
 			columns := []table.Column{
 				{Title: "Index", Width: 5},
 				{Title: "Proxy", Width: 60},
@@ -548,10 +550,13 @@ func (that *Shell) show() {
 				// str += utils.FormatLineForShell(r...)
 				rows = append(rows, table.Row(r))
 			}
-			tHeight := len(rows) / 3
+			tHeight := len(rows) / 2
 			if tHeight < 7 {
 				tHeight = 7
+			} else if tHeight > 40 {
+				tHeight = 40
 			}
+
 			t := gtable.NewTable(table.WithColumns(columns), table.WithRows(rows), table.WithFocused(true), table.WithHeight(tHeight), table.WithWidth(100))
 			t.Run()
 		},

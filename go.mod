@@ -11,12 +11,12 @@ require (
 	github.com/moqsien/goktrl v1.3.8
 	github.com/moqsien/goutils v0.4.8
 	github.com/moqsien/hackbrowser v1.0.3
-	github.com/moqsien/vpnparser v0.2.2
+	github.com/moqsien/vpnparser v0.2.3
 	github.com/moqsien/wgcf v0.0.0-20230611034603-e29859e0cae2
 	github.com/moqsien/xraycore v1.8.5
 	github.com/prometheus-community/pro-bing v0.3.0
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/sagernet/sing-box v1.4.3
+	github.com/sagernet/sing-box v1.4.6
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/urfave/cli/v2 v2.25.7
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
@@ -144,14 +144,13 @@ require (
 	github.com/sagernet/netlink v0.0.0-20220905062125-8043b4a9aa97 // indirect
 	github.com/sagernet/quic-go v0.0.0-20230911082307-390b7c274032 // indirect
 	github.com/sagernet/reality v0.0.0-20230406110435-ee17307e7691 // indirect
-	github.com/sagernet/sing v0.2.10-0.20230912050851-1453c7c8c20d // indirect
-	github.com/sagernet/sing-dns v0.1.9-0.20230911082806-425022bdc92b // indirect
+	github.com/sagernet/sing v0.2.10-0.20230925134514-7ce1ab786c10 // indirect
+	github.com/sagernet/sing-dns v0.1.9-0.20230925101650-9cc09becd01e // indirect
 	github.com/sagernet/sing-mux v0.1.3-0.20230908032617-759a1886a400 // indirect
-	github.com/sagernet/sing-quic v0.0.0-20230912130846-98205e7e798c // indirect
 	github.com/sagernet/sing-shadowsocks v0.2.5-0.20230907005610-126234728ca0 // indirect
 	github.com/sagernet/sing-shadowsocks2 v0.1.4-0.20230907005906-5d2917b29248 // indirect
 	github.com/sagernet/sing-shadowtls v0.1.4 // indirect
-	github.com/sagernet/sing-tun v0.1.12-0.20230821065522-7545dc2d5641 // indirect
+	github.com/sagernet/sing-tun v0.1.12-0.20230926093914-0d0ebad6cfa5 // indirect
 	github.com/sagernet/sing-vmess v0.1.8-0.20230907010359-161fb0ac716b // indirect
 	github.com/sagernet/smux v0.0.0-20230312102458-337ec2a5af37 // indirect
 	github.com/sagernet/tfo-go v0.0.0-20230816093905-5a5c285d44a6 // indirect

@@ -116,10 +116,12 @@ func (that *Shell) start() {
 }
 
 func (that *Shell) restart() {
+	// TODO: force to use sing-box client or not? Add transfer feature for vpnparser.
 	type Options struct {
-		ShowChosen bool `alias:"sh" required:"false" descr:"show the chosen proxy or not."`
-		ShowConfig bool `alias:"shc" required:"false" descr:"show config in result or not."`
-		UseDomains bool `alias:"d" required:"false" descr:"use selected domains for edgetunnels."`
+		ShowChosen  bool `alias:"sp" required:"false" descr:"show the chosen proxy or not."`
+		ShowConfig  bool `alias:"sc" required:"false" descr:"show config in result or not."`
+		UseDomains  bool `alias:"d" required:"false" descr:"use selected domains for edgetunnels."`
+		UseXrayCore bool `alias:"x" required:"false" descr:"force to use xray-core client."`
 	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "restart",
@@ -134,7 +136,17 @@ func (that *Shell) restart() {
 				idxStr = args[0]
 			}
 			r := []string{}
-			if proxyItem := that.runner.GetProxyByIndex(idxStr, opts.UseDomains); proxyItem != nil {
+			// get proxyItem
+			proxyItem := that.runner.GetProxyByIndex(idxStr, opts.UseDomains)
+
+			if opts.UseXrayCore {
+				// force to use xray-core as client
+				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.XrayCore)
+			} else {
+				// use sing-box as client by default
+				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.SingBox)
+			}
+			if proxyItem != nil {
 				r = append(r, crypt.EncodeBase64(proxyItem.String()))
 			}
 			c.Args = r
@@ -148,7 +160,6 @@ func (that *Shell) restart() {
 			var res []byte
 			if that.runner.PingRunner() {
 				res, _ = c.GetResult()
-
 			} else {
 				that.Start()
 				res, _ = c.GetResult()
@@ -558,7 +569,14 @@ func (that *Shell) show() {
 				tHeight = 40
 			}
 
-			t := gtable.NewTable(table.WithColumns(columns), table.WithRows(rows), table.WithFocused(true), table.WithHeight(tHeight), table.WithWidth(100))
+			t := gtable.NewTable(
+				table.WithColumns(columns),
+				table.WithRows(rows),
+				table.WithFocused(true),
+				table.WithHeight(tHeight),
+				table.WithWidth(100),
+				table.WithStyles(table.DefaultStyles()),
+			)
 			t.Run()
 		},
 		KtrlHandler: func(c *goktrl.Context) {

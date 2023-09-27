@@ -118,10 +118,10 @@ func (that *Shell) start() {
 func (that *Shell) restart() {
 	// TODO: force to use sing-box client or not? Add transfer feature for vpnparser.
 	type Options struct {
-		ShowChosen  bool `alias:"sp" required:"false" descr:"show the chosen proxy or not."`
-		ShowConfig  bool `alias:"sc" required:"false" descr:"show config in result or not."`
-		UseDomains  bool `alias:"d" required:"false" descr:"use selected domains for edgetunnels."`
-		UseXrayCore bool `alias:"x" required:"false" descr:"force to use xray-core client."`
+		ShowChosen bool `alias:"sp" required:"false" descr:"show the chosen proxy or not."`
+		ShowConfig bool `alias:"sc" required:"false" descr:"show config in result or not."`
+		UseDomains bool `alias:"d" required:"false" descr:"use selected domains for edgetunnels."`
+		UseSingBox bool `alias:"b" required:"false" descr:"force to use sing-box client."`
 	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "restart",
@@ -139,11 +139,11 @@ func (that *Shell) restart() {
 			// get proxyItem
 			proxyItem := that.runner.GetProxyByIndex(idxStr, opts.UseDomains)
 
-			if opts.UseXrayCore {
-				// force to use xray-core as client
+			if !opts.UseSingBox {
+				// use xray-core as client by default
 				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.XrayCore)
 			} else {
-				// use sing-box as client by default
+				// force to  use sing-box as client
 				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.SingBox)
 			}
 			if proxyItem != nil {

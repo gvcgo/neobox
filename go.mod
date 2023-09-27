@@ -16,7 +16,7 @@ require (
 	github.com/moqsien/xraycore v1.8.5
 	github.com/prometheus-community/pro-bing v0.3.0
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/sagernet/sing-box v1.4.6
+	github.com/sagernet/sing-box v1.4.3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/urfave/cli/v2 v2.25.7
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
@@ -147,6 +147,7 @@ require (
 	github.com/sagernet/sing v0.2.10-0.20230925134514-7ce1ab786c10 // indirect
 	github.com/sagernet/sing-dns v0.1.9-0.20230925101650-9cc09becd01e // indirect
 	github.com/sagernet/sing-mux v0.1.3-0.20230908032617-759a1886a400 // indirect
+	github.com/sagernet/sing-quic v0.0.0-20230912130846-98205e7e798c // indirect
 	github.com/sagernet/sing-shadowsocks v0.2.5-0.20230907005610-126234728ca0 // indirect
 	github.com/sagernet/sing-shadowsocks2 v0.1.4-0.20230907005906-5d2917b29248 // indirect
 	github.com/sagernet/sing-shadowtls v0.1.4 // indirect

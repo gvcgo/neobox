@@ -119,7 +119,7 @@ func (that *Shell) restart() {
 	type Options struct {
 		ShowChosen bool `alias:"sh" required:"false" descr:"show the chosen proxy or not."`
 		ShowConfig bool `alias:"shc" required:"false" descr:"show config in result or not."`
-		UseDomains bool `alias:"dom" required:"false" descr:"use selected domains for edgetunnels."`
+		UseDomains bool `alias:"d" required:"false" descr:"use selected domains for edgetunnels."`
 	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "restart",

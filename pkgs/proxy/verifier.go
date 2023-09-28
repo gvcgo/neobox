@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
+	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/neobox/pkgs/client"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/storage/dao"
@@ -105,7 +106,12 @@ func (that *Verifier) verify(httpClient *http.Client) bool {
 
 func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 	that.wg.Add(1)
-	defer that.wg.Done()
+	defer func() {
+		if r := recover(); r != nil {
+			logs.Error(r)
+		}
+		that.wg.Done()
+	}()
 	pClient := client.NewClient(that.CNF, inboundPort, cType, false)
 
 	var (
@@ -140,7 +146,7 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 					}
 				}
 				pClient.Close()
-				return
+				continue
 			}
 			if toPrintLogs != "" {
 				gprint.PrintInfo("Proxy[%s] time consumed: %vs", p.GetHost(), time.Since(start).Seconds())
@@ -187,16 +193,22 @@ func (that *Verifier) Run(force ...bool) {
 
 	gprint.PrintInfo("filters for [ssr/ss-obfs] started.")
 	that.wg.Wait()
-
+	logs.Info("verfication completed.")
 	if that.Result.Len() > 0 {
 		for _, pxyItem := range that.Result.GetTotalList() {
 			that.Locater.Query(pxyItem)
 		}
 		that.Result.UpdateAt = time.Now().Format("2006-01-02 15:04:05")
 		that.Result.Save(that.verifiedFile)
+
+	}
+	logs.Info("write verification file succeeded.")
+	that.isRunning = false
+
+	if that.Result.Len() > 0 {
 		that.saveHistory()
 	}
-	that.isRunning = false
+	logs.Info("save to db succeeded.")
 }
 
 func (that *Verifier) saveHistory() {

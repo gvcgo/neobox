@@ -247,6 +247,12 @@ func PrepareConfig(out IOutbound, inboundPort int, logPath, geoInfoDir string) (
 			j.Set("route.geoip.path", filepath.Join(geoInfoDir, SingBoxGeoIPFileName))
 			j.Set("route.geosite.path", filepath.Join(geoInfoDir, SingboxGeoSiteFileName))
 		}
+		// dns_in port should not be the same
+		inboundDNSInPort := inboundPort + 6450
+		if inboundDNSInPort > 65535 {
+			inboundDNSInPort = inboundDNSInPort - 65535 + 6450
+		}
+		j.Set("inbounds.0.listen_port", inboundDNSInPort)
 		return j.MustToJson()
 	case outbound.XrayCore:
 		j := gjson.New(XrayCoreConfigStr)

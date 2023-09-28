@@ -104,7 +104,7 @@ var XrayCoreConfigStr = `{
 var SingBoxConfigStr string = `{
     "log": {
         "disabled": false,
-        "level": "warning",
+        "level": "error",
         "timestamp": true
     },
     "dns": {

@@ -116,12 +116,11 @@ func (that *Shell) start() {
 }
 
 func (that *Shell) restart() {
-	// TODO: force to use sing-box client or not? Add transfer feature for vpnparser.
 	type Options struct {
-		ShowChosen bool `alias:"sp" required:"false" descr:"show the chosen proxy or not."`
-		ShowConfig bool `alias:"sc" required:"false" descr:"show config in result or not."`
-		UseDomains bool `alias:"d" required:"false" descr:"use selected domains for edgetunnels."`
-		UseSingBox bool `alias:"b" required:"false" descr:"force to use sing-box client."`
+		ShowChosen bool `alias:"p,proxy" required:"false" descr:"show the chosen proxy or not."`
+		ShowConfig bool `alias:"c,config" required:"false" descr:"show config in result or not."`
+		UseDomains bool `alias:"d,domain" required:"false" descr:"use selected domains for edgetunnels."`
+		UseSingBox bool `alias:"b,box" required:"false" descr:"force to use sing-box client."`
 	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "restart",
@@ -168,7 +167,7 @@ func (that *Shell) restart() {
 			rList := strings.Split(string(res), "___")
 			if opts.ShowConfig && len(rList) == 2 {
 				confStr, _ := url.QueryUnescape(rList[1])
-				gprint.PrintInfo(rList[0], "; ConfStr: ", confStr)
+				gprint.PrintInfo("%s%s%s", rList[0], "; ConfStr: ", confStr)
 			} else {
 				gprint.PrintInfo(rList[0])
 			}

@@ -2,6 +2,7 @@ package run
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -155,9 +156,13 @@ func (that *Runner) handleEdgeTunnelVless(p *outbound.ProxyItem, useDomain ...bo
 	newProxy = edt.RandomlyChooseEdgeTunnelByOldProxyItem(p)
 	wguard := &dao.WireGuardIP{}
 	if len(useDomain) > 0 && useDomain[0] {
+		// use optimized domains
 		if w, err := wguard.RandomlyGetOneIPByType(model.WireGuardTypeDomain); err == nil && w != nil {
 			j := gjson.New(newProxy.GetOutbound())
-			// use optimized IPs
+			// parse domain to IP
+			if addr, err := net.ResolveIPAddr("ip", w.Address); err == nil {
+				w.Address = addr.String()
+			}
 			if newProxy.OutboundType == outbound.SingBox {
 				j.Set("server", w.Address)
 				j.Set("server_port", w.Port)
@@ -179,9 +184,9 @@ func (that *Runner) handleEdgeTunnelVless(p *outbound.ProxyItem, useDomain ...bo
 		}
 		return
 	}
+	// use optimized IPs
 	if w, err := wguard.RandomlyGetOneIPByPort(newProxy.Port); err == nil && w != nil {
 		j := gjson.New(newProxy.GetOutbound())
-		// use optimized IPs
 		if newProxy.OutboundType == outbound.SingBox {
 			j.Set("server", w.Address)
 		} else {

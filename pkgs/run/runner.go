@@ -2,7 +2,6 @@ package run
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -160,15 +159,15 @@ func (that *Runner) handleEdgeTunnelVless(p *outbound.ProxyItem, useDomain ...bo
 		if w, err := wguard.RandomlyGetOneIPByType(model.WireGuardTypeDomain); err == nil && w != nil {
 			j := gjson.New(newProxy.GetOutbound())
 			// parse domain to IP
-			if addr, err := net.ResolveIPAddr("ip", w.Address); err == nil {
-				w.Address = addr.String()
-			}
+			// if addr, err := net.ResolveIPAddr("ip", w.Address); err == nil {
+			// 	w.Address = addr.String()
+			// }
 			if newProxy.OutboundType == outbound.SingBox {
 				j.Set("server", w.Address)
-				j.Set("server_port", w.Port)
+				j.Set("server_port", p.Port)
 			} else {
 				j.Set("settings.vnext.0.address", w.Address)
-				j.Set("port", w.Port)
+				j.Set("port", p.Port)
 			}
 			newProxy.Address = w.Address
 			newProxy.Port = w.Port

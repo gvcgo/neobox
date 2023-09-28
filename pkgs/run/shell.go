@@ -215,7 +215,7 @@ func (that *Shell) stop() {
 
 func (that *Shell) genQRCode() {
 	type Options struct {
-		UseDomains bool `alias:"dom" required:"false" descr:"use selected domains for edgetunnels."`
+		UseDomains bool `alias:"d,domain" required:"false" descr:"use selected domains for edgetunnels."`
 	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "qcode",

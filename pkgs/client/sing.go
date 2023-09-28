@@ -19,10 +19,11 @@ type SInstance struct {
 	cancel      context.CancelFunc
 	assetDir    string
 	*box.Box
+	clientType string
 }
 
 func NewSClient() *SInstance {
-	return &SInstance{}
+	return &SInstance{clientType: "sing-box"}
 }
 
 func (that *SInstance) SetInPortAndLogFile(inboundPort int, logPath string) {
@@ -92,4 +93,8 @@ func (that *SInstance) Close() {
 
 func (that *SInstance) GetConf() []byte {
 	return that.conf
+}
+
+func (that *SInstance) Type() string {
+	return that.clientType
 }

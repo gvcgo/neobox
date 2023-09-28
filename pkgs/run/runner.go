@@ -292,9 +292,9 @@ func (that *Runner) Restart(args ...string) (result string) {
 	that.Client.SetOutbound(that.CurrentProxy)
 	err := that.Client.Start()
 	if err == nil {
-		result = fmt.Sprintf("client restarted use: %s%s___%s", that.CurrentProxy.Scheme, that.CurrentProxy.GetHost(), url.QueryEscape(string(that.Client.GetConf())))
+		result = fmt.Sprintf("client restarted use: %s%s, clientType: %s___%s", that.CurrentProxy.Scheme, that.CurrentProxy.GetHost(), that.Client.Type(), url.QueryEscape(string(that.Client.GetConf())))
 	} else {
-		result = fmt.Sprintf("restart client failed: %+v\nConfigString___%s", err, url.QueryEscape(string(that.Client.GetConf())))
+		result = fmt.Sprintf("restart client failed: %+v, clientType: %s\nConfigString___%s", err, that.Client.Type(), url.QueryEscape(string(that.Client.GetConf())))
 		that.Client.Close()
 	}
 	return

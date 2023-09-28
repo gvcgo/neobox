@@ -14,6 +14,7 @@ type IClient interface {
 	GetConf() []byte
 	Start() error
 	Close()
+	Type() string
 }
 
 func NewClient(cnf *conf.NeoConf, inboundPort int, cType outbound.ClientType, enableLog bool) (client IClient) {

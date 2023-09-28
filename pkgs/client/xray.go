@@ -20,10 +20,11 @@ type XInstance struct {
 	conf        []byte
 	assetDir    string
 	*core.Instance
+	clientType string
 }
 
 func NewXClient() *XInstance {
-	return &XInstance{}
+	return &XInstance{clientType: "xray-core"}
 }
 
 func (that *XInstance) SetInPortAndLogFile(inboundPort int, logPath string) {
@@ -72,4 +73,8 @@ func (that *XInstance) Close() {
 
 func (that *XInstance) GetConf() []byte {
 	return that.conf
+}
+
+func (that *XInstance) Type() string {
+	return that.clientType
 }

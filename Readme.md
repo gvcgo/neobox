@@ -64,7 +64,7 @@ Restart the running neobox client with a chosen proxy. [restart proxy_index]
   -showchosen; alias:-{p,proxy}; description: show the chosen proxy or not.
   -showconfig; alias:-{c,config}; description: show config in result or not.
   -usedomains; alias:-{d,domain}; description: use selected domains for edgetunnels.
-  -usexraycore; alias:-{x,xcore}; description: force to use xray-core as client.
+  -usesingbox; alias:-{s,sbox}; description: force to use sing-box as client.
  args:
   choose a specified proxy by index.
 ```

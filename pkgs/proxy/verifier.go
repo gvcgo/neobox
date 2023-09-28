@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -78,7 +79,7 @@ func (that *Verifier) send() {
 		case outbound.XrayCore:
 			that.sendXrayChan <- proxyItem
 		default:
-			gprint.PrintWarning("unsupported outbound type: %v", proxyItem.GetOutboundType())
+			gprint.PrintWarning("unsupported client type: %v", proxyItem.GetOutboundType())
 		}
 	}
 	close(that.sendSingChan)
@@ -129,15 +130,21 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 			}
 			pClient.SetOutbound(p)
 			start := time.Now()
+
+			toPrintLogs := os.Getenv("PRINT_NEOBOX_LOGS")
 			if err := pClient.Start(); err != nil {
-				gprint.PrintError("%s_Client[%s] start failed. Error: %+v\n", cType, p.RawUri, err)
-				if strings.Contains(err.Error(), "proxyman.InboundConfig is not registered") {
-					fmt.Println(string(pClient.GetConf()))
+				if toPrintLogs != "" {
+					gprint.PrintError("%s_Client[%s] start failed. Error: %+v\n", cType, p.RawUri, err)
+					if strings.Contains(err.Error(), "proxyman.InboundConfig is not registered") {
+						fmt.Println(string(pClient.GetConf()))
+					}
 				}
 				pClient.Close()
 				return
 			}
-			gprint.PrintInfo("Proxy[%s] time consumed: %vs", p.GetHost(), time.Since(start).Seconds())
+			if toPrintLogs != "" {
+				gprint.PrintInfo("Proxy[%s] time consumed: %vs", p.GetHost(), time.Since(start).Seconds())
+			}
 
 			startTime := time.Now()
 			ok = that.verify(httpClient)

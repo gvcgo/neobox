@@ -61,9 +61,10 @@ Add edgetunnel proxies to neobox.
 
 Restart the running neobox client with a chosen proxy. [restart proxy_index]
  options:
-  -showchosen; alias:-{sh}; description: show the chosen proxy or not.
-  -showconfig; alias:-{shc}; description: show config in result or not.
-  -usedomains; alias:-{dom}; description: use selected domains for edgetunnels.
+  -showchosen; alias:-{p,proxy}; description: show the chosen proxy or not.
+  -showconfig; alias:-{c,config}; description: show config in result or not.
+  -usedomains; alias:-{d,domain}; description: use selected domains for edgetunnels.
+  -usexraycore; alias:-{x,xcore}; description: force to use xray-core as client.
  args:
   choose a specified proxy by index.
 ```

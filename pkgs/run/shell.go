@@ -117,10 +117,10 @@ func (that *Shell) start() {
 
 func (that *Shell) restart() {
 	type Options struct {
-		ShowChosen bool `alias:"p,proxy" required:"false" descr:"show the chosen proxy or not."`
-		ShowConfig bool `alias:"c,config" required:"false" descr:"show config in result or not."`
-		UseDomains bool `alias:"d,domain" required:"false" descr:"use selected domains for edgetunnels."`
-		UseSingBox bool `alias:"b,box" required:"false" descr:"force to use sing-box client."`
+		ShowChosen  bool `alias:"p,proxy" required:"false" descr:"show the chosen proxy or not."`
+		ShowConfig  bool `alias:"c,config" required:"false" descr:"show config in result or not."`
+		UseDomains  bool `alias:"d,domain" required:"false" descr:"use selected domains for edgetunnels."`
+		UseXrayCore bool `alias:"x,xcore" required:"false" descr:"force to use xray-core as client."`
 	}
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
 		Name: "restart",
@@ -138,11 +138,11 @@ func (that *Shell) restart() {
 			// get proxyItem
 			proxyItem := that.runner.GetProxyByIndex(idxStr, opts.UseDomains)
 
-			if !opts.UseSingBox {
-				// use xray-core as client by default
+			if opts.UseXrayCore {
+				// force to use xray-core as client
 				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.XrayCore)
 			} else {
-				// force to  use sing-box as client
+				// use sing-box as client by default
 				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.SingBox)
 			}
 			if proxyItem != nil {

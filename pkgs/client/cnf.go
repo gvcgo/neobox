@@ -101,6 +101,8 @@ var XrayCoreConfigStr = `{
     }
 }`
 
+/*
+
 var SingBoxConfigStr string = `{
     "log": {
         "disabled": false,
@@ -192,6 +194,123 @@ var SingBoxConfigStr string = `{
         }
     }
 }`
+*/
+
+var SingBoxConfigString string = `{
+    "dns":{
+        "independent_cache":true,
+        "rules":[
+            {
+                "domain":[
+                    "www.visa.com.sg"
+                ],
+                "server":"dns-direct"
+            }
+        ],
+        "servers":[
+            {
+                "address":"https://8.8.8.8/dns-query",
+                "address_resolver":"dns-direct",
+                "strategy":"ipv4_only",
+                "tag":"dns-remote"
+            },
+            {
+                "address":"local",
+                "address_resolver":"dns-local",
+                "detour":"direct",
+                "strategy":"ipv4_only",
+                "tag":"dns-direct"
+            },
+            {
+                "address":"local",
+                "detour":"direct",
+                "tag":"dns-local"
+            },
+            {
+                "address":"rcode://success",
+                "tag":"dns-block"
+            }
+        ]
+    },
+    "inbounds":[
+        {
+            "listen":"127.0.0.1",
+            "listen_port":6450,
+            "override_address":"8.8.8.8",
+            "override_port":53,
+            "tag":"dns-in",
+            "type":"direct"
+        },
+        {
+            "domain_strategy":"",
+            "listen":"127.0.0.1",
+            "listen_port":2023,
+            "sniff":true,
+            "sniff_override_destination":false,
+            "tag":"mixed-in",
+            "type":"mixed"
+        }
+    ],
+    "log":{
+        "disabled": false,
+        "level":"panic",
+        "timestamp": true
+    },
+    "outbounds":[
+        {},
+        {
+            "tag":"direct",
+            "type":"direct"
+        },
+        {
+            "tag":"bypass",
+            "type":"direct"
+        },
+        {
+            "tag":"block",
+            "type":"block"
+        },
+        {
+            "tag":"dns-out",
+            "type":"dns"
+        }
+    ],
+    "route":{
+        "auto_detect_interface":true,
+        "final":"PROXY_OUT",
+        "geoip":{
+            "path":""
+        },
+        "geosite":{
+            "path":""
+        },
+        "rules":[
+            {
+                "outbound":"dns-out",
+                "port":[
+                    53
+                ]
+            },
+            {
+                "inbound":[
+                    "dns-in"
+                ],
+                "outbound":"dns-out"
+            },
+            {
+                "ip_cidr":[
+                    "224.0.0.0/3",
+                    "ff00::/8"
+                ],
+                "outbound":"block",
+                "source_ip_cidr":[
+                    "224.0.0.0/3",
+                    "ff00::/8"
+                ]
+            }
+        ]
+    }
+}`
 
 type IOutbound interface {
 	GetHost() string
@@ -210,10 +329,15 @@ func PrepareConfig(out IOutbound, inboundPort int, logPath, geoInfoDir string) (
 	}
 	switch out.GetOutboundType() {
 	case outbound.SingBox:
-		j := gjson.New(SingBoxConfigStr)
+		j := gjson.New(SingBoxConfigString)
 		j = vutils.SetJsonObjectByString("outbounds.0", out.GetOutbound(), j)
-		j.Set("inbounds.0.listen_port", inboundPort)
+		j.Set("inbounds.1.listen_port", inboundPort)
 		j.Set("log.output", logPath)
+		jj := gjson.New(out.GetOutbound())
+		serverAddr := jj.Get("server")
+		if serverAddr != "" {
+			j.Set("dns.rules.0.domain.0", serverAddr)
+		}
 		if geoInfoDir != "" {
 			j.Set("route.geoip.path", filepath.Join(geoInfoDir, SingBoxGeoIPFileName))
 			j.Set("route.geosite.path", filepath.Join(geoInfoDir, SingboxGeoSiteFileName))

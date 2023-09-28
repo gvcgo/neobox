@@ -164,10 +164,10 @@ func (that *Runner) handleEdgeTunnelVless(p *outbound.ProxyItem, useDomain ...bo
 			// }
 			if newProxy.OutboundType == outbound.SingBox {
 				j.Set("server", w.Address)
-				j.Set("server_port", p.Port)
+				j.Set("server_port", w.Port)
 			} else {
 				j.Set("settings.vnext.0.address", w.Address)
-				j.Set("port", p.Port)
+				j.Set("port", w.Port)
 			}
 			newProxy.Address = w.Address
 			newProxy.Port = w.Port

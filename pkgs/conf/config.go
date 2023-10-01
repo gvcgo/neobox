@@ -65,7 +65,7 @@ type NeoConf struct {
 func GetDefaultNeoConf() (n *NeoConf) {
 	n = &NeoConf{
 		WorkDir:         `C:\Users\moqsien\data\projects\go\src\neobox\test`,
-		DownloadUrl:     "https://gitlab.com/moqsien/gvc_resources/-/raw/main/conf.txt",
+		DownloadUrl:     "https://gitlab.com/moqsien/neobox_related/-/raw/main/conf.txt",
 		MaxPingers:      120,
 		MaxPingAvgRTT:   600,
 		MaxPingPackLoss: 10,
@@ -81,10 +81,10 @@ func GetDefaultNeoConf() (n *NeoConf) {
 		CountryAbbrevsUrl:   "https://gitlab.com/moqsien/gvc_resources/-/raw/main/country_names.json?ref_type=heads&inline=false",
 		IPLocationQueryUrl:  "https://www.fkcoder.com/ip?ip=%s",
 		GeoInfoUrls: map[string]string{
-			"geoip.dat":   "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geoip.dat",
-			"geosite.dat": "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geosite.dat",
-			"geoip.db":    "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geoip.db",
-			"geosite.db":  "https://gitlab.com/moqsien/neobox_resources/-/raw/main/geosite.db",
+			"geoip.dat":   "https://gitlab.com/moqsien/neobox_related/-/raw/main/geoip.dat",
+			"geosite.dat": "https://gitlab.com/moqsien/neobox_related/-/raw/main/geosite.dat",
+			"geoip.db":    "https://gitlab.com/moqsien/neobox_related/-/raw/main/geoip.db",
+			"geosite.db":  "https://gitlab.com/moqsien/neobox_related/-/raw/main/geosite.db",
 		},
 		GeoInfoSumUrl: "https://gitlab.com/moqsien/gvc_resources/-/raw/main/files_info.json?ref_type=heads&inline=false",
 		KeeperCron:    "@every 3m",
@@ -97,7 +97,7 @@ func GetDefaultNeoConf() (n *NeoConf) {
 			MaxRTT:                  800,
 			MaxLossRate:             30.0,
 			MaxSaveToDB:             1000,
-			CloudflareDomainFileUrl: "https://gitlab.com/moqsien/gvc_resources/-/raw/main/cloudflare_domains.txt?ref_type=heads",
+			CloudflareDomainFileUrl: "https://gitlab.com/moqsien/neobox_related/-/raw/main/cloudflare_domains.txt?ref_type=heads&inline=false",
 		},
 	}
 	n.LogDir = n.WorkDir

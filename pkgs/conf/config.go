@@ -78,7 +78,7 @@ func GetDefaultNeoConf() (n *NeoConf) {
 		VerificationUrl:     "https://www.google.com",
 		VerificationCron:    "@every 2h",
 		MaxToSaveRTT:        2000,
-		CountryAbbrevsUrl:   "https://gitlab.com/moqsien/gvc_resources/-/raw/main/country_names.json?ref_type=heads&inline=false",
+		CountryAbbrevsUrl:   "https://gitlab.com/moqsien/neobox_related/-/raw/main/country_names.json?ref_type=heads&inline=false",
 		IPLocationQueryUrl:  "https://www.fkcoder.com/ip?ip=%s",
 		GeoInfoUrls: map[string]string{
 			"geoip.dat":   "https://gitlab.com/moqsien/neobox_related/-/raw/main/geoip.dat",

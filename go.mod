@@ -4,12 +4,11 @@ go 1.21
 
 require (
 	github.com/bytedance/sonic v1.8.8
-	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/lipgloss v0.8.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/gogf/gf v1.16.9
 	github.com/moqsien/goktrl v1.3.8
-	github.com/moqsien/goutils v0.5.1
+	github.com/moqsien/goutils v0.5.5
 	github.com/moqsien/hackbrowser v1.0.3
 	github.com/moqsien/vpnparser v0.2.3
 	github.com/moqsien/wgcf v0.0.0-20230611034603-e29859e0cae2
@@ -42,6 +41,7 @@ require (
 	github.com/bodgit/sevenzip v1.4.2 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
 	github.com/caddyserver/certmagic v0.19.2 // indirect
+	github.com/charmbracelet/bubbles v0.16.1 // indirect
 	github.com/charmbracelet/bubbletea v0.24.2 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect

@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/moqsien/goktrl"
@@ -523,28 +522,28 @@ func (that *Shell) show() {
 			gprint.Cyan("========================================================================")
 			helpStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render
 			fmt.Println(helpStyle("Press 'Up/k · Down/j' to move up/down or 'q' to quit."))
-			columns := []table.Column{
+			columns := []gtable.Column{
 				{Title: "Index", Width: 5},
 				{Title: "Proxy", Width: 60},
 				{Title: "Location", Width: 8},
 				{Title: "RTT", Width: 6},
 				{Title: "Source", Width: 15},
 			}
-			rows := []table.Row{}
+			rows := []gtable.Row{}
 			// headers := []string{"idx", "pxy", "loc", "rtt", "src"}
 			// str = utils.FormatLineForShell(headers...)
 
 			for idx, item := range verifiedResult.GetTotalList() {
 				r := []string{fmt.Sprintf("%d", idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "verified"}
 				// str += utils.FormatLineForShell(r...)
-				rows = append(rows, table.Row(r))
+				rows = append(rows, gtable.Row(r))
 			}
 
 			wireguard := wguard.NewWireguardOutbound(that.CNF)
 			if item, _ := wireguard.GetProxyItem(); item != nil {
 				r := []string{fmt.Sprintf("%s%d", FromWireguard, 0), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "wireguard"}
 				// str += utils.FormatLineForShell(r...)
-				rows = append(rows, table.Row(r))
+				rows = append(rows, gtable.Row(r))
 			}
 
 			for idx, item := range edgeTunnelList {
@@ -553,13 +552,13 @@ func (that *Shell) show() {
 				}
 				r := []string{fmt.Sprintf("%s%d", FromEdgetunnel, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeEdgeTunnel}
 				// str += utils.FormatLineForShell(r...)
-				rows = append(rows, table.Row(r))
+				rows = append(rows, gtable.Row(r))
 			}
 
 			for idx, item := range manualList {
 				r := []string{fmt.Sprintf("%s%d", FromManually, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeManually}
 				// str += utils.FormatLineForShell(r...)
-				rows = append(rows, table.Row(r))
+				rows = append(rows, gtable.Row(r))
 			}
 			tHeight := len(rows) / 2
 			if tHeight < 7 {
@@ -569,12 +568,12 @@ func (that *Shell) show() {
 			}
 
 			t := gtable.NewTable(
-				table.WithColumns(columns),
-				table.WithRows(rows),
-				table.WithFocused(true),
-				table.WithHeight(tHeight),
-				table.WithWidth(100),
-				table.WithStyles(table.DefaultStyles()),
+				gtable.WithColumns(columns),
+				gtable.WithRows(rows),
+				gtable.WithFocused(true),
+				gtable.WithHeight(tHeight),
+				gtable.WithWidth(100),
+				gtable.WithStyles(gtable.DefaultStyles()),
 			)
 			t.Run()
 		},

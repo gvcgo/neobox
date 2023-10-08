@@ -10,7 +10,7 @@ require (
 	github.com/moqsien/goktrl v1.3.8
 	github.com/moqsien/goutils v0.5.5
 	github.com/moqsien/hackbrowser v1.0.3
-	github.com/moqsien/vpnparser v0.2.3
+	github.com/moqsien/vpnparser v0.2.4
 	github.com/moqsien/wgcf v0.0.0-20230611034603-e29859e0cae2
 	github.com/moqsien/xraycore v1.8.5
 	github.com/prometheus-community/pro-bing v0.3.0

@@ -45,14 +45,11 @@ func (that *GeoInfo) DoesGeoInfoFileExist() bool {
 
 func (that *GeoInfo) Download() {
 	for filename, dUrl := range that.CNF.GeoInfoUrls {
-		item := that.info.InfoList[filename]
-		if item != nil {
-			fPath := filepath.Join(that.geoDir, filename)
-			that.fetcher.SetUrl(dUrl)
-			that.fetcher.SetThreadNum(2)
-			that.fetcher.Timeout = 10 * time.Minute
-			that.fetcher.GetAndSaveFile(fPath, true)
-		}
+		fPath := filepath.Join(that.geoDir, filename)
+		that.fetcher.SetUrl(dUrl)
+		that.fetcher.SetThreadNum(2)
+		that.fetcher.Timeout = 10 * time.Minute
+		that.fetcher.GetAndSaveFile(fPath, true)
 	}
 }
 

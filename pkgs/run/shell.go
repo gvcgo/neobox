@@ -727,7 +727,7 @@ func (that *Shell) registerWireguardAndUpdateToWarpplus() {
 
 func (that *Shell) enableSystemProxy() {
 	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name:            "sys-proxy",
+		Name:            "system",
 		Help:            "To enable or disable System Proxy.",
 		ArgsDescription: "If there is an arg, it means to disable the System Proxy.",
 		Func: func(c *goktrl.Context) {

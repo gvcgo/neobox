@@ -3,10 +3,10 @@ package model
 import (
 	"path/filepath"
 
+	"github.com/glebarez/sqlite"
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/logs"
-	"github.com/moqsien/hackbrowser/utils/hsqlite"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -23,12 +23,13 @@ func NewDBEngine(cnf *conf.NeoConf) (db *gorm.DB, err error) {
 	dbPath := filepath.Join(cnf.DatabaseDir, conf.SQLiteDBFileName)
 	existed, _ := gutils.PathIsExist(dbPath)
 	db, err = gorm.Open(
-		hsqlite.Open(dbPath),
+		sqlite.Open(dbPath),
 		&gorm.Config{
 			Logger: logger.Default.LogMode(logger.Silent),
 		},
 	)
 	if err != nil {
+		gprint.PrintError("Open sqlite.db failed: %s", dbPath)
 		logs.Error(err)
 		panic(err)
 	}

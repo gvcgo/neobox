@@ -137,7 +137,7 @@ func (that *Shell) restart() {
 			// get proxyItem
 			proxyItem := that.runner.GetProxyByIndex(idxStr, opts.UseDomains)
 
-			if !opts.UseSingbox {
+			if !opts.UseSingbox && proxyItem.Scheme != parser.SchemeSS && proxyItem.Scheme != parser.SchemeSSR {
 				//use xray-core as client
 				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.XrayCore)
 			} else {

@@ -9,7 +9,7 @@ require (
 	github.com/glebarez/sqlite v1.9.0
 	github.com/gogf/gf v1.16.9
 	github.com/moqsien/goktrl v1.3.8
-	github.com/moqsien/goutils v0.5.5
+	github.com/moqsien/goutils v0.7.1
 	github.com/moqsien/vpnparser v0.2.4
 	github.com/moqsien/wgcf v0.0.0-20230611034603-e29859e0cae2
 	github.com/moqsien/xraycore v1.8.5
@@ -34,6 +34,7 @@ require (
 	github.com/abiosoft/ishell/v2 v2.0.2 // indirect
 	github.com/abiosoft/readline v0.0.0-20180607040430-155bce2042db // indirect
 	github.com/ajg/form v1.5.1 // indirect
+	github.com/alexmullins/zip v0.0.0-20180717182244-4affb64b04d0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/aquasecurity/table v1.8.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
@@ -51,6 +52,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/cretz/bine v0.2.0 // indirect
 	github.com/dgryski/go-metro v0.0.0-20211217172704-adc40b04c140 // indirect
+	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -78,6 +80,7 @@ require (
 	github.com/gogf/gf/v2 v2.4.1 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/snappy v0.0.2 // indirect
 	github.com/gomodule/redigo v1.8.9 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/pprof v0.0.0-20230821062121-407c9e7a662f // indirect
@@ -96,6 +99,7 @@ require (
 	github.com/kdomanski/iso9660 v0.3.5 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
+	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/knadh/koanf v1.5.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/libdns/libdns v0.2.1 // indirect
@@ -107,6 +111,7 @@ require (
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mholt/acmez v1.2.0 // indirect
+	github.com/mholt/archiver/v3 v3.5.1 // indirect
 	github.com/miekg/dns v1.1.55 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
@@ -114,7 +119,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/moqsien/processes v1.0.3 // indirect
-	github.com/moqsien/xtractr v0.0.1 // indirect
+	github.com/moqsien/xtractr v0.0.2 // indirect
 	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect

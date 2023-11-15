@@ -123,9 +123,9 @@ Or you can install [gvc](https://github.com/moqsien/gvc) instead.
 
 ## Note
 You need to **Set A Key**, or the free-vpn-list cannot be decrypted.
-Currently, the Key is **5lR3hcN8Zzpo1nzI**.
+Currently, the Key is **gveOYpArReKRlItJ**.
 ```bash
->>>setkey 5lR3hcN8Zzpo1nzI
+>>>setkey gveOYpArReKRlItJ
 
 ```
 [Get Latest Neobox Key](https://github.com/moqsien/neobox/raw/main/docs/gvc_qq_group.jpg)

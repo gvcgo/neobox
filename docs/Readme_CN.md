@@ -124,11 +124,11 @@ go install -tags "with_wireguard with_shadowsocksr with_utls with_gvisor with_gr
 或者安装[gvc](https://github.com/moqsien/gvc)
 
 ## 注意事项
-想要使用免费代理，则必须获取解密Key. 当前用于解密的Key是 **5lR3hcN8Zzpo1nzI**.
+想要使用免费代理，则必须获取解密Key. 当前用于解密的Key是 **gveOYpArReKRlItJ**.
 
 设置解密Key：
 ```bash
->>>setkey 5lR3hcN8Zzpo1nzI
+>>>setkey gveOYpArReKRlItJ
 
 ```
 [获取最新的Neobox Key](https://github.com/moqsien/neobox/raw/main/docs/gvc_qq_group.jpg)

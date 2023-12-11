@@ -167,6 +167,10 @@ func (that *NeoConf) Restore() {
 	that.koanfer.Save(that)
 }
 
+func (that *NeoConf) GetConfPath() string {
+	return that.path
+}
+
 func GetDefaultNeoConf() (n *NeoConf) {
 	cwd, _ := os.Getwd()
 	workDir := filepath.Join(cwd, "data", "projects", "go", "src", "neobox", "test")

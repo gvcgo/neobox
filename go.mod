@@ -148,7 +148,6 @@ require (
 	github.com/riobard/go-bloom v0.0.0-20200614022211-cdc8013cb5b3 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rsteube/carapace v0.45.0 // indirect
-	github.com/rsteube/carapace-shlex v0.0.4 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sagernet/cloudflare-tls v0.0.0-20230829051644-4a68352d0c4a // indirect
 	github.com/sagernet/go-tun2socks v1.16.12-0.20220818015926-16cb67876a61 // indirect
@@ -219,3 +218,5 @@ require (
 	modernc.org/sqlite v1.23.1 // indirect
 	mvdan.cc/sh/v3 v3.7.0 // indirect
 )
+
+replace github.com/rsteube/carapace v0.45.0 => github.com/reeflective/carapace v0.25.2-0.20230816093630-a30f5184fa0d

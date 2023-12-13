@@ -10,7 +10,7 @@ require (
 	github.com/gogf/gf v1.16.9
 	github.com/moqsien/goktrl v1.3.8
 	github.com/moqsien/goutils v0.7.1
-	github.com/moqsien/gshell v0.1.0
+	github.com/moqsien/gshell v0.2.0
 	github.com/moqsien/vpnparser v0.2.4
 	github.com/moqsien/wgcf v0.0.0-20230611034603-e29859e0cae2
 	github.com/moqsien/xraycore v1.8.5

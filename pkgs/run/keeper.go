@@ -93,7 +93,7 @@ func (that *Keeper) checkRunner() {
 	if that.runner == nil {
 		that.runner = NewRunner(that.CNF)
 	}
-	if !that.runner.PingRunner() {
+	if !that.runner.shell.PingServer() {
 		that.runner.Start()
 	}
 }

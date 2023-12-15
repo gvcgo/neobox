@@ -4,13 +4,12 @@ go 1.21.5
 
 require (
 	github.com/bytedance/sonic v1.8.8
-	github.com/charmbracelet/lipgloss v0.8.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/glebarez/sqlite v1.9.0
 	github.com/gogf/gf v1.16.9
 	github.com/moqsien/goktrl v1.3.8
 	github.com/moqsien/goutils v0.7.1
-	github.com/moqsien/gshell v0.2.0
+	github.com/moqsien/gshell v0.2.1
 	github.com/moqsien/vpnparser v0.2.4
 	github.com/moqsien/wgcf v0.0.0-20230611034603-e29859e0cae2
 	github.com/moqsien/xraycore v1.8.5
@@ -46,6 +45,7 @@ require (
 	github.com/charmbracelet/bubbles v0.16.1 // indirect
 	github.com/charmbracelet/bubbletea v0.24.2 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
+	github.com/charmbracelet/lipgloss v0.8.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/clbanning/mxj v1.8.5-0.20200714211355-ff02cfb8ea28 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect

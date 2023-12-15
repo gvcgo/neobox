@@ -11,13 +11,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/gogf/gf/encoding/gjson"
-	"github.com/moqsien/goktrl"
+	"github.com/gogf/gf/util/gconv"
 	"github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gtea/gtable"
 	"github.com/moqsien/goutils/pkgs/gutils"
+	"github.com/moqsien/gshell/pkgs/ktrl"
 	"github.com/moqsien/neobox/pkgs/cflare/domain"
 	"github.com/moqsien/neobox/pkgs/cflare/wguard"
 	"github.com/moqsien/neobox/pkgs/cflare/wspeed"
@@ -32,36 +32,37 @@ import (
 )
 
 const (
-	KtrlShellSockName = "neobox_ktrl.sock"
+	verifierCliName string = "vf"
 )
 
-type Shell struct {
-	CNF       *conf.NeoConf
-	ktrl      *goktrl.Ktrl
-	runner    *Runner
-	ktrlSocks string
+type IShell struct {
+	CNF    *conf.NeoConf
+	runner *Runner
+	ktrl   *ktrl.Ktrl
 }
 
-func NewShell(cnf *conf.NeoConf) (s *Shell) {
-	s = &Shell{
-		CNF:       cnf,
-		ktrl:      goktrl.NewKtrl(),
-		ktrlSocks: KtrlShellSockName,
-	}
+func NewIShell(cnf *conf.NeoConf) (s *IShell) {
+	s = &IShell{CNF: cnf}
+	s.ktrl = ktrl.NewKtrl(&ktrl.KtrlConf{
+		SockDir:         cnf.SocketDir,
+		SockName:        cnf.ShellSocketName,
+		HistoryFilePath: filepath.Join(cnf.WorkDir, cnf.HistoryFileName),
+		MaxHistoryLines: cnf.HistoryMaxLines,
+	})
 	return
 }
 
-func (that *Shell) SetRunner(runner *Runner) {
+func (that *IShell) SetRunner(runner *Runner) {
 	that.runner = runner
 }
 
-func (that *Shell) Start() {
+func (that *IShell) Start() {
 	if !that.runner.DoesGeoInfoFileExist() {
 		// automatically download geoip and geosite
 		that.runner.DownloadGeoInfo()
 	}
 
-	if that.runner.PingRunner() {
+	if that.PingServer() {
 		gprint.PrintInfo("NeoBox is already running.")
 		return
 	}
@@ -69,7 +70,7 @@ func (that *Shell) Start() {
 	starter.Run()
 	time.Sleep(2 * time.Second)
 
-	if that.runner.PingRunner() {
+	if that.PingServer() {
 		gprint.PrintSuccess("start NeoBox succeeded.")
 	} else {
 		gprint.PrintError("start NeoBox failed")
@@ -89,354 +90,36 @@ func (that *Shell) Start() {
 	}
 }
 
-func (that *Shell) downloadRawUri() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "graw",
-		Help: "Manually dowload rawUri list(conf.txt from gitlab) for neobox client.",
-		Func: func(c *goktrl.Context) {
-			f := proxy.NewProxyFetcher(that.CNF)
-			f.Download()
-		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
+func (that *IShell) PingServer() (ok bool) {
+	r := that.ktrl.SendMsg(strings.Trim(ktrl.PingRoute, "/"), "", []*ktrl.Option{})
+	ok = strings.Contains(string(r), ktrl.PingResponse)
+	return
 }
 
-func (that *Shell) start() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "start",
-		Help: "Start a neobox client/keeper.",
-		Func: func(c *goktrl.Context) {
-			that.Start()
-		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
+func (that *IShell) PingVerifier() (ok bool) {
+	r := that.ktrl.SendMsg(strings.Trim(ktrl.PingRoute, "/"), verifierCliName, []*ktrl.Option{})
+	ok = strings.Contains(string(r), ktrl.PingResponse)
+	return
 }
 
-func (that *Shell) restart() {
-	type Options struct {
-		ShowChosen bool `alias:"p,proxy" required:"false" descr:"show the chosen proxy or not."`
-		ShowConfig bool `alias:"c,config" required:"false" descr:"show config in result or not."`
-		UseDomains bool `alias:"d,domain" required:"false" descr:"use selected domains for edgetunnels."`
-		UseSingbox bool `alias:"s,sbox" required:"false" descr:"force to use sing-box as client."`
-	}
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "restart",
-		Help: "Restart the running neobox client with a chosen proxy. [restart proxy_index]",
-		Opts: &Options{},
-		Func: func(c *goktrl.Context) {
-			// prepare args
-			opts := c.Options.(*Options)
-			args := c.Args
-			idxStr := "0"
-			if len(args) > 0 {
-				idxStr = args[0]
-			}
-			r := []string{}
-			// get proxyItem
-			proxyItem := that.runner.GetProxyByIndex(idxStr, opts.UseDomains)
-
-			if !opts.UseSingbox && proxyItem.Scheme != parser.SchemeSS && proxyItem.Scheme != parser.SchemeSSR {
-				//use xray-core as client
-				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.XrayCore)
-			} else {
-				// use sing-box as client
-				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.SingBox)
-			}
-			if proxyItem != nil {
-				r = append(r, crypt.EncodeBase64(proxyItem.String()))
-			}
-			c.Args = r
-
-			// show proxyItem
-			if opts.ShowChosen && len(c.Args) > 0 {
-				gprint.PrintInfo(crypt.DecodeBase64(c.Args[0]))
-			}
-
-			// send request
-			var res []byte
-			if that.runner.PingRunner() {
-				res, _ = c.GetResult()
-			} else {
-				that.Start()
-				res, _ = c.GetResult()
-			}
-
-			rList := strings.Split(string(res), "___")
-			if opts.ShowConfig && len(rList) == 2 {
-				confStr, _ := url.QueryUnescape(rList[1])
-				gprint.PrintInfo("%s%s%s", rList[0], "; ConfStr: ", confStr)
-			} else {
-				gprint.PrintInfo(rList[0])
-			}
-		},
-		ArgsDescription: "choose a specified proxy by index.",
-		KtrlHandler: func(c *goktrl.Context) {
-			if len(c.Args) == 0 {
-				c.Send("Cannot find specified proxy", 200)
-			} else {
-				pxyStr := crypt.DecodeBase64(c.Args[0])
-				// os.WriteFile("config_arg_parsed.log", []byte(pxyStr), os.ModePerm)
-				r := that.runner.Restart(pxyStr)
-				c.Send(r, 200)
-			}
-		},
-		SocketName: that.ktrlSocks,
-	})
+func (that *IShell) InitKtrl() {
+	that.show()
+	that.start()
+	that.restart()
+	that.stop()
+	that.verifier()
+	that.tools()
+	that.manual()
+	that.setup()
+	that.cloudflare()
 }
 
-func (that *Shell) stop() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "stop",
-		Help: "Stop neobox client.",
-		Func: func(c *goktrl.Context) {
-			if that.runner.PingRunner() {
-				res, _ := c.GetResult()
-				gprint.PrintWarning(string(res))
-			} else {
-				gprint.PrintInfo("Neobox is not running for now.")
-			}
-			if that.runner.PingKeeper() {
-				r := that.runner.StopKeeperByRequest()
-				gprint.PrintWarning(r)
-			} else {
-				gprint.PrintInfo("Keeper is not running for now.")
-			}
-		},
-		KtrlHandler: func(c *goktrl.Context) {
-			c.Send("Neobox successfully exited", 200)
-			that.runner.Stop()
-		},
-		SocketName: that.ktrlSocks,
-	})
-}
-
-func (that *Shell) genQRCode() {
-	type Options struct {
-		UseDomains bool `alias:"d,domain" required:"false" descr:"use selected domains for edgetunnels."`
-	}
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "qcode",
-		Help: "Generate QRCode for a chosen proxy. [qcode proxy_index]",
-		Opts: &Options{},
-		Func: func(c *goktrl.Context) {
-			args := c.Args
-			idxStr := "0"
-			if len(args) > 0 {
-				idxStr = args[0]
-			}
-			opts := c.Options.(*Options)
-			if proxyItem := that.runner.GetProxyByIndex(idxStr, opts.UseDomains); proxyItem != nil {
-				qrc := proxy.NewQRCodeProxy(that.CNF)
-				qrc.SetProxyItem(proxyItem)
-				qrc.GenQRCode()
-			} else {
-				gprint.PrintError("Can not find a ProxyItem!")
-			}
-		},
-		ArgsDescription: "choose a specified proxy by index.",
-		KtrlHandler:     func(c *goktrl.Context) {},
-		SocketName:      that.ktrlSocks,
-	})
-}
-
-func (that *Shell) addMannually() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "add",
-		Help: "Add proxies to neobox mannually.",
-		Func: func(c *goktrl.Context) {
-			manual := proxy.NewMannualProxy(that.CNF)
-			for _, rawUri := range os.Args {
-				manual.AddRawUri(rawUri, model.SourceTypeManually)
-			}
-		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
-}
-
-func (that *Shell) addEdgeTunnel() {
-	type Options struct {
-		UUID    string `alias:"u" required:"false" descr:"uuid for edge tunnel vless."`
-		Address string `alias:"a" required:"false" descr:"domain/ip for edge tunnel."`
-	}
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name:            "added",
-		Help:            "Add edgetunnel proxies to neobox.",
-		ArgsDescription: "full raw_uri[vless://xxx@xxx?xxx]",
-		Opts:            &Options{},
-		Func: func(c *goktrl.Context) {
-			manual := proxy.NewMannualProxy(that.CNF)
-			opts := c.Options.(*Options)
-			if opts.UUID != "" && opts.Address != "" {
-				manual.AddEdgeTunnelByAddressUUID(opts.Address, opts.UUID)
-			} else if len(os.Args) > 0 {
-				for _, rawUri := range os.Args {
-					if strings.HasPrefix(rawUri, parser.SchemeVless) {
-						manual.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
-					}
-				}
-			}
-		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
-}
-
-func (that *Shell) genUUID() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name:            "guuid",
-		Help:            "Generate UUIDs.",
-		ArgsDescription: "to generate how many uuids [num]",
-		Func: func(c *goktrl.Context) {
-			num := 1
-			if len(c.Args) > 0 {
-				num, _ = strconv.Atoi(c.Args[0])
-			}
-			if num == 0 {
-				num = 1
-			}
-			result := []string{}
-			for i := 0; i < num; i++ {
-				uu := gutils.NewUUID()
-				result = append(result, uu.String())
-			}
-			gprint.PrintInfo(strings.Join(result, ", "))
-		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
-}
-
-func (that *Shell) removeManually() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name:            "remove",
-		Help:            "Remove a manually added proxy [manually or edgetunnel].",
-		ArgsDescription: "proxy host [address:port]",
-		Func: func(c *goktrl.Context) {
-			if len(c.Args) == 0 {
-				return
-			}
-			hostStr := c.Args[0]
-			if strings.Contains(hostStr, "://") {
-				hostStr = strings.Split(hostStr, "://")[1]
-			}
-			sList := strings.Split(hostStr, ":")
-			if len(sList) == 2 {
-				p := &dao.Proxy{}
-				port, _ := strconv.Atoi(sList[1])
-				p.DeleteOneRecord(sList[0], port)
-			}
-		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
-}
-
-func (that *Shell) downloadRawlistForEdgeTunnel() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name:            "dedge",
-		Help:            "Download rawList for a specified edgeTunnel proxy [dedge proxy_index].",
-		ArgsDescription: "edgeTunnel proxy index",
-		Func: func(c *goktrl.Context) {
-			if len(c.Args) == 0 {
-				return
-			}
-			idxStr := os.Args[0]
-			if strings.HasPrefix(idxStr, FromEdgetunnel) {
-				idx, _ := strconv.Atoi(strings.TrimLeft(idxStr, FromEdgetunnel))
-				dProxy := &dao.Proxy{}
-				proxyList := dProxy.GetItemListBySourceType(model.SourceTypeEdgeTunnel)
-				if idx < 0 || idx > len(proxyList)-1 {
-					return
-				}
-				p := proxyList[idx]
-				edt := proxy.NewEdgeTunnelProxy(that.CNF)
-				vp := &parser.ParserVless{}
-				vp.Parse(p.RawUri)
-				edt.DownloadAndSaveRawList(vp.Address, vp.UUID)
-			}
-		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
-}
-
-func (that *Shell) downloadDomainFileForEdgeTunnel() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "domain",
-		Help: "Download selected domains file for edgeTunnels.",
-		Func: func(c *goktrl.Context) {
-			dom := domain.NewCPinger(that.CNF)
-			dom.Download()
-		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
-}
-
-func (that *Shell) pingDomainsForEdgeTunnel() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "pingd",
-		Help: "Ping selected domains for edgeTunnels.",
-		Func: func(c *goktrl.Context) {
-			dom := domain.NewCPinger(that.CNF)
-			dom.Run()
-		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
-}
-
-func (that *Shell) parseRawUriToOutboundStr() {
-	type Options struct {
-		IsSingBox  bool `alias:"s" required:"false" descr:"Output sing-box outbound string or not."`
-		UseDomains bool `alias:"dom" required:"false" descr:"use selected domains for edgetunnels."`
-	}
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name:            "parse",
-		Help:            "Parse rawUri of a proxy to xray-core/sing-box outbound string [xray-core by default].",
-		ArgsDescription: "rawUri or proxyIndex",
-		Opts:            &Options{},
-		Func: func(c *goktrl.Context) {
-			if len(c.Args) == 0 {
-				gprint.PrintError("No rawUri is specified!")
-				return
-			}
-			rawUri := c.Args[0]
-			if !strings.Contains(rawUri, "://") {
-				opts := c.Options.(*Options)
-				proxyItem := that.runner.GetProxyByIndex(rawUri, opts.UseDomains)
-				if proxyItem == nil {
-					gprint.PrintError("Can not find specified proxy!")
-				} else {
-					rawUri = proxyItem.RawUri
-				}
-			}
-			opts := c.Options.(*Options)
-			var p *outbound.ProxyItem
-			if opts.IsSingBox {
-				p = outbound.ParseRawUriToProxyItem(rawUri, outbound.SingBox)
-			} else {
-				p = outbound.ParseRawUriToProxyItem(rawUri, outbound.XrayCore)
-			}
-
-			if p != nil {
-				j := gjson.New(p.GetOutbound())
-				gprint.Cyan(j.MustToJsonIndentString())
-			}
-		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
-}
-
-func (that *Shell) show() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "show",
-		Help: "Show neobox info.",
-		Func: func(c *goktrl.Context) {
+func (that *IShell) show() {
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "ls",
+		HelpStr:       "Show list of proxies and neobox running status.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
 			fetcher := proxy.NewProxyFetcher(that.CNF)
 			fetcher.DecryptAndLoad()
 			pinger := proxy.NewPinger(that.CNF)
@@ -496,17 +179,16 @@ func (that *Shell) show() {
 				keeperStatus   string = gprint.RedStr("stopped")
 				verifierStatus string = gprint.RedStr("stopped")
 			)
-			if that.runner.PingRunner() {
+			if that.PingServer() {
 				neoboxStatus = gprint.GreenStr("running")
-				result, _ := c.GetResult()
-
-				currenVpnInfo = gprint.YellowStr(string(result))
+				that.ktrl.GetResult(ctx)
+				currenVpnInfo = gprint.YellowStr(string(ctx.Result))
 				verifierStatus = gprint.MagentaStr("completed")
 			}
 			if that.runner.PingKeeper() {
 				keeperStatus = gprint.GreenStr("running")
 			}
-			if that.runner.PingVerifier() {
+			if that.PingVerifier() {
 				verifierStatus = gprint.GreenStr("running")
 			}
 
@@ -520,8 +202,8 @@ func (that *Shell) show() {
 			fmt.Printf("%s\n%s\n", nStatus, logInfo)
 
 			gprint.Cyan("========================================================================")
-			helpStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render
-			fmt.Println(helpStyle("Press 'Up/k · Down/j' to move up/down or 'q' to quit."))
+			// helpStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render
+			// fmt.Println(helpStyle("Press 'Up/k · Down/j' to move up/down or 'q' to quit."))
 			columns := []gtable.Column{
 				{Title: "Index", Width: 5},
 				{Title: "Proxy", Width: 60},
@@ -577,51 +259,285 @@ func (that *Shell) show() {
 			)
 			t.Run()
 		},
-		KtrlHandler: func(c *goktrl.Context) {
+		Handler: func(ctx *ktrl.KtrlContext) {
 			var m runtime.MemStats
 			runtime.ReadMemStats(&m)
 			result := fmt.Sprintf("%s (Mem: %dMiB)", that.runner.Current(), m.Sys/1048576)
-			c.Send(result, 200)
+			ctx.SendResponse(result, 200)
 		},
-		SocketName: that.ktrlSocks,
 	})
 }
 
-func (that *Shell) filter() {
-	type Options struct {
-		LoadHistory bool `alias:"l" required:"false" descr:"Load history list items to rawList or not."`
-	}
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "filter",
-		Help: "Start filtering proxies by verifier manually.",
-		Opts: &Options{},
-		Func: func(c *goktrl.Context) {
-			result, _ := c.GetResult()
-			gprint.PrintInfo(string(result))
+func (that *IShell) start() {
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "start",
+		HelpStr:       "Start a neobox client.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			that.Start()
 		},
-		KtrlHandler: func(c *goktrl.Context) {
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+}
+
+func (that *IShell) restart() {
+	var (
+		showProxy    string = "showproxy"
+		showConfig   string = "showconfig"
+		useDomain    string = "usedomain"
+		forceSingbox string = "forcesingbox"
+	)
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "restart",
+		HelpStr:       "Restart the running neobox client with a chosen proxy.",
+		LongHelpStr:   "Usage: restart <the-proxy-index>",
+		SendInRunFunc: true, // send request in RunFunc.
+		Options: []*ktrl.Option{
+			{
+				Name:    showProxy,
+				Short:   "sp",
+				Type:    ktrl.OptionTypeBool,
+				Default: "false",
+				Usage:   "To show the chosen proxy or not.",
+			},
+			{
+				Name:    showConfig,
+				Short:   "sc",
+				Type:    ktrl.OptionTypeBool,
+				Default: "false",
+				Usage:   "To show the config for sing-box/xray-core or not.",
+			},
+			{
+				Name:    useDomain,
+				Short:   "d",
+				Type:    ktrl.OptionTypeBool,
+				Default: "false",
+				Usage:   "To use a domain for edgetunnel or not.",
+			},
+			{
+				Name:    forceSingbox,
+				Short:   "s",
+				Type:    ktrl.OptionTypeBool,
+				Default: "false",
+				Usage:   "To force using sing-box as local client.",
+			},
+		},
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			// prepare args
+			args := ctx.GetArgs()
+			idxStr := "0"
+			if len(args) > 0 {
+				idxStr = args[0]
+			}
+			r := []string{}
+			// get proxyItem
+			proxyItem := that.runner.GetProxyByIndex(idxStr, ctx.GetBool(useDomain))
+
+			if !ctx.GetBool(forceSingbox) && proxyItem.Scheme != parser.SchemeSS && proxyItem.Scheme != parser.SchemeSSR {
+				//use xray-core as client
+				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.XrayCore)
+			} else {
+				// use sing-box as client
+				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.SingBox)
+			}
+			if proxyItem != nil {
+				r = append(r, crypt.EncodeBase64(proxyItem.String()))
+			}
+			ctx.SetArgs(r...)
+
+			// show proxyItem
+			if ctx.GetBool(showProxy) && len(ctx.GetArgs()) > 0 {
+				gprint.PrintInfo(crypt.DecodeBase64(ctx.GetArgs()[0]))
+			}
+
+			// send request
+			if that.PingServer() {
+				that.ktrl.GetResult(ctx) // send request
+			} else {
+				that.Start()
+				that.ktrl.GetResult(ctx) // send request
+			}
+
+			rList := strings.Split(string(ctx.Result), "___")
+			if ctx.GetBool(showConfig) && len(rList) == 2 {
+				confStr, _ := url.QueryUnescape(rList[1])
+				gprint.PrintInfo("%s%s%s", rList[0], "; ConfStr: ", confStr)
+			} else {
+				gprint.PrintInfo(rList[0])
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {
+			if len(ctx.GetArgs()) == 0 {
+				ctx.SendResponse("Cannot find specified proxy", 200)
+			} else {
+				pxyStr := crypt.DecodeBase64(ctx.GetArgs()[0])
+				// os.WriteFile("config_arg_parsed.log", []byte(pxyStr), os.ModePerm)
+				r := that.runner.Restart(pxyStr)
+				ctx.SendResponse(r, 200)
+			}
+		},
+	})
+}
+
+func (that *IShell) stop() {
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "stop",
+		HelpStr:       "Stop neobox client.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			if that.PingServer() {
+				that.ktrl.GetResult(ctx)
+				gprint.PrintWarning(string(ctx.Result))
+			} else {
+				gprint.PrintInfo("neobox is not running for now.")
+			}
+			if that.runner.PingKeeper() {
+				r := that.runner.StopKeeperByRequest()
+				gprint.PrintWarning(r)
+			} else {
+				gprint.PrintInfo("keeper is not running for now.")
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {
+			ctx.SendResponse("neobox successfully exited.", 200)
+			that.runner.Stop()
+		},
+	})
+}
+
+func (that *IShell) verifier() {
+	parentStr := verifierCliName
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          parentStr,
+		HelpStr:       "Verifier related CLIs.",
+		SendInRunFunc: true,
+		RunFunc:       func(ctx *ktrl.KtrlContext) {},
+		Handler:       func(ctx *ktrl.KtrlContext) {},
+	})
+
+	loadHistory := "loadHistory"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:    "start",
+		Parent:  parentStr,
+		HelpStr: "Start the verifier manually.",
+		Options: []*ktrl.Option{
+			{
+				Name:    loadHistory,
+				Short:   "l",
+				Type:    ktrl.OptionTypeBool,
+				Default: "false",
+				Usage:   "Load history list to rawList.",
+			},
+		},
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			gprint.PrintInfo(string(ctx.Result))
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {
 			if that.runner.verifier.IsRunning() {
-				c.Send("verifier is already running", 200)
+				ctx.SendResponse("verifier is already running", 200)
 				return
 			}
-			opt := c.Options.(*Options)
+
 			v := that.runner.verifier
-			if opt != nil && opt.LoadHistory {
+			if ctx.GetBool(loadHistory) {
 				go v.Run(true, true)
 			} else {
 				go v.Run(true)
 			}
-			c.Send("verifier starts running", 200)
+			ctx.SendResponse("verifier starts running", 200)
 		},
-		SocketName: that.ktrlSocks,
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "toggle",
+		Parent:        parentStr,
+		HelpStr:       "Toggle verfier status.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			that.CNF.Reload()
+			that.CNF.EnableVerifier = !that.CNF.EnableVerifier
+			if that.CNF.EnableVerifier {
+				gprint.Green("verifier enabled.")
+			} else {
+				gprint.Yellow("verifier disabled.")
+			}
+			that.CNF.Restore()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "cron",
+		Parent:        parentStr,
+		HelpStr:       "Set cron time for verifier.",
+		LongHelpStr:   "Usage: vf cron <hours>.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			args := ctx.GetArgs()
+			if len(args) == 0 {
+				return
+			}
+			hours := gconv.Int(args[0])
+			if hours > 0.0 {
+				that.CNF.Reload()
+				that.CNF.VerificationCron = fmt.Sprintf("@every %dh", hours)
+				that.CNF.Restore()
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:    strings.Trim(ktrl.PingRoute, "/"),
+		Parent:  parentStr,
+		HelpStr: "Get status of the verifier.",
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			if that.PingServer() {
+				if strings.Contains(string(ctx.Result), ktrl.PingResponse) {
+					gprint.Green("verifier is running.")
+				} else {
+					gprint.Yellow("verifier is stopped.")
+				}
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {
+			if that.runner.verifier.IsRunning() {
+				ctx.SendResponse(ktrl.PingResponse, 200)
+			} else {
+				ctx.SendResponse("not running.", 200)
+			}
+		},
 	})
 }
 
-func (that *Shell) geoinfo() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "geoinfo",
-		Help: "Install/Update geoip&geosite for neobox client.",
-		Func: func(c *goktrl.Context) {
+func (that *IShell) tools() {
+	parentStr := "tools"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          parentStr,
+		HelpStr:       "Tools for neobox.",
+		SendInRunFunc: true,
+		RunFunc:       func(ctx *ktrl.KtrlContext) {},
+		Handler:       func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "raw",
+		Parent:        parentStr,
+		HelpStr:       "Manually dowload rawURIs.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			f := proxy.NewProxyFetcher(that.CNF)
+			f.Download()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "geo",
+		Parent:        parentStr,
+		HelpStr:       "Get new geoip&geosite files for sing-box&xray-core.",
+		SendInRunFunc: true, // no need to send request.
+		RunFunc: func(ctx *ktrl.KtrlContext) {
 			g := proxy.NewGeoInfo(that.CNF)
 			g.Download()
 			if dList, err := os.ReadDir(g.GetGeoDir()); err == nil {
@@ -630,52 +546,215 @@ func (that *Shell) geoinfo() {
 				}
 			}
 		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
+		Handler: func(ctx *ktrl.KtrlContext) {},
 	})
-}
 
-func (that *Shell) setPing() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "setping",
-		Help: "Setup ping without root for Linux.",
-		Func: func(c *goktrl.Context) {
-			utils.SetPingWithoutRootForLinux()
+	useDomain := "domain"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:        "qcode",
+		Parent:      parentStr,
+		HelpStr:     "Generate QRCode for a chosen proxy. ",
+		LongHelpStr: "Usage: qcode <proxy_index>.",
+		Options: []*ktrl.Option{
+			{
+				Name:    useDomain,
+				Short:   "d",
+				Type:    ktrl.OptionTypeBool,
+				Default: "false",
+				Usage:   "Use selected domains[Only for edgetunnels].",
+			},
 		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
-}
-
-func (that *Shell) manualGC() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "gc",
-		Help: "Start GC manually.",
-		Func: func(c *goktrl.Context) {
-			if that.runner.PingRunner() {
-				result, _ := c.GetResult()
-				if len(result) > 0 {
-					gprint.PrintInfo(string(result))
-				}
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			args := ctx.GetArgs()
+			idxStr := "0"
+			if len(args) > 0 {
+				idxStr = args[0]
+			}
+			if proxyItem := that.runner.GetProxyByIndex(idxStr, ctx.GetBool(useDomain)); proxyItem != nil {
+				qrc := proxy.NewQRCodeProxy(that.CNF)
+				qrc.SetProxyItem(proxyItem)
+				qrc.GenQRCode()
+			} else {
+				gprint.PrintError("Can not find a ProxyItem!")
 			}
 		},
-		KtrlHandler: func(c *goktrl.Context) {
-			runtime.GC()
-			c.Send("GC started", 200)
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "uuid",
+		Parent:        parentStr,
+		HelpStr:       "Generate UUIDs.",
+		LongHelpStr:   "Usage: uuid <how-many-uuids-to-generate>.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			num := 1
+			args := ctx.GetArgs()
+			if len(args) > 0 {
+				num, _ = strconv.Atoi(args[0])
+			}
+			if num == 0 {
+				num = 1
+			}
+			result := []string{}
+			for i := 0; i < num; i++ {
+				uu := gutils.NewUUID()
+				result = append(result, uu.String())
+			}
+			gprint.PrintInfo(strings.Join(result, ", "))
 		},
-		SocketName: that.ktrlSocks,
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	singBox := "singbox"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:    "parse",
+		Parent:  parentStr,
+		HelpStr: "Parse rawURI as xray-core/sing-box outbound string.",
+		Options: []*ktrl.Option{
+			{
+				Name:    singBox,
+				Short:   "s",
+				Type:    ktrl.OptionTypeBool,
+				Default: "false",
+				Usage:   "Parse sing-box outbound string.",
+			},
+			{
+				Name:    useDomain,
+				Short:   "d",
+				Type:    ktrl.OptionTypeBool,
+				Default: "false",
+				Usage:   "Use selected domains (Only for edgetunnel).",
+			},
+		},
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			args := ctx.GetArgs()
+			if len(args) == 0 {
+				gprint.PrintError("No rawURI is specified!")
+				return
+			}
+			rawUri := args[0]
+			if !strings.Contains(rawUri, "://") {
+				proxyItem := that.runner.GetProxyByIndex(rawUri, ctx.GetBool(useDomain))
+				if proxyItem == nil {
+					gprint.PrintError("Can not find specified proxy!")
+				} else {
+					rawUri = proxyItem.RawUri
+				}
+			}
+
+			var p *outbound.ProxyItem
+			if ctx.GetBool(singBox) {
+				p = outbound.ParseRawUriToProxyItem(rawUri, outbound.SingBox)
+			} else {
+				p = outbound.ParseRawUriToProxyItem(rawUri, outbound.XrayCore)
+			}
+
+			if p != nil {
+				j := gjson.New(p.GetOutbound())
+				gprint.Cyan(j.MustToJsonIndentString())
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "gc",
+		Parent:        parentStr,
+		HelpStr:       "Start GC manually.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			if that.PingServer() {
+				that.ktrl.GetResult(ctx)
+				if len(ctx.Result) > 0 {
+					gprint.PrintInfo(string(ctx.Result))
+				}
+			} else {
+				gprint.PrintWarning("Neobox is not running.")
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {
+			runtime.GC()
+			ctx.SendResponse("GC started", 200)
+		},
 	})
 }
 
-func (that *Shell) setKey() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "setkey",
-		Help: "Setup rawlist encrytion key for neobox. [With no args will set key to default value]",
-		Func: func(c *goktrl.Context) {
-			if len(c.Args) > 0 {
-				if len(c.Args[0]) == 16 {
+func (that *IShell) manual() {
+	parentStr := "manual"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          parentStr,
+		HelpStr:       "Manually added proxies.",
+		SendInRunFunc: true,
+		RunFunc:       func(ctx *ktrl.KtrlContext) {},
+		Handler:       func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "add",
+		Parent:        parentStr,
+		HelpStr:       "Add proxies to neobox mannually.",
+		LongHelpStr:   "Usage: manual add <proxy URIs>.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			manual := proxy.NewMannualProxy(that.CNF)
+			for _, rawUri := range ctx.GetArgs() {
+				manual.AddRawUri(rawUri, model.SourceTypeManually)
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "remove",
+		Parent:        parentStr,
+		HelpStr:       "Remove a manually added proxy(edgetunnel included).",
+		LongHelpStr:   "Usage: manual remove <address:port>.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			args := ctx.GetArgs()
+			if len(args) == 0 {
+				return
+			}
+			hostStr := args[0]
+			if strings.Contains(hostStr, "://") {
+				hostStr = strings.Split(hostStr, "://")[1]
+			}
+			sList := strings.Split(hostStr, ":")
+			if len(sList) == 2 {
+				p := &dao.Proxy{}
+				port, _ := strconv.Atoi(sList[1])
+				p.DeleteOneRecord(sList[0], port)
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+}
+
+func (that *IShell) setup() {
+	parentStr := "setup"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          parentStr,
+		HelpStr:       "Setup for neobox.",
+		SendInRunFunc: true,
+		RunFunc:       func(ctx *ktrl.KtrlContext) {},
+		Handler:       func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "key",
+		Parent:        parentStr,
+		HelpStr:       "Setup rawlist decrytion key.",
+		LongHelpStr:   "Usage: setup key <decryption key>.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			args := ctx.GetArgs()
+			if len(args) > 0 {
+				if len(args[0]) == 16 {
 					k := conf.NewEncryptKey(that.CNF.WorkDir)
-					k.Set(c.Args[0])
+					k.Set(args[0])
 					k.Save()
 				}
 			} else {
@@ -684,54 +763,26 @@ func (that *Shell) setKey() {
 				k.Save()
 			}
 		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
+		Handler: func(ctx *ktrl.KtrlContext) {},
 	})
-}
 
-func (that *Shell) cloudflareIPv4() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "cfip",
-		Help: "Test speed for cloudflare IPv4s.",
-		Func: func(c *goktrl.Context) {
-			wpinger := wspeed.NewWPinger(that.CNF)
-			wpinger.Run()
+	enableGlobal := "enableGlobal"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:    "global",
+		Parent:  parentStr,
+		HelpStr: "Toggle Global Proxy status.",
+		Options: []*ktrl.Option{
+			{
+				Name:    enableGlobal,
+				Short:   "e",
+				Type:    ktrl.OptionTypeBool,
+				Default: "false",
+				Usage:   "To enable if true else to disable.",
+			},
 		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
-}
-
-// register cloudflare wireguard account and update the account to Warp+.
-func (that *Shell) registerWireguardAndUpdateToWarpplus() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name: "wireguard",
-		Help: "Register wireguard account and update licenseKey to Warp+ [if a licenseKey is specified].",
-		Func: func(c *goktrl.Context) {
-			if len(c.Args) > 0 {
-				if len(c.Args[0]) == 26 {
-					w := wguard.NewWGuard(that.CNF)
-					w.Run(c.Args[0])
-				} else {
-					gprint.PrintWarning("invalid license key.")
-				}
-			} else {
-				w := wguard.NewWGuard(that.CNF)
-				w.Status()
-			}
-		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
-	})
-}
-
-func (that *Shell) enableSystemProxy() {
-	that.ktrl.AddKtrlCommand(&goktrl.KCommand{
-		Name:            "system",
-		Help:            "To enable or disable System Proxy.",
-		ArgsDescription: "If there is an arg, it means to disable the System Proxy.",
-		Func: func(c *goktrl.Context) {
-			if len(c.Args) == 0 {
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			if ctx.GetBool(enableGlobal) {
 				localProxyUrl := fmt.Sprintf("http://127.0.0.1:%d", that.CNF.InboundPort)
 				if err := sysproxy.SetSystemProxy(localProxyUrl, ""); err != nil {
 					gprint.PrintError("%+v", err)
@@ -746,40 +797,164 @@ func (that *Shell) enableSystemProxy() {
 				}
 			}
 		},
-		KtrlHandler: func(c *goktrl.Context) {},
-		SocketName:  that.ktrlSocks,
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "pingLinux",
+		Parent:        parentStr,
+		HelpStr:       "Set ping-without-root for Linux.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			utils.SetPingWithoutRootForLinux()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
 	})
 }
 
-func (that *Shell) InitKtrl() {
-	that.start()
-	that.stop()
-	that.restart()
-	that.addMannually()
-	that.addEdgeTunnel()
-	that.genQRCode()
-	that.genUUID()
-	that.removeManually()
-	that.show()
-	that.filter()
-	that.geoinfo()
-	that.setPing()
-	that.manualGC()
-	that.setKey()
-	that.cloudflareIPv4()
-	that.downloadRawUri()
-	that.registerWireguardAndUpdateToWarpplus()
-	that.parseRawUriToOutboundStr()
-	that.downloadRawlistForEdgeTunnel()
-	that.downloadDomainFileForEdgeTunnel()
-	that.pingDomainsForEdgeTunnel()
-	that.enableSystemProxy()
+func (that *IShell) cloudflare() {
+	parentStr := "cf"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          parentStr,
+		HelpStr:       "Cloudflare related CLIs.",
+		SendInRunFunc: true,
+		RunFunc:       func(ctx *ktrl.KtrlContext) {},
+		Handler:       func(ctx *ktrl.KtrlContext) {},
+	})
+
+	uuidName := "uuid"
+	addName := "address"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "add",
+		Parent:        parentStr,
+		HelpStr:       "Add edgetunnel proxies to neobox.",
+		LongHelpStr:   "Usage: cf add <vless://xxx@xxx?xxx> || cf add -u=UUID -a=Address.",
+		SendInRunFunc: true,
+		Options: []*ktrl.Option{
+			{
+				Name:  uuidName,
+				Short: "u",
+				Type:  ktrl.OptionTypeString,
+				Usage: "UUID for edgetunnel vless.",
+			},
+			{
+				Name:  addName,
+				Short: "a",
+				Type:  ktrl.OptionTypeString,
+				Usage: "Domain/IP for edgetunnel.",
+			},
+		},
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			manual := proxy.NewMannualProxy(that.CNF)
+			uuidStr := ctx.GetString(uuidName)
+			addName := ctx.GetString(addName)
+			if uuidStr != "" && addName != "" {
+				manual.AddEdgeTunnelByAddressUUID(addName, uuidStr)
+			} else if len(ctx.GetArgs()) > 0 {
+				for _, rawUri := range ctx.GetArgs() {
+					if strings.HasPrefix(rawUri, parser.SchemeVless) {
+						manual.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
+					}
+				}
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "raw",
+		Parent:        parentStr,
+		HelpStr:       "Download rawList for a specified edgeTunnel proxy.",
+		LongHelpStr:   "Usage: cf raw <edgetunnel_proxy_index>.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			args := ctx.GetArgs()
+			if len(args) == 0 {
+				return
+			}
+			idxStr := args[0]
+			if strings.HasPrefix(idxStr, FromEdgetunnel) {
+				idx, _ := strconv.Atoi(strings.TrimLeft(idxStr, FromEdgetunnel))
+				dProxy := &dao.Proxy{}
+				proxyList := dProxy.GetItemListBySourceType(model.SourceTypeEdgeTunnel)
+				if idx < 0 || idx > len(proxyList)-1 {
+					return
+				}
+				p := proxyList[idx]
+				edt := proxy.NewEdgeTunnelProxy(that.CNF)
+				vp := &parser.ParserVless{}
+				vp.Parse(p.RawUri)
+				edt.DownloadAndSaveRawList(vp.Address, vp.UUID)
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "domain",
+		Parent:        parentStr,
+		HelpStr:       "Download domain list for edgetunnel proxies.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			dom := domain.NewCPinger(that.CNF)
+			dom.Download()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "ping",
+		Parent:        parentStr,
+		HelpStr:       "Ping test for edgetunnel domains.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			dom := domain.NewCPinger(that.CNF)
+			dom.Run()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "wguard",
+		Parent:        parentStr,
+		HelpStr:       "Register wireguard account and update licenseKey to Warp+.",
+		LongHelpStr:   "Usage: cf wguard <license-key-for-Warp+>",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			args := ctx.GetArgs()
+			if len(args) > 0 {
+				if len(args[0]) == 26 {
+					w := wguard.NewWGuard(that.CNF)
+					w.Run(args[0])
+				} else {
+					gprint.PrintWarning("invalid license key.")
+				}
+			} else {
+				w := wguard.NewWGuard(that.CNF)
+				w.Status()
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "ip",
+		Parent:        parentStr,
+		HelpStr:       "Test speed for cloudflare IPs(Only IPV4).",
+		LongHelpStr:   "Test cloudflare IPs for Warp+.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			wpinger := wspeed.NewWPinger(that.CNF)
+			wpinger.Run()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
 }
 
-func (that *Shell) StartShell() {
-	that.ktrl.RunShell(that.ktrlSocks)
+func (that *IShell) StartShell() {
+	that.ktrl.StartShell()
 }
 
-func (that *Shell) StartServer() {
-	that.ktrl.RunCtrl(that.ktrlSocks)
+func (that *IShell) StartServer() {
+	that.ktrl.StartServer()
 }

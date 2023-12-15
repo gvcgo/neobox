@@ -2,7 +2,6 @@ package run
 
 import (
 	"fmt"
-	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -12,12 +11,9 @@ import (
 	"time"
 
 	json "github.com/bytedance/sonic"
-	"github.com/gin-gonic/gin"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/moqsien/goutils/pkgs/daemon"
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
-	"github.com/moqsien/goutils/pkgs/logs"
-	"github.com/moqsien/goutils/pkgs/socks"
 	"github.com/moqsien/neobox/pkgs/cflare/wguard"
 	"github.com/moqsien/neobox/pkgs/client"
 	"github.com/moqsien/neobox/pkgs/conf"
@@ -51,13 +47,13 @@ type Runner struct {
 	CurrentProxy *outbound.ProxyItem
 	NextProxy    *outbound.ProxyItem
 	extraSocks   string
-	pingClient   *socks.UClient
 	daemon       *daemon.Daemon
 	cron         *cron.Cron
 	starter      *exec.Cmd
 	verifier     *proxy.Verifier
 	keeper       *Keeper
-	shell        *Shell
+	shell        *IShell
+	// pingClient   *socks.UClient
 }
 
 func NewRunner(cnf *conf.NeoConf) (r *Runner) {
@@ -68,7 +64,7 @@ func NewRunner(cnf *conf.NeoConf) (r *Runner) {
 		cron:       cron.New(),
 		verifier:   proxy.NewVerifier(cnf),
 		keeper:     NewKeeper(cnf),
-		shell:      NewShell(cnf),
+		shell:      NewIShell(cnf),
 	}
 	r.shell.SetRunner(r)
 	r.shell.InitKtrl()
@@ -86,6 +82,7 @@ func (that *Runner) Current() string {
 	}
 }
 
+/*
 // runner server related
 func (that *Runner) startPingServer() {
 	server := socks.NewUServer(that.extraSocks)
@@ -123,6 +120,7 @@ func (that *Runner) PingVerifier() bool {
 	}
 	return false
 }
+*/
 
 func (that *Runner) getNextProxy(args ...string) *outbound.ProxyItem {
 	proxyStr := ""
@@ -240,33 +238,39 @@ func (that *Runner) GetProxyByIndex(idxStr string, useDomain ...bool) (p *outbou
 
 // start runner
 func (that *Runner) Start(args ...string) {
-	if that.PingRunner() {
+	if that.shell.PingServer() {
 		gprint.PrintInfo("neobox is already running.")
 		return
 	}
 	that.daemon.Run(os.Args...)
 
-	go that.startPingServer()   // start ping server
+	/*
+		go that.startPingServer()   // start ping server
+	*/
 	go that.shell.StartServer() // start shell server
 
-	cronTime := that.CNF.VerificationCron
-	if !strings.HasPrefix(cronTime, "@every") {
-		cronTime = "@every 2h"
-	}
-	// run verifier once starting.
-	go that.verifier.Run(true)
-
-	that.cron.AddFunc(cronTime, func() {
-		if !that.verifier.IsRunning() {
-			force := true
-			if time.Now().Hour() < 5 {
-				force = false
-			}
-			that.verifier.Run(force)
+	// Enable verifier or not.
+	if that.CNF.EnableVerifier {
+		cronTime := that.CNF.VerificationCron
+		if !strings.HasPrefix(cronTime, "@every") {
+			cronTime = "@every 2h"
 		}
-	})
+		// run verifier once starting.
+		go that.verifier.Run(true)
 
-	that.cron.Start()
+		that.cron.AddFunc(cronTime, func() {
+			if !that.verifier.IsRunning() {
+				force := true
+				if time.Now().Hour() < 5 {
+					force = false
+				}
+				that.verifier.Run(force)
+			}
+		})
+
+		that.cron.Start()
+	}
+
 	that.Restart(args...)
 	<-StopChan
 	gprint.PrintWarning("exiting...")
@@ -290,6 +294,7 @@ func (that *Runner) Restart(args ...string) (result string) {
 	}
 	that.Client = client.NewClient(that.CNF, that.CNF.InboundPort, that.CurrentProxy.OutboundType, true)
 	that.Client.SetOutbound(that.CurrentProxy)
+	// TODO: save it to file and use it next time by default.
 	err := that.Client.Start()
 	if err == nil {
 		result = fmt.Sprintf("client restarted use: %s%s, clientType: %s___%s", that.CurrentProxy.Scheme, that.CurrentProxy.GetHost(), that.Client.Type(), url.QueryEscape(string(that.Client.GetConf())))

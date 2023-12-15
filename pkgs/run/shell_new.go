@@ -2,6 +2,7 @@ package run
 
 import (
 	"fmt"
+	"math/rand"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -10,10 +11,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/lipgloss"
+	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/util/gconv"
 	"github.com/moqsien/goutils/pkgs/crypt"
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
+	"github.com/moqsien/goutils/pkgs/gtea/gtable"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/gshell/pkgs/ktrl"
+	"github.com/moqsien/neobox/pkgs/cflare/domain"
+	"github.com/moqsien/neobox/pkgs/cflare/wguard"
+	"github.com/moqsien/neobox/pkgs/cflare/wspeed"
 	"github.com/moqsien/neobox/pkgs/client/sysproxy"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/proxy"
@@ -81,13 +89,169 @@ func (that *IShell) Start() {
 }
 
 func (that *IShell) InitKtrl() {
+	that.show()
 	that.start()
 	that.restart()
 	that.stop()
+	that.verifier()
 	that.tools()
-	that.manually()
-	that.settings()
+	that.manual()
+	that.setup()
 	that.cloudflare()
+}
+
+func (that *IShell) show() {
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "ls",
+		HelpStr:       "Show list of proxies and neobox running status.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			fetcher := proxy.NewProxyFetcher(that.CNF)
+			fetcher.DecryptAndLoad()
+			pinger := proxy.NewPinger(that.CNF)
+			verifier := proxy.NewVerifier(that.CNF)
+			manual := &dao.Proxy{}
+
+			rawResult := fetcher.GetResultByReload()
+			pingResult := pinger.GetResultByReload()
+			verifiedResult := verifier.GetResultByReload()
+
+			manualList := manual.GetItemListBySourceType(model.SourceTypeManually)
+			edgeTunnelList := manual.GetItemListBySourceType(model.SourceTypeEdgeTunnel)
+
+			rawStatistics := fmt.Sprintf(
+				"RawList[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]\n",
+				gprint.GreenStr("%d", rawResult.Len()),
+				gprint.BrownStr(rawResult.UpdateAt),
+				gprint.YellowStr("%d", rawResult.VmessTotal),
+				gprint.YellowStr("%d", rawResult.VlessTotal),
+				gprint.YellowStr("%d", rawResult.TrojanTotal),
+				gprint.YellowStr("%d", rawResult.SSTotal),
+				gprint.YellowStr("%d", rawResult.SSRTotal),
+			)
+			pingStatistics := fmt.Sprintf(
+				"Pinged[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]\n",
+				gprint.GreenStr("%d", pingResult.Len()),
+				gprint.BrownStr(pingResult.UpdateAt),
+				gprint.YellowStr("%d", pingResult.VmessTotal),
+				gprint.YellowStr("%d", pingResult.VlessTotal),
+				gprint.YellowStr("%d", pingResult.TrojanTotal),
+				gprint.YellowStr("%d", pingResult.SSTotal),
+				gprint.YellowStr("%d", pingResult.SSRTotal),
+			)
+			verifiedStatistics := fmt.Sprintf(
+				"Final[%s@%s] vmess[%s] vless[%s] trojan[%s] ss[%s] ssr[%s]\n",
+				gprint.GreenStr("%d", verifiedResult.Len()),
+				gprint.BrownStr(verifiedResult.UpdateAt),
+				gprint.YellowStr("%d", verifiedResult.VmessTotal),
+				gprint.YellowStr("%d", verifiedResult.VlessTotal),
+				gprint.YellowStr("%d", verifiedResult.TrojanTotal),
+				gprint.YellowStr("%d", verifiedResult.SSTotal),
+				gprint.YellowStr("%d", verifiedResult.SSRTotal),
+			)
+			dbStatistics := fmt.Sprintf(
+				"Database: History[%s] EdgeTunnel[%s] Manually[%s]\n",
+				gprint.YellowStr("%d", manual.CountBySchemeOrSourceType("", model.SourceTypeHistory)),
+				gprint.YellowStr("%d", manual.CountBySchemeOrSourceType("", model.SourceTypeEdgeTunnel)),
+				gprint.YellowStr("%d", manual.CountBySchemeOrSourceType("", model.SourceTypeManually)),
+			)
+			str := rawStatistics + pingStatistics + verifiedStatistics + dbStatistics
+			fmt.Println(str)
+			gprint.Cyan("========================================================================")
+
+			var (
+				currenVpnInfo  string
+				neoboxStatus   string = gprint.RedStr("stopped")
+				keeperStatus   string = gprint.RedStr("stopped")
+				verifierStatus string = gprint.RedStr("stopped")
+			)
+			if that.runner.PingRunner() {
+				neoboxStatus = gprint.GreenStr("running")
+				that.ktrl.GetResult(ctx)
+				currenVpnInfo = gprint.YellowStr(string(ctx.Result))
+				verifierStatus = gprint.MagentaStr("completed")
+			}
+			if that.runner.PingKeeper() {
+				keeperStatus = gprint.GreenStr("running")
+			}
+			if that.runner.PingVerifier() {
+				verifierStatus = gprint.GreenStr("running")
+			}
+
+			nStatus := gprint.CyanStr(fmt.Sprintf("NeoBox[%s @%s] Verifier[%s] Keeper[%s]",
+				neoboxStatus,
+				currenVpnInfo,
+				verifierStatus,
+				keeperStatus,
+			))
+			logInfo := gprint.PinkStr(fmt.Sprintf("LogFileDir: %s\n", that.CNF.LogDir))
+			fmt.Printf("%s\n%s\n", nStatus, logInfo)
+
+			gprint.Cyan("========================================================================")
+			helpStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render
+			fmt.Println(helpStyle("Press 'Up/k · Down/j' to move up/down or 'q' to quit."))
+			columns := []gtable.Column{
+				{Title: "Index", Width: 5},
+				{Title: "Proxy", Width: 60},
+				{Title: "Location", Width: 8},
+				{Title: "RTT", Width: 6},
+				{Title: "Source", Width: 15},
+			}
+			rows := []gtable.Row{}
+			// headers := []string{"idx", "pxy", "loc", "rtt", "src"}
+			// str = utils.FormatLineForShell(headers...)
+
+			for idx, item := range verifiedResult.GetTotalList() {
+				r := []string{fmt.Sprintf("%d", idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "verified"}
+				// str += utils.FormatLineForShell(r...)
+				rows = append(rows, gtable.Row(r))
+			}
+
+			wireguard := wguard.NewWireguardOutbound(that.CNF)
+			if item, _ := wireguard.GetProxyItem(); item != nil {
+				r := []string{fmt.Sprintf("%s%d", FromWireguard, 0), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), "wireguard"}
+				// str += utils.FormatLineForShell(r...)
+				rows = append(rows, gtable.Row(r))
+			}
+
+			for idx, item := range edgeTunnelList {
+				if item.RTT == 0 {
+					item.RTT = int64(200 + rand.Intn(100))
+				}
+				r := []string{fmt.Sprintf("%s%d", FromEdgetunnel, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeEdgeTunnel}
+				// str += utils.FormatLineForShell(r...)
+				rows = append(rows, gtable.Row(r))
+			}
+
+			for idx, item := range manualList {
+				r := []string{fmt.Sprintf("%s%d", FromManually, idx), utils.FormatProxyItemForTable(item), item.Location, fmt.Sprintf("%v", item.RTT), model.SourceTypeManually}
+				// str += utils.FormatLineForShell(r...)
+				rows = append(rows, gtable.Row(r))
+			}
+			tHeight := len(rows) / 2
+			if tHeight < 7 {
+				tHeight = 7
+			} else if tHeight > 40 {
+				tHeight = 40
+			}
+
+			t := gtable.NewTable(
+				gtable.WithColumns(columns),
+				gtable.WithRows(rows),
+				gtable.WithFocused(true),
+				gtable.WithHeight(tHeight),
+				gtable.WithWidth(100),
+				gtable.WithStyles(gtable.DefaultStyles()),
+			)
+			t.Run()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {
+			var m runtime.MemStats
+			runtime.ReadMemStats(&m)
+			result := fmt.Sprintf("%s (Mem: %dMiB)", that.runner.Current(), m.Sys/1048576)
+			ctx.SendResponse(result, 200)
+		},
+	})
 }
 
 func (that *IShell) start() {
@@ -226,12 +390,106 @@ func (that *IShell) stop() {
 	})
 }
 
+func (that *IShell) verifier() {
+	parentStr := "vf"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          parentStr,
+		HelpStr:       "Verifier related CLIs.",
+		SendInRunFunc: true,
+		RunFunc:       func(ctx *ktrl.KtrlContext) {},
+		Handler:       func(ctx *ktrl.KtrlContext) {},
+	})
+
+	loadHistory := "loadHistory"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:    "start",
+		Parent:  parentStr,
+		HelpStr: "Start the verifier manually.",
+		Options: []*ktrl.Option{
+			{
+				Name:    loadHistory,
+				Short:   "l",
+				Type:    ktrl.OptionTypeBool,
+				Default: "false",
+				Usage:   "Load history list to rawList.",
+			},
+		},
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			gprint.PrintInfo(string(ctx.Result))
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {
+			if that.runner.verifier.IsRunning() {
+				ctx.SendResponse("verifier is already running", 200)
+				return
+			}
+
+			v := that.runner.verifier
+			if ctx.GetBool(loadHistory) {
+				go v.Run(true, true)
+			} else {
+				go v.Run(true)
+			}
+			ctx.SendResponse("verifier starts running", 200)
+		},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "toggle",
+		Parent:        parentStr,
+		HelpStr:       "Toggle verfier status.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			that.CNF.Reload()
+			that.CNF.EnableVerifier = !that.CNF.EnableVerifier
+			if that.CNF.EnableVerifier {
+				gprint.Green("verifier enabled.")
+			} else {
+				gprint.Yellow("verifier disabled.")
+			}
+			that.CNF.Restore()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "cron",
+		Parent:        parentStr,
+		HelpStr:       "Set cron time for verifier.",
+		LongHelpStr:   "Usage: vf cron <hours>.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			args := ctx.GetArgs()
+			if len(args) == 0 {
+				return
+			}
+			hours := gconv.Int(args[0])
+			if hours > 0.0 {
+				that.CNF.Reload()
+				that.CNF.VerificationCron = fmt.Sprintf("@every %dh", hours)
+				that.CNF.Restore()
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+}
+
 func (that *IShell) tools() {
 	parentStr := "tools"
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
 		Name:    parentStr,
-		HelpStr: "Tools.",
+		HelpStr: "Tools for neobox.",
 		RunFunc: func(ctx *ktrl.KtrlContext) {},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:    "raw",
+		Parent:  parentStr,
+		HelpStr: "Manually dowload rawURIs.",
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			f := proxy.NewProxyFetcher(that.CNF)
+			f.Download()
+		},
 		Handler: func(ctx *ktrl.KtrlContext) {},
 	})
 
@@ -248,17 +506,6 @@ func (that *IShell) tools() {
 					gprint.PrintInfo(filepath.Join(g.GetGeoDir(), d.Name()))
 				}
 			}
-		},
-		Handler: func(ctx *ktrl.KtrlContext) {},
-	})
-
-	that.ktrl.AddCommand(&ktrl.KtrlCommand{
-		Name:    "raw",
-		Parent:  parentStr,
-		HelpStr: "Manually dowload rawURIs.",
-		RunFunc: func(ctx *ktrl.KtrlContext) {
-			f := proxy.NewProxyFetcher(that.CNF)
-			f.Download()
 		},
 		Handler: func(ctx *ktrl.KtrlContext) {},
 	})
@@ -319,37 +566,57 @@ func (that *IShell) tools() {
 		Handler: func(ctx *ktrl.KtrlContext) {},
 	})
 
-	loadHistory := "loadHistory"
+	singBox := "singbox"
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
-		Name:    "filter",
+		Name:    "parse",
 		Parent:  parentStr,
-		HelpStr: "Start the verifier manually.",
+		HelpStr: "Parse rawURI as xray-core/sing-box outbound string.",
 		Options: []*ktrl.Option{
 			{
-				Name:    loadHistory,
-				Short:   "l",
+				Name:    singBox,
+				Short:   "s",
 				Type:    ktrl.OptionTypeBool,
 				Default: "false",
-				Usage:   "Load history list to rawList.",
+				Usage:   "Parse sing-box outbound string.",
+			},
+			{
+				Name:    useDomain,
+				Short:   "d",
+				Type:    ktrl.OptionTypeBool,
+				Default: "false",
+				Usage:   "Use selected domains (Only for edgetunnel).",
 			},
 		},
+		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
-			gprint.PrintInfo(string(ctx.Result))
-		},
-		Handler: func(ctx *ktrl.KtrlContext) {
-			if that.runner.verifier.IsRunning() {
-				ctx.SendResponse("verifier is already running", 200)
+			args := ctx.GetArgs()
+			if len(args) == 0 {
+				gprint.PrintError("No rawURI is specified!")
 				return
 			}
-
-			v := that.runner.verifier
-			if ctx.GetBool(loadHistory) {
-				go v.Run(true, true)
-			} else {
-				go v.Run(true)
+			rawUri := args[0]
+			if !strings.Contains(rawUri, "://") {
+				proxyItem := that.runner.GetProxyByIndex(rawUri, ctx.GetBool(useDomain))
+				if proxyItem == nil {
+					gprint.PrintError("Can not find specified proxy!")
+				} else {
+					rawUri = proxyItem.RawUri
+				}
 			}
-			ctx.SendResponse("verifier starts running", 200)
+
+			var p *outbound.ProxyItem
+			if ctx.GetBool(singBox) {
+				p = outbound.ParseRawUriToProxyItem(rawUri, outbound.SingBox)
+			} else {
+				p = outbound.ParseRawUriToProxyItem(rawUri, outbound.XrayCore)
+			}
+
+			if p != nil {
+				j := gjson.New(p.GetOutbound())
+				gprint.Cyan(j.MustToJsonIndentString())
+			}
 		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
 	})
 
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
@@ -368,21 +635,9 @@ func (that *IShell) tools() {
 			ctx.SendResponse("GC started", 200)
 		},
 	})
-
-	that.ktrl.AddCommand(&ktrl.KtrlCommand{
-		Name:          "parse",
-		Parent:        parentStr,
-		HelpStr:       "Parse rawURI to xray-core/sing-box outbound string.",
-		Options:       []*ktrl.Option{},
-		SendInRunFunc: true,
-		RunFunc: func(ctx *ktrl.KtrlContext) {
-			// TODO
-		},
-		Handler: func(ctx *ktrl.KtrlContext) {},
-	})
 }
 
-func (that *IShell) manually() {
+func (that *IShell) manual() {
 	parentStr := "manual"
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
 		Name:    parentStr,
@@ -430,22 +685,12 @@ func (that *IShell) manually() {
 	})
 }
 
-func (that *IShell) settings() {
+func (that *IShell) setup() {
 	parentStr := "setup"
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
 		Name:    parentStr,
-		HelpStr: "Setup.",
+		HelpStr: "Setup for neobox.",
 		RunFunc: func(ctx *ktrl.KtrlContext) {},
-		Handler: func(ctx *ktrl.KtrlContext) {},
-	})
-
-	that.ktrl.AddCommand(&ktrl.KtrlCommand{
-		Name:    "pingLinux",
-		Parent:  parentStr,
-		HelpStr: "Set ping-without-root for Linux.",
-		RunFunc: func(ctx *ktrl.KtrlContext) {
-			utils.SetPingWithoutRootForLinux()
-		},
 		Handler: func(ctx *ktrl.KtrlContext) {},
 	})
 
@@ -503,8 +748,153 @@ func (that *IShell) settings() {
 		},
 		Handler: func(ctx *ktrl.KtrlContext) {},
 	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:    "pingLinux",
+		Parent:  parentStr,
+		HelpStr: "Set ping-without-root for Linux.",
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			utils.SetPingWithoutRootForLinux()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
 }
 
 func (that *IShell) cloudflare() {
+	parentStr := "cf"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          parentStr,
+		HelpStr:       "Cloudflare related CLIs.",
+		SendInRunFunc: true,
+		RunFunc:       func(ctx *ktrl.KtrlContext) {},
+		Handler:       func(ctx *ktrl.KtrlContext) {},
+	})
 
+	uuidName := "uuid"
+	addName := "address"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "add",
+		Parent:        parentStr,
+		HelpStr:       "Add edgetunnel proxies to neobox.",
+		LongHelpStr:   "Usage: cf add <vless://xxx@xxx?xxx> || cf add -u=UUID -a=Address.",
+		SendInRunFunc: true,
+		Options: []*ktrl.Option{
+			{
+				Name:  uuidName,
+				Short: "u",
+				Type:  ktrl.OptionTypeString,
+				Usage: "UUID for edgetunnel vless.",
+			},
+			{
+				Name:  addName,
+				Short: "a",
+				Type:  ktrl.OptionTypeString,
+				Usage: "Domain/IP for edgetunnel.",
+			},
+		},
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			manual := proxy.NewMannualProxy(that.CNF)
+			uuidStr := ctx.GetString(uuidName)
+			addName := ctx.GetString(addName)
+			if uuidStr != "" && addName != "" {
+				manual.AddEdgeTunnelByAddressUUID(addName, uuidStr)
+			} else if len(ctx.GetArgs()) > 0 {
+				for _, rawUri := range ctx.GetArgs() {
+					if strings.HasPrefix(rawUri, parser.SchemeVless) {
+						manual.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
+					}
+				}
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "raw",
+		Parent:        parentStr,
+		HelpStr:       "Download rawList for a specified edgeTunnel proxy.",
+		LongHelpStr:   "Usage: cf raw <edgetunnel_proxy_index>.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			args := ctx.GetArgs()
+			if len(args) == 0 {
+				return
+			}
+			idxStr := args[0]
+			if strings.HasPrefix(idxStr, FromEdgetunnel) {
+				idx, _ := strconv.Atoi(strings.TrimLeft(idxStr, FromEdgetunnel))
+				dProxy := &dao.Proxy{}
+				proxyList := dProxy.GetItemListBySourceType(model.SourceTypeEdgeTunnel)
+				if idx < 0 || idx > len(proxyList)-1 {
+					return
+				}
+				p := proxyList[idx]
+				edt := proxy.NewEdgeTunnelProxy(that.CNF)
+				vp := &parser.ParserVless{}
+				vp.Parse(p.RawUri)
+				edt.DownloadAndSaveRawList(vp.Address, vp.UUID)
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "domain",
+		Parent:        parentStr,
+		HelpStr:       "Download domain list for edgetunnel proxies.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			dom := domain.NewCPinger(that.CNF)
+			dom.Download()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "ping",
+		Parent:        parentStr,
+		HelpStr:       "Ping test for edgetunnel domains.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			dom := domain.NewCPinger(that.CNF)
+			dom.Run()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "wguard",
+		Parent:        parentStr,
+		HelpStr:       "Register wireguard account and update licenseKey to Warp+.",
+		LongHelpStr:   "Usage: cf wguard <license-key-for-Warp+>",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			args := ctx.GetArgs()
+			if len(args) > 0 {
+				if len(args[0]) == 26 {
+					w := wguard.NewWGuard(that.CNF)
+					w.Run(args[0])
+				} else {
+					gprint.PrintWarning("invalid license key.")
+				}
+			} else {
+				w := wguard.NewWGuard(that.CNF)
+				w.Status()
+			}
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "ip",
+		Parent:        parentStr,
+		HelpStr:       "Test speed for cloudflare IPs(Only IPV4).",
+		LongHelpStr:   "Test cloudflare IPs for Warp+.",
+		SendInRunFunc: true,
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			wpinger := wspeed.NewWPinger(that.CNF)
+			wpinger.Run()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
 }

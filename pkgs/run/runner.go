@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -277,11 +278,24 @@ func (that *Runner) Start(args ...string) {
 	os.Exit(0)
 }
 
+func (that *Runner) saveArgsToHistory(args ...string) (r []string) {
+	histFilePath := filepath.Join(that.CNF.WorkDir, ".restart_history")
+	if len(args) > 0 {
+		s := strings.Join(args, ",")
+		os.WriteFile(histFilePath, []byte(s), 0666)
+		r = args
+	} else {
+		// use the last used args.
+		s, _ := os.ReadFile(histFilePath)
+		r = strings.Split(string(s), ",")
+	}
+	return
+}
+
 func (that *Runner) Restart(args ...string) (result string) {
-	// if !that.PingRunner() {
-	// 	return
-	// }
-	that.NextProxy = that.getNextProxy(args...)
+	// save args to history file.
+	newArgs := that.saveArgsToHistory(args...)
+	that.NextProxy = that.getNextProxy(newArgs...)
 	if that.NextProxy == nil {
 		result = "No available proxies."
 		return
@@ -294,7 +308,6 @@ func (that *Runner) Restart(args ...string) (result string) {
 	}
 	that.Client = client.NewClient(that.CNF, that.CNF.InboundPort, that.CurrentProxy.OutboundType, true)
 	that.Client.SetOutbound(that.CurrentProxy)
-	// TODO: save it to file and use it next time by default.
 	err := that.Client.Start()
 	if err == nil {
 		result = fmt.Sprintf("client restarted use: %s%s, clientType: %s___%s", that.CurrentProxy.Scheme, that.CurrentProxy.GetHost(), that.Client.Type(), url.QueryEscape(string(that.Client.GetConf())))

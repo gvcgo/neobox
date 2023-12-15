@@ -174,50 +174,6 @@ func (that *NeoConf) GetConfPath() string {
 func GetDefaultNeoConf() (n *NeoConf) {
 	cwd, _ := os.Getwd()
 	workDir := filepath.Join(cwd, "data", "projects", "go", "src", "neobox", "test")
-	n = &NeoConf{
-		WorkDir:         workDir,
-		DownloadUrl:     "https://gitlab.com/moqsien/neobox_related/-/raw/main/conf.txt",
-		MaxPingers:      120,
-		MaxPingAvgRTT:   600,
-		MaxPingPackLoss: 10,
-		InboundPort:     2023,
-		VerificationPortRange: &PortRange{
-			Min: 9045,
-			Max: 9095,
-		},
-		VerificationTimeout: 3,
-		VerificationUrl:     "https://www.google.com",
-		VerificationCron:    "@every 2h",
-		MaxToSaveRTT:        2000,
-		CountryAbbrevsUrl:   "https://gitlab.com/moqsien/neobox_related/-/raw/main/country_names.json?ref_type=heads&inline=false",
-		IPLocationQueryUrl:  "https://www.fkcoder.com/ip?ip=%s",
-		GeoInfoUrls: map[string]string{
-			"geoip.dat":   "https://gitlab.com/moqsien/neobox_related/-/raw/main/geoip.dat",
-			"geosite.dat": "https://gitlab.com/moqsien/neobox_related/-/raw/main/geosite.dat",
-			"geoip.db":    "https://gitlab.com/moqsien/neobox_related/-/raw/main/geoip.db",
-			"geosite.db":  "https://gitlab.com/moqsien/neobox_related/-/raw/main/geosite.db",
-		},
-		GeoInfoSumUrl: "https://gitlab.com/moqsien/gvc_resources/-/raw/main/files_info.json?ref_type=heads&inline=false",
-		KeeperCron:    "@every 3m",
-		CloudflareConf: &CloudflareConf{
-			CloudflareIPV4URL: "https://www.cloudflare.com/ips-v4",
-			PortList:          []int{443, 8443, 2053, 2096, 2087, 2083},
-			// PortList:      []int{443},
-			MaxPingCount:            4,
-			MaxGoroutines:           300,
-			MaxRTT:                  800,
-			MaxLossRate:             30.0,
-			MaxSaveToDB:             1000,
-			CloudflareDomainFileUrl: "https://gitlab.com/moqsien/neobox_related/-/raw/main/cloudflare_domains.txt?ref_type=heads&inline=false",
-		},
-	}
-	n.LogDir = n.WorkDir
-	n.SocketDir = n.WorkDir
-	n.GeoInfoDir = n.WorkDir
-	n.DatabaseDir = n.WorkDir
-	n.CloudflareConf.WireGuardConfDir = filepath.Join(n.WorkDir, "wireguard")
-	n.HistoryMaxLines = 300
-	n.HistoryFileName = HistoryFileName
-	n.ShellSocketName = ShellSocketName
+	n = NewNeoConf(workDir)
 	return
 }

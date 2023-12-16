@@ -104,8 +104,8 @@ func (that *NeoConf) initiate() {
 }
 
 func (that *NeoConf) SetDefault() {
-	cwd, _ := os.Getwd()
-	workDir := filepath.Join(cwd, "data", "projects", "go", "src", "neobox", "test")
+	homeDir, _ := os.UserHomeDir()
+	workDir := filepath.Join(homeDir, "data", "projects", "go", "src", "neobox", "test")
 	if that.WorkDir == "" {
 		that.WorkDir = workDir
 	}
@@ -172,8 +172,8 @@ func (that *NeoConf) GetConfPath() string {
 }
 
 func GetDefaultNeoConf() (n *NeoConf) {
-	cwd, _ := os.Getwd()
-	workDir := filepath.Join(cwd, "data", "projects", "go", "src", "neobox", "test")
+	homeDir, _ := os.UserHomeDir()
+	workDir := filepath.Join(homeDir, "data", "projects", "go", "src", "neobox", "test")
 	n = NewNeoConf(workDir)
 	return
 }

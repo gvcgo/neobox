@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"net/url"
 	"os"
+	"os/user"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -29,6 +30,7 @@ import (
 	"github.com/moqsien/neobox/pkgs/utils"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 	"github.com/moqsien/vpnparser/pkgs/parser"
+	"github.com/reeflective/console"
 )
 
 const (
@@ -290,19 +292,19 @@ func (that *IShell) restart() {
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
 		Name:          "restart",
 		HelpStr:       "Restart the running neobox client with a chosen proxy.",
-		LongHelpStr:   "Usage: restart <the-proxy-index>",
+		LongHelpStr:   "Example: restart <the-proxy-index>",
 		SendInRunFunc: true, // send request in RunFunc.
 		Options: []*ktrl.Option{
 			{
 				Name:    showProxy,
-				Short:   "sp",
+				Short:   "p",
 				Type:    ktrl.OptionTypeBool,
 				Default: "false",
 				Usage:   "To show the chosen proxy or not.",
 			},
 			{
 				Name:    showConfig,
-				Short:   "sc",
+				Short:   "c",
 				Type:    ktrl.OptionTypeBool,
 				Default: "false",
 				Usage:   "To show the config for sing-box/xray-core or not.",
@@ -325,6 +327,7 @@ func (that *IShell) restart() {
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			// prepare args
 			args := ctx.GetArgs()
+			// TODO: use last used proxy.
 			idxStr := "0"
 			if len(args) > 0 {
 				idxStr = args[0]
@@ -470,7 +473,7 @@ func (that *IShell) verifier() {
 		Name:          "cron",
 		Parent:        parentStr,
 		HelpStr:       "Set cron time for verifier.",
-		LongHelpStr:   "Usage: vf cron <hours>.",
+		LongHelpStr:   "Example: vf cron <hours>.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			args := ctx.GetArgs()
@@ -554,7 +557,7 @@ func (that *IShell) tools() {
 		Name:        "qcode",
 		Parent:      parentStr,
 		HelpStr:     "Generate QRCode for a chosen proxy. ",
-		LongHelpStr: "Usage: qcode <proxy_index>.",
+		LongHelpStr: "Example: qcode <proxy_index>.",
 		Options: []*ktrl.Option{
 			{
 				Name:    useDomain,
@@ -586,7 +589,7 @@ func (that *IShell) tools() {
 		Name:          "uuid",
 		Parent:        parentStr,
 		HelpStr:       "Generate UUIDs.",
-		LongHelpStr:   "Usage: uuid <how-many-uuids-to-generate>.",
+		LongHelpStr:   "Example: uuid <how-many-uuids-to-generate>.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			num := 1
@@ -696,7 +699,7 @@ func (that *IShell) manual() {
 		Name:          "add",
 		Parent:        parentStr,
 		HelpStr:       "Add proxies to neobox mannually.",
-		LongHelpStr:   "Usage: manual add <proxy URIs>.",
+		LongHelpStr:   "Example: manual add <proxy URIs>.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			manual := proxy.NewMannualProxy(that.CNF)
@@ -711,7 +714,7 @@ func (that *IShell) manual() {
 		Name:          "remove",
 		Parent:        parentStr,
 		HelpStr:       "Remove a manually added proxy(edgetunnel included).",
-		LongHelpStr:   "Usage: manual remove <address:port>.",
+		LongHelpStr:   "Example: manual remove <address:port>.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			args := ctx.GetArgs()
@@ -747,7 +750,7 @@ func (that *IShell) setup() {
 		Name:          "key",
 		Parent:        parentStr,
 		HelpStr:       "Setup rawlist decrytion key.",
-		LongHelpStr:   "Usage: setup key <decryption key>.",
+		LongHelpStr:   "Example: setup key <decryption key>.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			args := ctx.GetArgs()
@@ -828,7 +831,7 @@ func (that *IShell) cloudflare() {
 		Name:          "add",
 		Parent:        parentStr,
 		HelpStr:       "Add edgetunnel proxies to neobox.",
-		LongHelpStr:   "Usage: cf add <vless://xxx@xxx?xxx> || cf add -u=UUID -a=Address.",
+		LongHelpStr:   "Example: cf add <vless://xxx@xxx?xxx> || cf add -u=UUID -a=Address.",
 		SendInRunFunc: true,
 		Options: []*ktrl.Option{
 			{
@@ -865,7 +868,7 @@ func (that *IShell) cloudflare() {
 		Name:          "raw",
 		Parent:        parentStr,
 		HelpStr:       "Download rawList for a specified edgeTunnel proxy.",
-		LongHelpStr:   "Usage: cf raw <edgetunnel_proxy_index>.",
+		LongHelpStr:   "Example: cf raw <edgetunnel_proxy_index>.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			args := ctx.GetArgs()
@@ -891,7 +894,7 @@ func (that *IShell) cloudflare() {
 	})
 
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
-		Name:          "domain",
+		Name:          "dl",
 		Parent:        parentStr,
 		HelpStr:       "Download domain list for edgetunnel proxies.",
 		SendInRunFunc: true,
@@ -918,7 +921,7 @@ func (that *IShell) cloudflare() {
 		Name:          "wguard",
 		Parent:        parentStr,
 		HelpStr:       "Register wireguard account and update licenseKey to Warp+.",
-		LongHelpStr:   "Usage: cf wguard <license-key-for-Warp+>",
+		LongHelpStr:   "Example: cf wguard <license-key-for-Warp+>",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			args := ctx.GetArgs()
@@ -940,7 +943,7 @@ func (that *IShell) cloudflare() {
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
 		Name:          "ip",
 		Parent:        parentStr,
-		HelpStr:       "Test speed for cloudflare IPs(Only IPV4).",
+		HelpStr:       "Test speed for cloudflare IPs(IPV4 Only).",
 		LongHelpStr:   "Test cloudflare IPs for Warp+.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
@@ -952,9 +955,37 @@ func (that *IShell) cloudflare() {
 }
 
 func (that *IShell) StartShell() {
+	that.ktrl.PreShellStart()
+	sh := that.ktrl.GetShell()
+	sh.SetPrintLogo(func(_ *console.Console) {
+		gprint.Yellow("Welcome to NeoBox!")
+	})
+	sh.SetupPrompt(func(m *console.Menu) {
+		time.Sleep(time.Second)
+		p := m.Prompt()
+		p.Primary = func() string {
+			u, _ := user.Current()
+			prompt := "%s in [%s]\n>>> "
+			wd, _ := os.Getwd()
+
+			dir, err := filepath.Rel(u.HomeDir, wd)
+			if err != nil {
+				dir = filepath.Base(wd)
+			}
+			return fmt.Sprintf(prompt, gprint.MagentaStr(u.Username), gprint.CyanStr(dir))
+		}
+
+		p.Secondary = func() string { return ">" }
+		p.Right = func() string {
+			return gprint.YellowStr(time.Now().Format("15:04:05"))
+		}
+
+		p.Transient = func() string { return ">> " }
+	})
 	that.ktrl.StartShell()
 }
 
 func (that *IShell) StartServer() {
+	that.ktrl.PreServerStart()
 	that.ktrl.StartServer()
 }

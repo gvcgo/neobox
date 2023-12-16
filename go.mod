@@ -8,12 +8,13 @@ require (
 	github.com/glebarez/sqlite v1.9.0
 	github.com/gogf/gf v1.16.9
 	github.com/moqsien/goktrl v1.3.8
-	github.com/moqsien/goutils v0.7.1
-	github.com/moqsien/gshell v0.2.1
+	github.com/moqsien/goutils v0.7.6
+	github.com/moqsien/gshell v0.2.5
 	github.com/moqsien/vpnparser v0.2.4
 	github.com/moqsien/wgcf v0.0.0-20230611034603-e29859e0cae2
 	github.com/moqsien/xraycore v1.8.5
 	github.com/prometheus-community/pro-bing v0.3.0
+	github.com/reeflective/console v0.1.13
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sagernet/sing-box v1.4.6
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
@@ -141,7 +142,6 @@ require (
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/quic-go/qtls-go1-20 v0.3.3 // indirect
 	github.com/quic-go/quic-go v0.38.1 // indirect
-	github.com/reeflective/console v0.1.13 // indirect
 	github.com/reeflective/readline v1.0.12 // indirect
 	github.com/refraction-networking/utls v1.4.3 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect

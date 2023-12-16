@@ -34,6 +34,7 @@ func NewNeoBox(cnf *conf.NeoConf) *NeoBox {
 	return nb
 }
 
+// TODO: use cobra.
 type Apps struct {
 	*cli.App
 	conf *conf.NeoConf

@@ -290,10 +290,9 @@ func (that *IShell) restart() {
 		forceSingbox string = "forcesingbox"
 	)
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
-		Name:          "restart",
-		HelpStr:       "Restart the running neobox client with a chosen proxy.",
-		LongHelpStr:   "Example: restart <the-proxy-index>",
-		SendInRunFunc: true, // send request in RunFunc.
+		Name:        "restart",
+		HelpStr:     "Restart the running neobox client with a chosen proxy.",
+		LongHelpStr: "Example: restart <proxy-index> (if no index is specified, then read from history or use '0' by default.)",
 		Options: []*ktrl.Option{
 			{
 				Name:    showProxy,
@@ -324,16 +323,22 @@ func (that *IShell) restart() {
 				Usage:   "To force using sing-box as local client.",
 			},
 		},
+		SendInRunFunc: true, // send request in RunFunc.
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			// prepare args
 			args := ctx.GetArgs()
-			// TODO: use last used proxy.
-			idxStr := "0"
+			if len(args) == 0 {
+				// try to read proxy index from history file.
+				args = that.runner.GetArgsFromHistory()
+			}
+			idxStr := "0" // default value.
 			if len(args) > 0 {
 				idxStr = args[0]
 			}
-			r := []string{}
-			// get proxyItem
+
+			r := []string{idxStr}
+
+			// get proxyItem (Do not influence the Result of verifier at the server side.)
 			proxyItem := that.runner.GetProxyByIndex(idxStr, ctx.GetBool(useDomain))
 
 			if !ctx.GetBool(forceSingbox) && proxyItem.Scheme != parser.SchemeSS && proxyItem.Scheme != parser.SchemeSSR {
@@ -346,6 +351,7 @@ func (that *IShell) restart() {
 			if proxyItem != nil {
 				r = append(r, crypt.EncodeBase64(proxyItem.String()))
 			}
+			// rewrite args.
 			ctx.SetArgs(r...)
 
 			// show proxyItem
@@ -370,10 +376,14 @@ func (that *IShell) restart() {
 			}
 		},
 		Handler: func(ctx *ktrl.KtrlContext) {
-			if len(ctx.GetArgs()) == 0 {
-				ctx.SendResponse("Cannot find specified proxy", 200)
+			args := ctx.GetArgs()
+			if len(args) < 2 {
+				ctx.SendResponse("Cannot find specified proxy.", 200)
 			} else {
-				pxyStr := crypt.DecodeBase64(ctx.GetArgs()[0])
+				idxStr := args[0]
+				// save proxy index to history file.
+				that.runner.SaveArgsToHistory(idxStr)
+				pxyStr := crypt.DecodeBase64(args[1])
 				// os.WriteFile("config_arg_parsed.log", []byte(pxyStr), os.ModePerm)
 				r := that.runner.Restart(pxyStr)
 				ctx.SendResponse(r, 200)

@@ -31,6 +31,7 @@ const (
 	runnerPingRoute     = "/pingRunner"
 	runnerVerifierRoute = "/pingVerifier"
 	winRunScriptName    = "neobox_runner.bat"
+	ProxyHistoryFile    = ".proxy_history"
 )
 
 // index prefix for proxy
@@ -278,24 +279,24 @@ func (that *Runner) Start(args ...string) {
 	os.Exit(0)
 }
 
-func (that *Runner) saveArgsToHistory(args ...string) (r []string) {
-	histFilePath := filepath.Join(that.CNF.WorkDir, ".restart_history")
-	if len(args) > 0 {
-		s := strings.Join(args, ",")
-		os.WriteFile(histFilePath, []byte(s), 0666)
-		r = args
-	} else {
-		// use the last used args.
-		s, _ := os.ReadFile(histFilePath)
-		r = strings.Split(string(s), ",")
-	}
+func (that *Runner) GetArgsFromHistory() (args []string) {
+	histFilePath := filepath.Join(that.CNF.WorkDir, ProxyHistoryFile)
+	s, _ := os.ReadFile(histFilePath)
+	args = strings.Split(string(s), ",")
 	return
 }
 
+func (that *Runner) SaveArgsToHistory(args ...string) {
+	if len(args) == 0 {
+		return
+	}
+	histFilePath := filepath.Join(that.CNF.WorkDir, ProxyHistoryFile)
+	s := strings.Join(args, ",")
+	os.WriteFile(histFilePath, []byte(s), 0666)
+}
+
 func (that *Runner) Restart(args ...string) (result string) {
-	// save args to history file.
-	newArgs := that.saveArgsToHistory(args...)
-	that.NextProxy = that.getNextProxy(newArgs...)
+	that.NextProxy = that.getNextProxy(args...)
 	if that.NextProxy == nil {
 		result = "No available proxies."
 		return

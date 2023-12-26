@@ -35,6 +35,12 @@ import (
 
 const (
 	verifierCliName string = "vf"
+	restartCliName  string = "restart"
+	// restart cli options
+	RestartShowProxy    string = "showproxy"
+	RestartShowConfig   string = "showconfig"
+	RestartUseDomain    string = "usedomain"
+	RestartForceSingbox string = "forcesingbox"
 )
 
 type IShell struct {
@@ -56,6 +62,18 @@ func NewIShell(cnf *conf.NeoConf) (s *IShell) {
 
 func (that *IShell) SetRunner(runner *Runner) {
 	that.runner = runner
+}
+
+func (that *IShell) PingServer() (ok bool) {
+	r := that.ktrl.SendMsg(strings.Trim(ktrl.PingRoute, "/"), "", []*ktrl.Option{})
+	ok = strings.Contains(string(r), ktrl.PingResponse)
+	return
+}
+
+func (that *IShell) PingVerifier() (ok bool) {
+	r := that.ktrl.SendMsg(strings.Trim(ktrl.PingRoute, "/"), verifierCliName, []*ktrl.Option{})
+	ok = strings.Contains(string(r), ktrl.PingResponse)
+	return
 }
 
 func (that *IShell) Start() {
@@ -92,16 +110,125 @@ func (that *IShell) Start() {
 	}
 }
 
-func (that *IShell) PingServer() (ok bool) {
-	r := that.ktrl.SendMsg(strings.Trim(ktrl.PingRoute, "/"), "", []*ktrl.Option{})
-	ok = strings.Contains(string(r), ktrl.PingResponse)
+func (that *IShell) getRestartOptions() (r []*ktrl.Option) {
+	r = []*ktrl.Option{
+		{
+			Name:    RestartShowProxy,
+			Short:   "p",
+			Type:    ktrl.OptionTypeBool,
+			Default: "false",
+			Usage:   "To show the chosen proxy or not.",
+		},
+		{
+			Name:    RestartShowConfig,
+			Short:   "c",
+			Type:    ktrl.OptionTypeBool,
+			Default: "false",
+			Usage:   "To show the config for sing-box/xray-core or not.",
+		},
+		{
+			Name:    RestartUseDomain,
+			Short:   "d",
+			Type:    ktrl.OptionTypeBool,
+			Default: "false",
+			Usage:   "To use a domain for edgetunnel or not.",
+		},
+		{
+			Name:    RestartForceSingbox,
+			Short:   "s",
+			Type:    ktrl.OptionTypeBool,
+			Default: "false",
+			Usage:   "To force using sing-box as local client.",
+		},
+	}
 	return
 }
 
-func (that *IShell) PingVerifier() (ok bool) {
-	r := that.ktrl.SendMsg(strings.Trim(ktrl.PingRoute, "/"), verifierCliName, []*ktrl.Option{})
-	ok = strings.Contains(string(r), ktrl.PingResponse)
-	return
+func (that *IShell) Restart(ctx *ktrl.KtrlContext, optionStr ...string) {
+	// prepare args
+	args := ctx.GetArgs()
+	var proxyStr string
+	if len(args) == 0 {
+		// try to read proxy info from history file.
+		args = that.runner.GetArgsFromHistory()
+		if len(args) > 0 {
+			proxyStr = args[0]
+		}
+	}
+
+	useDomain := false
+	forceSingbox := false
+	showProxy := false
+	showConfig := false
+	if ctx.Command != nil {
+		useDomain = ctx.GetBool(RestartUseDomain)
+		forceSingbox = ctx.GetBool(RestartForceSingbox)
+		showProxy = ctx.GetBool(RestartShowProxy)
+		showConfig = ctx.GetBool(RestartShowConfig)
+	} else if len(optionStr) > 0 && optionStr[0] != "" {
+		s := optionStr[0]
+		useDomain = strings.Contains(s, RestartUseDomain)
+		forceSingbox = strings.Contains(s, RestartForceSingbox)
+		showProxy = strings.Contains(s, RestartShowProxy)
+		showConfig = strings.Contains(s, RestartShowConfig)
+	}
+
+	if proxyStr != "" {
+		ctx.SetArgs(proxyStr)
+	} else {
+		idxStr := "0"
+		if len(args) > 0 {
+			idxStr = args[0]
+		}
+		// get proxyItem (Do not influence the Result of verifier at the server side.)
+		proxyItem := that.runner.GetProxyByIndex(idxStr, useDomain)
+
+		if !forceSingbox && proxyItem.Scheme != parser.SchemeSS && proxyItem.Scheme != parser.SchemeSSR {
+			//use xray-core as client
+			proxyItem = outbound.TransferProxyItem(proxyItem, outbound.XrayCore)
+		} else {
+			// use sing-box as client
+			proxyItem = outbound.TransferProxyItem(proxyItem, outbound.SingBox)
+		}
+		if proxyItem != nil {
+			proxyStr = crypt.EncodeBase64(proxyItem.String())
+			ctx.SetArgs(proxyStr)
+		} else {
+			gprint.PrintError("proxy not found!")
+		}
+	}
+
+	// save proxyStr to history file.
+	if proxyStr != "" {
+		that.runner.SaveArgsToHistory(proxyStr)
+	}
+
+	// show proxyItem
+	if showProxy && len(ctx.GetArgs()) > 0 {
+		gprint.PrintInfo(crypt.DecodeBase64(ctx.GetArgs()[0]))
+	}
+
+	switch ctx.Command {
+	case nil:
+		if !that.PingServer() {
+			that.Start()
+		}
+		// options are not used at server side.
+		ctx.Result = that.ktrl.SendMsg(restartCliName, "", that.getRestartOptions(), ctx.GetArgs()...)
+	default:
+		if !that.PingServer() {
+			that.Start()
+		}
+		that.ktrl.GetResult(ctx)
+	}
+
+	rList := strings.Split(string(ctx.Result), "___")
+	if showConfig && len(rList) == 2 {
+		confStr, _ := url.QueryUnescape(rList[1])
+		gprint.PrintInfo("%s%s%s", rList[0], "; ConfStr: ", confStr)
+	} else {
+		gprint.PrintInfo(rList[0])
+	}
 }
 
 func (that *IShell) InitKtrl() {
@@ -283,107 +410,21 @@ func (that *IShell) start() {
 }
 
 func (that *IShell) restart() {
-	var (
-		showProxy    string = "showproxy"
-		showConfig   string = "showconfig"
-		useDomain    string = "usedomain"
-		forceSingbox string = "forcesingbox"
-	)
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
-		Name:        "restart",
-		HelpStr:     "Restart the running neobox client with a chosen proxy.",
-		LongHelpStr: "Example: restart <proxy-index> (if no index is specified, then read from history or use '0' by default.)",
-		Options: []*ktrl.Option{
-			{
-				Name:    showProxy,
-				Short:   "p",
-				Type:    ktrl.OptionTypeBool,
-				Default: "false",
-				Usage:   "To show the chosen proxy or not.",
-			},
-			{
-				Name:    showConfig,
-				Short:   "c",
-				Type:    ktrl.OptionTypeBool,
-				Default: "false",
-				Usage:   "To show the config for sing-box/xray-core or not.",
-			},
-			{
-				Name:    useDomain,
-				Short:   "d",
-				Type:    ktrl.OptionTypeBool,
-				Default: "false",
-				Usage:   "To use a domain for edgetunnel or not.",
-			},
-			{
-				Name:    forceSingbox,
-				Short:   "s",
-				Type:    ktrl.OptionTypeBool,
-				Default: "false",
-				Usage:   "To force using sing-box as local client.",
-			},
-		},
+		Name:          restartCliName,
+		HelpStr:       "Restart the running neobox client with a chosen proxy.",
+		LongHelpStr:   "Example: restart <proxy-index> (if no index is specified, then read from history or use '0' by default.)",
+		Options:       that.getRestartOptions(),
 		SendInRunFunc: true, // send request in RunFunc.
 		RunFunc: func(ctx *ktrl.KtrlContext) {
-			// prepare args
-			args := ctx.GetArgs()
-			if len(args) == 0 {
-				// try to read proxy index from history file.
-				args = that.runner.GetArgsFromHistory()
-			}
-			idxStr := "0" // default value.
-			if len(args) > 0 {
-				idxStr = args[0]
-			}
-
-			r := []string{idxStr}
-
-			// get proxyItem (Do not influence the Result of verifier at the server side.)
-			proxyItem := that.runner.GetProxyByIndex(idxStr, ctx.GetBool(useDomain))
-
-			if !ctx.GetBool(forceSingbox) && proxyItem.Scheme != parser.SchemeSS && proxyItem.Scheme != parser.SchemeSSR {
-				//use xray-core as client
-				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.XrayCore)
-			} else {
-				// use sing-box as client
-				proxyItem = outbound.TransferProxyItem(proxyItem, outbound.SingBox)
-			}
-			if proxyItem != nil {
-				r = append(r, crypt.EncodeBase64(proxyItem.String()))
-			}
-			// rewrite args.
-			ctx.SetArgs(r...)
-
-			// show proxyItem
-			if ctx.GetBool(showProxy) && len(ctx.GetArgs()) > 0 {
-				gprint.PrintInfo(crypt.DecodeBase64(ctx.GetArgs()[0]))
-			}
-
-			// send request
-			if that.PingServer() {
-				that.ktrl.GetResult(ctx) // send request
-			} else {
-				that.Start()
-				that.ktrl.GetResult(ctx) // send request
-			}
-
-			rList := strings.Split(string(ctx.Result), "___")
-			if ctx.GetBool(showConfig) && len(rList) == 2 {
-				confStr, _ := url.QueryUnescape(rList[1])
-				gprint.PrintInfo("%s%s%s", rList[0], "; ConfStr: ", confStr)
-			} else {
-				gprint.PrintInfo(rList[0])
-			}
+			that.Restart(ctx)
 		},
 		Handler: func(ctx *ktrl.KtrlContext) {
 			args := ctx.GetArgs()
-			if len(args) < 2 {
+			if len(args) < 1 {
 				ctx.SendResponse("Cannot find specified proxy.", 200)
 			} else {
-				idxStr := args[0]
-				// save proxy index to history file.
-				that.runner.SaveArgsToHistory(idxStr)
-				pxyStr := crypt.DecodeBase64(args[1])
+				pxyStr := crypt.DecodeBase64(args[0])
 				// os.WriteFile("config_arg_parsed.log", []byte(pxyStr), os.ModePerm)
 				r := that.runner.Restart(pxyStr)
 				ctx.SendResponse(r, 200)

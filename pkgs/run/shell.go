@@ -146,6 +146,13 @@ func (that *IShell) getRestartOptions() (r []*shell.Flag) {
 }
 
 func (that *IShell) Restart(ctx *ktrl.KtrlContext, optionStr ...string) {
+	if !that.PingServer() {
+		os.RemoveAll(filepath.Join(that.CNF.SocketDir, conf.ShellSocketName))
+	}
+	if !that.runner.PingKeeper() {
+		os.RemoveAll(filepath.Join(that.CNF.SocketDir, NeoKeeperSockName))
+	}
+
 	// prepare args
 	args := ctx.GetArgs()
 	var proxyStr string
@@ -332,7 +339,7 @@ func (that *IShell) show() {
 				keeperStatus,
 			))
 			logInfo := gprint.PinkStr(fmt.Sprintf("LogFileDir: %s", that.CNF.LogDir))
-			inboundURI := gprint.YellowStr("Inbound: %s", fmt.Sprintf(utils.LocalProxyPattern, that.CNF.InboundPort))
+			inboundURI := gprint.CyanStr("Inbound: %s", fmt.Sprintf(utils.LocalProxyPattern, that.CNF.InboundPort))
 			fmt.Printf("%s\n%s\n%s\n", nStatus, inboundURI, logInfo)
 
 			gprint.Cyan("========================================================================")
@@ -530,11 +537,12 @@ func (that *IShell) verifier() {
 		Name:          "cron",
 		Parent:        parentStr,
 		HelpStr:       "Set cron time for verifier.",
-		LongHelpStr:   "Example: vf cron <hours>.",
+		LongHelpStr:   "Example: vf cron <hours:Int>.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			args := ctx.GetArgs()
 			if len(args) == 0 {
+				ctx.Command.Help()
 				return
 			}
 			hours := gconv.Int(args[0])
@@ -627,10 +635,11 @@ func (that *IShell) tools() {
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			args := ctx.GetArgs()
-			idxStr := "0"
-			if len(args) > 0 {
-				idxStr = args[0]
+			if len(args) == 0 {
+				ctx.Command.Help()
+				return
 			}
+			idxStr := args[0]
 			if proxyItem := that.runner.GetProxyByIndex(idxStr, ctx.GetBool(useDomain)); proxyItem != nil {
 				qrc := proxy.NewQRCodeProxy(that.CNF)
 				qrc.SetProxyItem(proxyItem)
@@ -646,14 +655,16 @@ func (that *IShell) tools() {
 		Name:          "uuid",
 		Parent:        parentStr,
 		HelpStr:       "Generate UUIDs.",
-		LongHelpStr:   "Example: uuid <how-many-uuids-to-generate>.",
+		LongHelpStr:   "Example: uuid <how-many-uuids-to-generate:Int>.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			num := 1
 			args := ctx.GetArgs()
-			if len(args) > 0 {
-				num, _ = strconv.Atoi(args[0])
+			if len(args) == 0 {
+				ctx.Command.Help()
+				return
 			}
+			num, _ = strconv.Atoi(args[0])
 			if num == 0 {
 				num = 1
 			}
@@ -759,6 +770,10 @@ func (that *IShell) manual() {
 		LongHelpStr:   "Example: manual add <proxy URIs>.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
+			if len(ctx.GetArgs()) == 0 {
+				ctx.Command.Help()
+				return
+			}
 			manual := proxy.NewMannualProxy(that.CNF)
 			for _, rawUri := range ctx.GetArgs() {
 				manual.AddRawUri(rawUri, model.SourceTypeManually)
@@ -776,6 +791,7 @@ func (that *IShell) manual() {
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			args := ctx.GetArgs()
 			if len(args) == 0 {
+				ctx.Command.Help()
 				return
 			}
 			hostStr := args[0]
@@ -787,6 +803,8 @@ func (that *IShell) manual() {
 				p := &dao.Proxy{}
 				port, _ := strconv.Atoi(sList[1])
 				p.DeleteOneRecord(sList[0], port)
+			} else {
+				ctx.Command.Help()
 			}
 		},
 		Handler: func(ctx *ktrl.KtrlContext) {},
@@ -818,9 +836,7 @@ func (that *IShell) setup() {
 					k.Save()
 				}
 			} else {
-				k := conf.NewEncryptKey(that.CNF.WorkDir)
-				k.Set(conf.DefaultKey)
-				k.Save()
+				ctx.Command.Help()
 			}
 		},
 		Handler: func(ctx *ktrl.KtrlContext) {},
@@ -916,6 +932,8 @@ func (that *IShell) cloudflare() {
 						manual.AddRawUri(rawUri, model.SourceTypeEdgeTunnel)
 					}
 				}
+			} else {
+				ctx.Command.Help()
 			}
 		},
 		Handler: func(ctx *ktrl.KtrlContext) {},
@@ -930,6 +948,7 @@ func (that *IShell) cloudflare() {
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			args := ctx.GetArgs()
 			if len(args) == 0 {
+				ctx.Command.Help()
 				return
 			}
 			idxStr := args[0]
@@ -1015,7 +1034,7 @@ func (that *IShell) StartShell() {
 	that.ktrl.PreShellStart()
 	sh := that.ktrl.GetShell()
 	sh.SetPrintLogo(func(_ *console.Console) {
-		gprint.Yellow("Welcome to NeoBox!")
+		gprint.Yellow("Welcome to NeoBox! Visit <https://github.com/moqsien/neobox/wiki> to learn more.")
 	})
 	sh.SetupPrompt(func(m *console.Menu) {
 		time.Sleep(time.Second)

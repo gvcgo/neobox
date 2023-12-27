@@ -5,11 +5,12 @@ import (
 	"os/exec"
 
 	"github.com/moqsien/goutils/pkgs/logs"
+	"github.com/moqsien/gshell/pkgs/ktrl"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/run"
 	"github.com/moqsien/neobox/pkgs/storage/model"
 	"github.com/moqsien/neobox/pkgs/utils"
-	cli "github.com/urfave/cli/v2"
+	"github.com/spf13/cobra"
 )
 
 type NeoBox struct {
@@ -34,16 +35,15 @@ func NewNeoBox(cnf *conf.NeoConf) *NeoBox {
 	return nb
 }
 
-// TODO: use cobra.
 type Apps struct {
-	*cli.App
-	conf *conf.NeoConf
+	rootCmd *cobra.Command
+	conf    *conf.NeoConf
 }
 
 func NewApps() (a *Apps) {
 	a = &Apps{
-		App:  &cli.App{},
-		conf: conf.GetDefaultNeoConf(),
+		rootCmd: &cobra.Command{},
+		conf:    conf.GetDefaultNeoConf(),
 	}
 	a.conf.Reload()
 
@@ -57,46 +57,72 @@ func NewApps() (a *Apps) {
 }
 
 func (that *Apps) initiate() {
-	command := &cli.Command{
-		Name:    "shell",
-		Aliases: []string{"sh", "s"},
-		Usage:   "Start a new shell for neobox.",
-		Action: func(ctx *cli.Context) error {
+
+	that.rootCmd.AddCommand(&cobra.Command{
+		Use:     "shell",
+		Aliases: []string{"s", "sh"},
+		Short:   "Start a new shell for neobox",
+		Run: func(cmd *cobra.Command, args []string) {
 			nb := NewNeoBox(that.conf)
 			nb.Runner.OpenShell()
-			return nil
+		},
+	})
+
+	ss := &cobra.Command{
+		Use:     "startServer",
+		Aliases: []string{"ss", "st"},
+		Short:   "Start the server.",
+		Run: func(cmd *cobra.Command, args []string) {
+			nb := NewNeoBox(that.conf)
+			sh := nb.Runner.GetShell()
+
+			opts := []string{
+				run.RestartUseDomain,
+				run.RestartForceSingbox,
+				run.RestartShowProxy,
+				run.RestartShowConfig,
+			}
+			optStr := ""
+			for _, o := range opts {
+				if ok, _ := cmd.Flags().GetBool(o); ok {
+					optStr += o
+				}
+			}
+			ctx := &ktrl.KtrlContext{}
+			ctx.SetArgs(args...)
+			sh.Restart(ctx, optStr)
 		},
 	}
-	that.App.Commands = append(that.App.Commands, command)
+	ss.Flags().BoolP(run.RestartUseDomain, "d", false, "Use domain for edgetunnels.")
+	ss.Flags().BoolP(run.RestartForceSingbox, "s", false, "Force to use singbox as client.")
+	ss.Flags().BoolP(run.RestartShowProxy, "p", false, "Show currently used proxy details.")
+	ss.Flags().BoolP(run.RestartShowConfig, "c", false, "Show current config details.")
+	that.rootCmd.AddCommand(ss)
 
-	command = &cli.Command{
-		Name:    "runner",
-		Aliases: []string{"run", "r"},
-		Usage:   "Start a new runner for neobox.",
-		Action: func(ctx *cli.Context) error {
+	that.rootCmd.AddCommand(&cobra.Command{
+		Use:     "runner",
+		Aliases: []string{"r", "run"},
+		Short:   "Start a new runner for neobox.",
+		Run: func(cmd *cobra.Command, args []string) {
 			nb := NewNeoBox(that.conf)
 			nb.Runner.Start()
-			return nil
 		},
-	}
-	that.App.Commands = append(that.App.Commands, command)
+	})
 
-	command = &cli.Command{
-		Name:    "keeper",
-		Aliases: []string{"keep", "k"},
-		Usage:   "Start a new keeper for neobox.",
-		Action: func(ctx *cli.Context) error {
+	that.rootCmd.AddCommand(&cobra.Command{
+		Use:     "keeper",
+		Aliases: []string{"k", "keep"},
+		Short:   "Start a new keeper for neobox.",
+		Run: func(cmd *cobra.Command, args []string) {
 			nb := NewNeoBox(that.conf)
 			nb.Runner.StartKeeper()
-			return nil
 		},
-	}
-	that.App.Commands = append(that.App.Commands, command)
+	})
 }
 
 func Start() {
 	app := NewApps()
-	app.App.Run(os.Args)
+	app.rootCmd.Execute()
 }
 
 func main() {

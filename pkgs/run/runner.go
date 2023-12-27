@@ -373,3 +373,7 @@ func (that *Runner) DoesGeoInfoFileExist() bool {
 func (that *Runner) OpenShell() {
 	that.shell.StartShell()
 }
+
+func (that *Runner) GetShell() *IShell {
+	return that.shell
+}

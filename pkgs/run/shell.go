@@ -19,6 +19,7 @@ import (
 	"github.com/moqsien/goutils/pkgs/gtea/gtable"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/gshell/pkgs/ktrl"
+	"github.com/moqsien/gshell/pkgs/shell"
 	"github.com/moqsien/neobox/pkgs/cflare/domain"
 	"github.com/moqsien/neobox/pkgs/cflare/wguard"
 	"github.com/moqsien/neobox/pkgs/cflare/wspeed"
@@ -65,13 +66,13 @@ func (that *IShell) SetRunner(runner *Runner) {
 }
 
 func (that *IShell) PingServer() (ok bool) {
-	r := that.ktrl.SendMsg(strings.Trim(ktrl.PingRoute, "/"), "", []*ktrl.Option{})
+	r := that.ktrl.SendMsg(strings.Trim(ktrl.PingRoute, "/"), "", []*shell.Flag{})
 	ok = strings.Contains(string(r), ktrl.PingResponse)
 	return
 }
 
 func (that *IShell) PingVerifier() (ok bool) {
-	r := that.ktrl.SendMsg(strings.Trim(ktrl.PingRoute, "/"), verifierCliName, []*ktrl.Option{})
+	r := that.ktrl.SendMsg(strings.Trim(ktrl.PingRoute, "/"), verifierCliName, []*shell.Flag{})
 	ok = strings.Contains(string(r), ktrl.PingResponse)
 	return
 }
@@ -110,33 +111,33 @@ func (that *IShell) Start() {
 	}
 }
 
-func (that *IShell) getRestartOptions() (r []*ktrl.Option) {
-	r = []*ktrl.Option{
+func (that *IShell) getRestartOptions() (r []*shell.Flag) {
+	r = []*shell.Flag{
 		{
 			Name:    RestartShowProxy,
 			Short:   "p",
-			Type:    ktrl.OptionTypeBool,
+			Type:    shell.OptionTypeBool,
 			Default: "false",
 			Usage:   "To show the chosen proxy or not.",
 		},
 		{
 			Name:    RestartShowConfig,
 			Short:   "c",
-			Type:    ktrl.OptionTypeBool,
+			Type:    shell.OptionTypeBool,
 			Default: "false",
 			Usage:   "To show the config for sing-box/xray-core or not.",
 		},
 		{
 			Name:    RestartUseDomain,
 			Short:   "d",
-			Type:    ktrl.OptionTypeBool,
+			Type:    shell.OptionTypeBool,
 			Default: "false",
 			Usage:   "To use a domain for edgetunnel or not.",
 		},
 		{
 			Name:    RestartForceSingbox,
 			Short:   "s",
-			Type:    ktrl.OptionTypeBool,
+			Type:    shell.OptionTypeBool,
 			Default: "false",
 			Usage:   "To force using sing-box as local client.",
 		},
@@ -410,11 +411,12 @@ func (that *IShell) start() {
 }
 
 func (that *IShell) restart() {
+	opts := that.getRestartOptions()
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
 		Name:          restartCliName,
 		HelpStr:       "Restart the running neobox client with a chosen proxy.",
 		LongHelpStr:   "Example: restart <proxy-index> (if no index is specified, then read from history or use '0' by default.)",
-		Options:       that.getRestartOptions(),
+		Options:       opts,
 		SendInRunFunc: true, // send request in RunFunc.
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			that.Restart(ctx)
@@ -453,7 +455,7 @@ func (that *IShell) stop() {
 			}
 		},
 		Handler: func(ctx *ktrl.KtrlContext) {
-			ctx.SendResponse("neobox successfully exited.", 200)
+			ctx.SendResponse("neobox successfully stopped.", 200)
 			that.runner.Stop()
 		},
 	})
@@ -469,16 +471,16 @@ func (that *IShell) verifier() {
 		Handler:       func(ctx *ktrl.KtrlContext) {},
 	})
 
-	loadHistory := "loadHistory"
+	loadHistory := "load"
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
 		Name:    "start",
 		Parent:  parentStr,
 		HelpStr: "Start the verifier manually.",
-		Options: []*ktrl.Option{
+		Options: []*shell.Flag{
 			{
 				Name:    loadHistory,
 				Short:   "l",
-				Type:    ktrl.OptionTypeBool,
+				Type:    shell.OptionTypeBool,
 				Default: "false",
 				Usage:   "Load history list to rawList.",
 			},
@@ -609,11 +611,11 @@ func (that *IShell) tools() {
 		Parent:      parentStr,
 		HelpStr:     "Generate QRCode for a chosen proxy. ",
 		LongHelpStr: "Example: qcode <proxy_index>.",
-		Options: []*ktrl.Option{
+		Options: []*shell.Flag{
 			{
 				Name:    useDomain,
 				Short:   "d",
-				Type:    ktrl.OptionTypeBool,
+				Type:    shell.OptionTypeBool,
 				Default: "false",
 				Usage:   "Use selected domains[Only for edgetunnels].",
 			},
@@ -666,18 +668,18 @@ func (that *IShell) tools() {
 		Name:    "parse",
 		Parent:  parentStr,
 		HelpStr: "Parse rawURI as xray-core/sing-box outbound string.",
-		Options: []*ktrl.Option{
+		Options: []*shell.Flag{
 			{
 				Name:    singBox,
 				Short:   "s",
-				Type:    ktrl.OptionTypeBool,
+				Type:    shell.OptionTypeBool,
 				Default: "false",
 				Usage:   "Parse sing-box outbound string.",
 			},
 			{
 				Name:    useDomain,
 				Short:   "d",
-				Type:    ktrl.OptionTypeBool,
+				Type:    shell.OptionTypeBool,
 				Default: "false",
 				Usage:   "Use selected domains (Only for edgetunnel).",
 			},
@@ -825,11 +827,11 @@ func (that *IShell) setup() {
 		Name:    "global",
 		Parent:  parentStr,
 		HelpStr: "Toggle Global Proxy status.",
-		Options: []*ktrl.Option{
+		Options: []*shell.Flag{
 			{
 				Name:    enableGlobal,
 				Short:   "e",
-				Type:    ktrl.OptionTypeBool,
+				Type:    shell.OptionTypeBool,
 				Default: "false",
 				Usage:   "To enable if true else to disable.",
 			},
@@ -884,17 +886,17 @@ func (that *IShell) cloudflare() {
 		HelpStr:       "Add edgetunnel proxies to neobox.",
 		LongHelpStr:   "Example: cf add <vless://xxx@xxx?xxx> || cf add -u=UUID -a=Address.",
 		SendInRunFunc: true,
-		Options: []*ktrl.Option{
+		Options: []*shell.Flag{
 			{
 				Name:  uuidName,
 				Short: "u",
-				Type:  ktrl.OptionTypeString,
+				Type:  shell.OptionTypeString,
 				Usage: "UUID for edgetunnel vless.",
 			},
 			{
 				Name:  addName,
 				Short: "a",
-				Type:  ktrl.OptionTypeString,
+				Type:  shell.OptionTypeString,
 				Usage: "Domain/IP for edgetunnel.",
 			},
 		},

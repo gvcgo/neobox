@@ -1,22 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 
+	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/gshell/pkgs/ktrl"
 	"github.com/moqsien/neobox/pkgs/conf"
 	"github.com/moqsien/neobox/pkgs/run"
 	"github.com/moqsien/neobox/pkgs/storage/model"
-	"github.com/moqsien/neobox/pkgs/utils"
 	"github.com/spf13/cobra"
 )
 
 /*
 TODO: test verifier and cron toggler.
 TODO: update documents to wiki.
-TODO: test auto restart using history list.
 */
 type NeoBox struct {
 	Conf   *conf.NeoConf
@@ -52,7 +54,6 @@ func NewApps() (a *Apps) {
 	}
 	a.conf.Reload()
 
-	utils.SetNeoboxEnvs(a.conf.GeoInfoDir, a.conf.SocketDir)
 	a.initiate()
 	// init database
 	model.NewDBEngine(a.conf)
@@ -73,8 +74,9 @@ func (that *Apps) initiate() {
 		},
 	})
 
+	ssCmd := "startServer"
 	ss := &cobra.Command{
-		Use:     "startServer",
+		Use:     ssCmd,
 		Aliases: []string{"ss", "st"},
 		Short:   "Start the server.",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -103,6 +105,22 @@ func (that *Apps) initiate() {
 	ss.Flags().BoolP(run.RestartShowProxy, "p", false, "Show currently used proxy details.")
 	ss.Flags().BoolP(run.RestartShowConfig, "c", false, "Show current config details.")
 	that.rootCmd.AddCommand(ss)
+
+	script := &cobra.Command{
+		Use:     "genScript",
+		Aliases: []string{"gs", "gens"},
+		Short:   "Generate auto-start script.",
+		Run: func(cmd *cobra.Command, args []string) {
+			autoStartScriptName := "nebox_script.sh"
+			if runtime.GOOS == gutils.Windows {
+				autoStartScriptName = "nebox_script.bat"
+			}
+			scriptPath := filepath.Join(that.conf.WorkDir, autoStartScriptName)
+			binPath, _ := os.Executable()
+			os.WriteFile(scriptPath, []byte(fmt.Sprintf("%s %s", binPath, ssCmd)), 0777)
+		},
+	}
+	that.rootCmd.AddCommand(script)
 
 	that.rootCmd.AddCommand(&cobra.Command{
 		Use:     "runner",

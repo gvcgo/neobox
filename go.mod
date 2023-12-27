@@ -7,7 +7,6 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/glebarez/sqlite v1.9.0
 	github.com/gogf/gf v1.16.9
-	github.com/moqsien/goktrl v1.3.8
 	github.com/moqsien/goutils v0.7.6
 	github.com/moqsien/gshell v0.2.7
 	github.com/moqsien/vpnparser v0.2.4
@@ -122,6 +121,7 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/moqsien/goktrl v1.3.8 // indirect
 	github.com/moqsien/processes v1.0.3 // indirect
 	github.com/moqsien/xtractr v0.0.2 // indirect
 	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect

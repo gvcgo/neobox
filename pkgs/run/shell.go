@@ -331,8 +331,9 @@ func (that *IShell) show() {
 				verifierStatus,
 				keeperStatus,
 			))
-			logInfo := gprint.PinkStr(fmt.Sprintf("LogFileDir: %s\n", that.CNF.LogDir))
-			fmt.Printf("%s\n%s\n", nStatus, logInfo)
+			logInfo := gprint.PinkStr(fmt.Sprintf("LogFileDir: %s", that.CNF.LogDir))
+			inboundURI := gprint.YellowStr("Inbound: %s", fmt.Sprintf(utils.LocalProxyPattern, that.CNF.InboundPort))
+			fmt.Printf("%s\n%s\n%s\n", nStatus, inboundURI, logInfo)
 
 			gprint.Cyan("========================================================================")
 			// helpStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#626262")).Render

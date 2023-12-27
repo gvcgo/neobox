@@ -9,7 +9,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/moqsien/goktrl"
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 )
@@ -36,15 +35,8 @@ func SetPingWithoutRootForLinux() {
 ENVs
 */
 const (
-	AssetDirEnvName    string = "xray.location.asset"
-	SockFileDirEnvName string = "NEOBOX_SOCK_FILE_DIR"
+	AssetDirEnvName string = "xray.location.asset"
 )
-
-func SetNeoboxEnvs(assetDir, sockDir string) {
-	os.Setenv(AssetDirEnvName, assetDir)
-	os.Setenv(SockFileDirEnvName, sockDir)
-	os.Setenv(goktrl.GoKtrlSockDirEnv, sockDir) // set goktrl sock file dir
-}
 
 /*
 http client

@@ -6,11 +6,11 @@ import (
 
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/logs"
-	"github.com/moqsien/xraycore/core"
-	"github.com/moqsien/xraycore/infra/conf/serial"
+	"github.com/xtls/xray-core/core"
+	"github.com/xtls/xray-core/infra/conf/serial"
 
 	// must imported
-	_ "github.com/moqsien/xraycore/main/distro/all"
+	_ "github.com/xtls/xray-core/main/distro/all"
 )
 
 type XInstance struct {

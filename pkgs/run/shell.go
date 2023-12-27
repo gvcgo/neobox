@@ -191,9 +191,12 @@ func (that *IShell) Restart(ctx *ktrl.KtrlContext, optionStr ...string) {
 			// use sing-box as client
 			proxyItem = outbound.TransferProxyItem(proxyItem, outbound.SingBox)
 		}
-		if proxyItem != nil {
+		if proxyItem != nil && proxyItem.Scheme != parser.SchemeSSR {
 			proxyStr = crypt.EncodeBase64(proxyItem.String())
 			ctx.SetArgs(proxyStr)
+		} else if proxyItem.Scheme == parser.SchemeSSR {
+			// SSR id deprecated by latest sing-box. https://sing-box.sagernet.org/deprecated/
+			gprint.PrintError("SSR is no longer supported!")
 		} else {
 			gprint.PrintError("proxy not found!")
 		}

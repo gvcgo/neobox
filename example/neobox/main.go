@@ -13,6 +13,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+/*
+TODO: test verifier and cron toggler.
+TODO: update documents to wiki.
+TODO: test auto restart using history list.
+*/
 type NeoBox struct {
 	Conf   *conf.NeoConf
 	Runner *run.Runner

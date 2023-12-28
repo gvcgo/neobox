@@ -16,6 +16,7 @@ const (
 	EtherNetworkservice string = "Ethernet"
 )
 
+// TODO: test.
 func GetNetworkServiceList() (nl []string) {
 	buff, _ := gutils.ExecuteSysCommand(true, ".", "networksetup", "-listallnetworkservices")
 	content, _ := io.ReadAll(buff)

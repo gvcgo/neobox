@@ -16,6 +16,7 @@ var (
 	SudoUser string
 )
 
+// TODO: test.
 func CheckGnome() (ok bool) {
 	if _, err := exec.LookPath("gsettings"); err == nil {
 		ok = true

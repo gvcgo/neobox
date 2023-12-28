@@ -145,13 +145,17 @@ func (that *IShell) getRestartOptions() (r []*shell.Flag) {
 	return
 }
 
-func (that *IShell) Restart(ctx *ktrl.KtrlContext, optionStr ...string) {
+func (that *IShell) removeOldSocketFiles() {
 	if !that.PingServer() {
 		os.RemoveAll(filepath.Join(that.CNF.SocketDir, conf.ShellSocketName))
 	}
 	if !that.runner.PingKeeper() {
 		os.RemoveAll(filepath.Join(that.CNF.SocketDir, NeoKeeperSockName))
 	}
+}
+
+func (that *IShell) Restart(ctx *ktrl.KtrlContext, optionStr ...string) {
+	that.removeOldSocketFiles()
 
 	// prepare args
 	args := ctx.GetArgs()
@@ -190,6 +194,18 @@ func (that *IShell) Restart(ctx *ktrl.KtrlContext, optionStr ...string) {
 		}
 		// get proxyItem (Do not influence the Result of verifier at the server side.)
 		proxyItem := that.runner.GetProxyByIndex(idxStr, useDomain)
+		// try to get "e0"
+		if proxyItem == nil && idxStr == "0" {
+			proxyItem = that.runner.GetProxyByIndex(FromEdgetunnel+idxStr, useDomain)
+		}
+		// try to get "m0"
+		if proxyItem == nil && idxStr == "0" {
+			proxyItem = that.runner.GetProxyByIndex(FromManually+idxStr, useDomain)
+		}
+		// try to get "w0"
+		if proxyItem == nil && idxStr == "0" {
+			proxyItem = that.runner.GetProxyByIndex(FromWireguard+idxStr, useDomain)
+		}
 
 		if !forceSingbox && proxyItem.Scheme != parser.SchemeSS && proxyItem.Scheme != parser.SchemeSSR {
 			//use xray-core as client
@@ -204,8 +220,10 @@ func (that *IShell) Restart(ctx *ktrl.KtrlContext, optionStr ...string) {
 		} else if proxyItem.Scheme == parser.SchemeSSR {
 			// SSR id deprecated by latest sing-box. https://sing-box.sagernet.org/deprecated/
 			gprint.PrintError("SSR is no longer supported!")
+			return
 		} else {
 			gprint.PrintError("proxy not found!")
+			return
 		}
 	}
 
@@ -415,6 +433,7 @@ func (that *IShell) start() {
 		HelpStr:       "Start a neobox server.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
+			that.removeOldSocketFiles()
 			that.Start()
 		},
 		Handler: func(ctx *ktrl.KtrlContext) {},
@@ -464,6 +483,8 @@ func (that *IShell) stop() {
 			} else {
 				gprint.PrintInfo("keeper is not running for now.")
 			}
+			time.Sleep(3 * time.Second)
+			that.removeOldSocketFiles()
 		},
 		Handler: func(ctx *ktrl.KtrlContext) {
 			ctx.SendResponse("neobox successfully stopped.", 200)

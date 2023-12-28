@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/logs"
 	"github.com/moqsien/gshell/pkgs/ktrl"
@@ -113,7 +114,10 @@ func (that *Apps) initiate() {
 			}
 			scriptPath := filepath.Join(that.conf.WorkDir, autoStartScriptName)
 			binPath, _ := os.Executable()
-			os.WriteFile(scriptPath, []byte(fmt.Sprintf("%s %s", binPath, ssCmd)), 0777)
+			err := os.WriteFile(scriptPath, []byte(fmt.Sprintf("%s %s", binPath, ssCmd)), 0777)
+			if err == nil {
+				gprint.PrintSuccess(scriptPath)
+			}
 		},
 	}
 	that.rootCmd.AddCommand(script)

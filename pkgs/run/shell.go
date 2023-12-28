@@ -412,7 +412,7 @@ func (that *IShell) show() {
 func (that *IShell) start() {
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
 		Name:          "start",
-		HelpStr:       "Start a neobox client.",
+		HelpStr:       "Start a neobox server.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			that.Start()
@@ -425,7 +425,7 @@ func (that *IShell) restart() {
 	opts := that.getRestartOptions()
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
 		Name:          restartCliName,
-		HelpStr:       "Restart the running neobox client with a chosen proxy.",
+		HelpStr:       "Restart the running neobox server with a chosen proxy.",
 		LongHelpStr:   "Example: restart <proxy-index> (if no index is specified, then read from history or use '0' by default.)",
 		Options:       opts,
 		SendInRunFunc: true, // send request in RunFunc.
@@ -449,7 +449,7 @@ func (that *IShell) restart() {
 func (that *IShell) stop() {
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
 		Name:          "stop",
-		HelpStr:       "Stop neobox client.",
+		HelpStr:       "Stop neobox server.",
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			if that.PingServer() {

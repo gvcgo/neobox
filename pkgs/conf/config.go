@@ -55,6 +55,7 @@ type NeoConf struct {
 	MaxPingAvgRTT         int64             `json,koanf:"max_ping_avgrtt"`
 	MaxPingPackLoss       float64           `json,koanf:"max_ping_packloss"`
 	InboundPort           int               `json,koanf:"inbound_port"`
+	EnableInboundSocks    bool              `json,koanf:"enable_socks"`
 	VerificationPortRange *PortRange        `json,koanf:"port_range"`
 	VerificationTimeout   int               `json,koanf:"verification_timeout"`
 	VerificationUrl       string            `json,koanf:"verification_url"`

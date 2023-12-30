@@ -832,6 +832,7 @@ func (that *IShell) manual() {
 	})
 }
 
+// TODO： setup inbound type and inbound port
 func (that *IShell) setup() {
 	parentStr := "setup"
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{
@@ -904,6 +905,40 @@ func (that *IShell) setup() {
 		SendInRunFunc: true,
 		RunFunc: func(ctx *ktrl.KtrlContext) {
 			utils.SetPingWithoutRootForLinux()
+		},
+		Handler: func(ctx *ktrl.KtrlContext) {},
+	})
+
+	enableSocks := "enableSocks"
+	that.ktrl.AddCommand(&ktrl.KtrlCommand{
+		Name:          "inbound",
+		Parent:        parentStr,
+		HelpStr:       "Set up inbound info.",
+		LongHelpStr:   "Example: inbound -e <inbound_port>.",
+		SendInRunFunc: true,
+		Options: []*shell.Flag{
+			{
+				Name:    enableSocks,
+				Short:   "e",
+				Type:    shell.OptionTypeBool,
+				Default: "false",
+				Usage:   "To use socks5 protocol for Inbound.",
+			},
+		},
+		RunFunc: func(ctx *ktrl.KtrlContext) {
+			that.CNF.Reload()
+			args := ctx.GetArgs()
+			if len(args) > 0 {
+				if port, err := strconv.Atoi(args[0]); err == nil && port > 100 {
+					that.CNF.InboundPort = port
+				}
+			}
+			if ctx.GetBool(enableSocks) {
+				that.CNF.EnableInboundSocks = true
+			} else {
+				that.CNF.EnableInboundSocks = false
+			}
+			that.CNF.Restore()
 		},
 		Handler: func(ctx *ktrl.KtrlContext) {},
 	})

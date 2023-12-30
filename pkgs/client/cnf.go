@@ -5,11 +5,15 @@ import (
 	"path/filepath"
 
 	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/util/gconv"
 	"github.com/moqsien/neobox/pkgs/utils"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 	vutils "github.com/moqsien/vpnparser/pkgs/utils"
 )
 
+/*
+Docs: https://xtls.github.io/config/#%E6%A6%82%E8%BF%B0
+*/
 var XrayCoreConfigStr = `{
     "dns": {
         "servers": [
@@ -101,6 +105,9 @@ var XrayCoreConfigStr = `{
     }
 }`
 
+/*
+Docs: https://sing-box.sagernet.org/zh/configuration/
+*/
 var SingBoxConfigString string = `{
     "dns":{
         "independent_cache":true,
@@ -226,6 +233,7 @@ type IOutbound interface {
 const (
 	SingBoxGeoIPFileName   string = "geoip.db"
 	SingboxGeoSiteFileName string = "geosite.db"
+	XrayCoreEnableSocksEnv string = "XRAY_CORE_ENABLE_SOCKS"
 )
 
 func PrepareConfig(out IOutbound, inboundPort int, logPath, geoInfoDir string) (conf []byte) {
@@ -259,6 +267,12 @@ func PrepareConfig(out IOutbound, inboundPort int, logPath, geoInfoDir string) (
 		j = vutils.SetJsonObjectByString("outbounds.0", out.GetOutbound(), j)
 		j.Set("inbounds.0.port", inboundPort)
 		j.Set("log.error", logPath)
+		// setup inbound type for socks5
+		socksEnv := os.Getenv(XrayCoreEnableSocksEnv)
+		if gconv.Bool(socksEnv) {
+			j.Set("inbounds.0.protocol", "socks")
+			j.Set("inbounds.0.tag", "socks-in")
+		}
 		// xray-core use "XRAY_LOCATION_ASSET" or "xray.location.asset" to specify the location of assets
 		// https://xtls.github.io/config/features/env.html
 		if geoInfoDir != "" && os.Getenv(utils.AssetDirEnvName) == "" {

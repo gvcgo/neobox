@@ -72,6 +72,11 @@ func NewRunner(cnf *conf.NeoConf) (r *Runner) {
 	r.shell.InitKtrl()
 	r.daemon.SetWorkdir(cnf.WorkDir)
 	r.daemon.SetScriptName(winRunScriptName)
+	if cnf.EnableInboundSocks {
+		os.Setenv(client.XrayCoreEnableSocksEnv, "true")
+	} else {
+		os.Setenv(client.XrayCoreEnableSocksEnv, "false")
+	}
 	return
 }
 
@@ -83,46 +88,6 @@ func (that *Runner) Current() string {
 		return that.CurrentProxy.Scheme + that.CurrentProxy.GetHost()
 	}
 }
-
-/*
-// runner server related
-func (that *Runner) startPingServer() {
-	server := socks.NewUServer(that.extraSocks)
-	server.AddHandler(runnerPingRoute, func(c *gin.Context) {
-		c.String(http.StatusOK, OkStr)
-	})
-	server.AddHandler(runnerVerifierRoute, func(c *gin.Context) {
-		if that.verifier.IsRunning() {
-			c.String(http.StatusOK, OkStr)
-		} else {
-			c.String(http.StatusOK, "false")
-		}
-	})
-	if err := server.Start(); err != nil {
-		logs.Error("[start ping server failed] ", err)
-	}
-}
-
-func (that *Runner) PingRunner() bool {
-	if that.pingClient == nil {
-		that.pingClient = socks.NewUClient(that.extraSocks)
-	}
-	if resp, err := that.pingClient.GetResp(runnerPingRoute, map[string]string{}); err == nil {
-		return strings.Contains(resp, OkStr)
-	}
-	return false
-}
-
-func (that *Runner) PingVerifier() bool {
-	if that.pingClient == nil {
-		that.pingClient = socks.NewUClient(that.extraSocks)
-	}
-	if resp, err := that.pingClient.GetResp(runnerVerifierRoute, map[string]string{}); err == nil {
-		return strings.Contains(resp, OkStr)
-	}
-	return false
-}
-*/
 
 func (that *Runner) getNextProxy(args ...string) *outbound.ProxyItem {
 	proxyStr := ""
@@ -246,9 +211,6 @@ func (that *Runner) Start(args ...string) {
 	}
 	that.daemon.Run(os.Args...)
 
-	/*
-		go that.startPingServer()   // start ping server
-	*/
 	go that.shell.StartServer() // start shell server
 
 	// Enable verifier or not.

@@ -1,5 +1,5 @@
 ## Docs
-For documents, please read the [NeoBox Wiki](https://github.com/moqsien/neobox/wiki).
+For documents, please see [NeoBox Wiki](https://github.com/moqsien/neobox/wiki).
 
 ## Gallery
 

@@ -23,6 +23,7 @@ import (
 /*
 https://uutool.cn/info-nation/
 https://www.fkcoder.com/ip?ip=%s
+TODO: http://ip-api.com/json/220.181.108.114
 */
 
 type CountryItem struct {

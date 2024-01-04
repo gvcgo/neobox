@@ -85,7 +85,8 @@ func (that *Runner) Current() string {
 	if that.CurrentProxy == nil {
 		return ""
 	} else {
-		return that.CurrentProxy.Scheme + that.CurrentProxy.GetHost()
+		countryAbbr := that.verifier.Locater.Query(that.CurrentProxy)
+		return that.CurrentProxy.Scheme + that.CurrentProxy.GetHost() + fmt.Sprintf("<%s>", countryAbbr)
 	}
 }
 

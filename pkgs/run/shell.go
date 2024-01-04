@@ -832,7 +832,6 @@ func (that *IShell) manual() {
 	})
 }
 
-// TODO： setup inbound type and inbound port
 func (that *IShell) setup() {
 	parentStr := "setup"
 	that.ktrl.AddCommand(&ktrl.KtrlCommand{

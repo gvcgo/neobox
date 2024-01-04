@@ -63,6 +63,7 @@ type NeoConf struct {
 	MaxToSaveRTT          int64             `json,koanf:"max_tosave_rtt"`
 	CountryAbbrevsUrl     string            `json,koanf:"country_abbr_url"`
 	IPLocationQueryUrl    string            `json,koanf:"ip_location_url"`
+	IPLocationQueryUrl2   string            `json,koanf:"ip_location_url2"`
 	GeoInfoUrls           map[string]string `json,koanf:"geo_info_urls"`
 	GeoInfoSumUrl         string            `json,koanf:"geo_info_sum_url"`
 	KeeperCron            string            `json,koanf:"keeper_cron"`
@@ -125,6 +126,7 @@ func (that *NeoConf) SetDefault() {
 	that.MaxToSaveRTT = 2000
 	that.CountryAbbrevsUrl = "https://gitlab.com/moqsien/neobox_related/-/raw/main/country_names.json?ref_type=heads&inline=false"
 	that.IPLocationQueryUrl = "https://www.fkcoder.com/ip?ip=%s"
+	that.IPLocationQueryUrl2 = "http://ip-api.com/json/%s"
 	that.GeoInfoUrls = map[string]string{
 		"geoip.dat":   "https://gitlab.com/moqsien/neobox_related/-/raw/main/geoip.dat",
 		"geosite.dat": "https://gitlab.com/moqsien/neobox_related/-/raw/main/geosite.dat",

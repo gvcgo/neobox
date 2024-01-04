@@ -23,7 +23,6 @@ import (
 /*
 https://uutool.cn/info-nation/
 https://www.fkcoder.com/ip?ip=%s
-TODO: http://ip-api.com/json/220.181.108.114
 */
 
 type CountryItem struct {
@@ -113,6 +112,11 @@ func (that *ProxyLocations) Query(pxy *outbound.ProxyItem) (name string) {
 		return
 	}
 
+	name = that.getLoc(pxy, ipStr)
+	if name != "" {
+		return
+	}
+
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(that.CNF.IPLocationQueryUrl, ipStr), nil)
 	if err != nil {
 		gprint.PrintError("%+v", err)
@@ -133,9 +137,37 @@ func (that *ProxyLocations) Query(pxy *outbound.ProxyItem) (name string) {
 		if content, err := io.ReadAll(resp.Body); err == nil {
 			j := gjson.New(content)
 			that.lock.Lock()
-			countryAbbr := that.parseCountryName(j.GetString("country"))
-			that.ipLocationSaver.Create(ipStr, countryAbbr)
-			pxy.Location = countryAbbr
+			name = that.parseCountryName(j.GetString("country"))
+			that.ipLocationSaver.Create(ipStr, name)
+			pxy.Location = name
+			that.lock.Unlock()
+		}
+	}
+	return
+}
+
+/*
+Get Locations info from http://ip-api.com/json/220.181.108.114
+*/
+func (that *ProxyLocations) getLoc(pxy *outbound.ProxyItem, ipStr string) (name string) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(that.CNF.IPLocationQueryUrl2, ipStr), nil)
+	if err != nil {
+		gprint.PrintError("%+v", err)
+		return
+	}
+	if resp, err := http.DefaultClient.Do(req); err != nil {
+		gprint.PrintError("%+v", err)
+		return
+	} else {
+		defer resp.Body.Close()
+		if content, err := io.ReadAll(resp.Body); err == nil {
+			j := gjson.New(content)
+			that.lock.Lock()
+			name = j.GetString("countryCode")
+			if name != "" {
+				that.ipLocationSaver.Create(ipStr, name)
+				pxy.Location = name
+			}
 			that.lock.Unlock()
 		}
 	}

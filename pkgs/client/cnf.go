@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/util/gconv"
+	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/moqsien/neobox/pkgs/utils"
 	"github.com/moqsien/vpnparser/pkgs/outbound"
 	vutils "github.com/moqsien/vpnparser/pkgs/utils"
@@ -247,7 +247,7 @@ func PrepareConfig(out IOutbound, inboundPort int, logPath, geoInfoDir string) (
 		j.Set("inbounds.1.listen_port", inboundPort)
 		j.Set("log.output", logPath)
 		jj := gjson.New(out.GetOutbound())
-		serverAddr := jj.Get("server")
+		serverAddr := jj.Get("server").String()
 		if serverAddr != "" {
 			j.Set("dns.rules.0.domain.0", serverAddr)
 		}

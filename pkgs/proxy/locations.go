@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	json "github.com/bytedance/sonic"
-	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/goutils/pkgs/gutils"
 	"github.com/moqsien/goutils/pkgs/logs"
@@ -137,7 +137,7 @@ func (that *ProxyLocations) Query(pxy *outbound.ProxyItem) (name string) {
 		if content, err := io.ReadAll(resp.Body); err == nil {
 			j := gjson.New(content)
 			that.lock.Lock()
-			name = that.parseCountryName(j.GetString("country"))
+			name = that.parseCountryName(j.Get("country").String())
 			that.ipLocationSaver.Create(ipStr, name)
 			pxy.Location = name
 			that.lock.Unlock()
@@ -163,7 +163,7 @@ func (that *ProxyLocations) getLoc(pxy *outbound.ProxyItem, ipStr string) (name 
 		if content, err := io.ReadAll(resp.Body); err == nil {
 			j := gjson.New(content)
 			that.lock.Lock()
-			name = j.GetString("countryCode")
+			name = j.Get("countryCode").String()
 			if name != "" {
 				that.ipLocationSaver.Create(ipStr, name)
 				pxy.Location = name

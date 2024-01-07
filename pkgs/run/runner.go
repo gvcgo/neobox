@@ -12,7 +12,7 @@ import (
 	"time"
 
 	json "github.com/bytedance/sonic"
-	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/moqsien/goutils/pkgs/daemon"
 	"github.com/moqsien/goutils/pkgs/gtea/gprint"
 	"github.com/moqsien/neobox/pkgs/cflare/wguard"

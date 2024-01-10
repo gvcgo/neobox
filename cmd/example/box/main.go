@@ -17,12 +17,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type NeoBox struct {
+type NBox struct {
 	Conf   *conf.NeoConf
 	Runner *run.Runner
 }
 
-func NewNeoBox(cnf *conf.NeoConf) *NeoBox {
+func NewNeoBox(cnf *conf.NeoConf) *NBox {
 	if cnf == nil {
 		cnf = conf.GetDefaultNeoConf()
 	}
@@ -32,7 +32,7 @@ func NewNeoBox(cnf *conf.NeoConf) *NeoBox {
 	runner.SetStarter(exec.Command(binPath, "runner"))
 	runner.SetKeeperStarter(exec.Command(binPath, "keeper"))
 
-	nb := &NeoBox{
+	nb := &NBox{
 		Conf:   cnf,
 		Runner: runner,
 	}

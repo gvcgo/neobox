@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/glebarez/sqlite v1.9.0
 	github.com/gogf/gf/v2 v2.6.1
-	github.com/moqsien/goutils v0.7.8
+	github.com/moqsien/goutils v0.8.0
 	github.com/moqsien/gshell v0.2.8
 	github.com/moqsien/vpnparser v0.2.6
 	github.com/moqsien/wgcf v0.0.0-20230611034603-e29859e0cae2

@@ -111,8 +111,7 @@ func (that *NeoConf) SetDefault() {
 	if that.WorkDir == "" {
 		that.WorkDir = workDir
 	}
-	// TODO: switch to github.
-	that.DownloadUrl = "https://gitlab.com/moqsien/neobox_related/-/raw/main/conf.txt"
+	that.DownloadUrl = "https://cdn.jsdelivr.net/gh/moqsien/neobox_resources@main/conf.txt"
 	that.MaxPingers = 120
 	that.MaxPingAvgRTT = 600
 	that.MaxPingPackLoss = 10
@@ -125,31 +124,27 @@ func (that *NeoConf) SetDefault() {
 	that.VerificationUrl = "https://www.google.com"
 	that.VerificationCron = "@every 2h"
 	that.MaxToSaveRTT = 2000
-	// TODO: switch to github.
 	that.CountryAbbrevsUrl = "https://gitlab.com/moqsien/neobox_related/-/raw/main/country_names.json?ref_type=heads&inline=false"
 	that.IPLocationQueryUrl = "https://www.fkcoder.com/ip?ip=%s"
 	that.IPLocationQueryUrl2 = "http://ip-api.com/json/%s"
-	// TODO: switch to github.
 	that.GeoInfoUrls = map[string]string{
-		"geoip.dat":   "https://gitlab.com/moqsien/neobox_related/-/raw/main/geoip.dat",
-		"geosite.dat": "https://gitlab.com/moqsien/neobox_related/-/raw/main/geosite.dat",
-		"geoip.db":    "https://gitlab.com/moqsien/neobox_related/-/raw/main/geoip.db",
-		"geosite.db":  "https://gitlab.com/moqsien/neobox_related/-/raw/main/geosite.db",
+		"geoip.dat":   "https://gvc.1710717.xyz/proxy/https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat",
+		"geosite.dat": "https://gvc.1710717.xyz/proxy/https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat",
+		"geoip.db":    "https://gvc.1710717.xyz/proxy/https://github.com/lyc8503/sing-box-rules/releases/latest/download/geoip.db",
+		"geosite.db":  "https://gvc.1710717.xyz/proxy/https://github.com/lyc8503/sing-box-rules/releases/latest/download/geosite.db",
 	}
 
-	// TODO: switch to github.
 	that.GeoInfoSumUrl = "https://gitlab.com/moqsien/gvc_resources/-/raw/main/files_info.json?ref_type=heads&inline=false"
 	that.KeeperCron = "@every 3m"
 	that.CloudflareConf = &CloudflareConf{
-		CloudflareIPV4URL: "https://www.cloudflare.com/ips-v4",
-		PortList:          []int{443, 8443, 2053, 2096, 2087, 2083},
-		MaxPingCount:      4,
-		MaxGoroutines:     300,
-		MaxRTT:            800,
-		MaxLossRate:       30.0,
-		MaxSaveToDB:       1000,
-		// TODO: switch to github.
-		CloudflareDomainFileUrl: "https://gitlab.com/moqsien/neobox_related/-/raw/main/cloudflare_domains.txt?ref_type=heads&inline=false",
+		CloudflareIPV4URL:       "https://www.cloudflare.com/ips-v4",
+		PortList:                []int{443, 8443, 2053, 2096, 2087, 2083},
+		MaxPingCount:            4,
+		MaxGoroutines:           300,
+		MaxRTT:                  800,
+		MaxLossRate:             30.0,
+		MaxSaveToDB:             1000,
+		CloudflareDomainFileUrl: "https://cdn.jsdelivr.net/gh/moqsien/neobox_resources@main/domains.txt",
 	}
 	that.LogDir = that.WorkDir
 	that.SocketDir = that.WorkDir

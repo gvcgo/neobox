@@ -49,7 +49,14 @@ func NewCPinger(cnf *conf.NeoConf) (cp *CPinger) {
 func (that *CPinger) Download() {
 	that.fetcher.SetUrl(that.CNF.CloudflareConf.CloudflareDomainFileUrl)
 	that.fetcher.Timeout = 30 * time.Second
-	that.fetcher.GetAndSaveFile(that.filePath, true)
+	content, sCode := that.fetcher.GetString()
+	// that.fetcher.GetAndSaveFile(that.filePath, true)
+	if sCode != 200 {
+		gprint.PrintError("Download failed, status code: %v", sCode)
+	} else {
+		os.WriteFile(that.filePath, []byte(content), os.ModePerm)
+		gprint.PrintSuccess("Download succeeded: %s", that.filePath)
+	}
 }
 
 func (that *CPinger) GetRawList() {

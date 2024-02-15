@@ -4,10 +4,10 @@ import (
 	"path/filepath"
 
 	"github.com/glebarez/sqlite"
-	"github.com/moqsien/goutils/pkgs/gtea/gprint"
-	"github.com/moqsien/goutils/pkgs/gutils"
-	"github.com/moqsien/goutils/pkgs/logs"
-	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/goutils/pkgs/logs"
+	"github.com/gvcgo/neobox/pkgs/conf"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )

@@ -4,7 +4,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/moqsien/goutils/pkgs/gutils"
+	"github.com/gvcgo/goutils/pkgs/gutils"
 )
 
 type Item struct {

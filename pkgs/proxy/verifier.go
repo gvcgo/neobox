@@ -10,14 +10,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/moqsien/goutils/pkgs/gtea/gprint"
-	"github.com/moqsien/goutils/pkgs/logs"
-	"github.com/moqsien/neobox/pkgs/client"
-	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/neobox/pkgs/storage/dao"
-	"github.com/moqsien/neobox/pkgs/storage/model"
-	"github.com/moqsien/neobox/pkgs/utils"
-	"github.com/moqsien/vpnparser/pkgs/outbound"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/logs"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
+	"github.com/gvcgo/neobox/pkgs/client"
+	"github.com/gvcgo/neobox/pkgs/conf"
+	"github.com/gvcgo/neobox/pkgs/storage/dao"
+	"github.com/gvcgo/neobox/pkgs/storage/model"
+	"github.com/gvcgo/neobox/pkgs/utils"
 )
 
 type Verifier struct {

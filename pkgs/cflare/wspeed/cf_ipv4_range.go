@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/moqsien/goutils/pkgs/gutils"
-	"github.com/moqsien/goutils/pkgs/request"
-	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/goutils/pkgs/request"
+	"github.com/gvcgo/neobox/pkgs/conf"
 )
 
 /*

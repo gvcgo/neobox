@@ -3,8 +3,8 @@ package client
 import (
 	"path/filepath"
 
-	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/vpnparser/pkgs/outbound"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
+	"github.com/gvcgo/neobox/pkgs/conf"
 )
 
 type IClient interface {

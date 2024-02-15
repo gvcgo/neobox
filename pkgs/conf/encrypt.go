@@ -3,8 +3,8 @@ package conf
 import (
 	"path/filepath"
 
-	"github.com/moqsien/goutils/pkgs/gutils"
-	"github.com/moqsien/goutils/pkgs/koanfer"
+	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/goutils/pkgs/koanfer"
 )
 
 /*

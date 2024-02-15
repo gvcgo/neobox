@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/moqsien/goutils/pkgs/daemon"
-	"github.com/moqsien/goutils/pkgs/gtea/gprint"
-	"github.com/moqsien/goutils/pkgs/socks"
-	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/gvcgo/goutils/pkgs/daemon"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/socks"
+	"github.com/gvcgo/neobox/pkgs/conf"
 	cron "github.com/robfig/cron/v3"
 )
 

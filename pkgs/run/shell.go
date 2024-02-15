@@ -14,23 +14,23 @@ import (
 
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/util/gconv"
-	"github.com/moqsien/goutils/pkgs/crypt"
-	"github.com/moqsien/goutils/pkgs/gtea/gprint"
-	"github.com/moqsien/goutils/pkgs/gtea/gtable"
-	"github.com/moqsien/goutils/pkgs/gutils"
-	"github.com/moqsien/gshell/pkgs/ktrl"
-	"github.com/moqsien/gshell/pkgs/shell"
-	"github.com/moqsien/neobox/pkgs/cflare/domain"
-	"github.com/moqsien/neobox/pkgs/cflare/wguard"
-	"github.com/moqsien/neobox/pkgs/cflare/wspeed"
-	"github.com/moqsien/neobox/pkgs/client/sysproxy"
-	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/neobox/pkgs/proxy"
-	"github.com/moqsien/neobox/pkgs/storage/dao"
-	"github.com/moqsien/neobox/pkgs/storage/model"
-	"github.com/moqsien/neobox/pkgs/utils"
-	"github.com/moqsien/vpnparser/pkgs/outbound"
-	"github.com/moqsien/vpnparser/pkgs/parser"
+	"github.com/gvcgo/goutils/pkgs/crypt"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gtea/gtable"
+	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/gshell/pkgs/ktrl"
+	"github.com/gvcgo/gshell/pkgs/shell"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
+	"github.com/gvcgo/vpnparser/pkgs/parser"
+	"github.com/gvcgo/neobox/pkgs/cflare/domain"
+	"github.com/gvcgo/neobox/pkgs/cflare/wguard"
+	"github.com/gvcgo/neobox/pkgs/cflare/wspeed"
+	"github.com/gvcgo/neobox/pkgs/client/sysproxy"
+	"github.com/gvcgo/neobox/pkgs/conf"
+	"github.com/gvcgo/neobox/pkgs/proxy"
+	"github.com/gvcgo/neobox/pkgs/storage/dao"
+	"github.com/gvcgo/neobox/pkgs/storage/model"
+	"github.com/gvcgo/neobox/pkgs/utils"
 	"github.com/reeflective/console"
 )
 
@@ -1089,7 +1089,7 @@ func (that *IShell) StartShell() {
 	that.ktrl.PreShellStart()
 	sh := that.ktrl.GetShell()
 	sh.SetPrintLogo(func(_ *console.Console) {
-		gprint.Yellow("Welcome to NeoBox! Visit <https://github.com/moqsien/neobox/wiki> to learn more.")
+		gprint.Yellow("Welcome to NeoBox! Visit <https://github.com/gvcgo/neobox/wiki> to learn more.")
 	})
 	sh.SetupPrompt(func(m *console.Menu) {
 		time.Sleep(time.Second)

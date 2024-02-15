@@ -8,13 +8,13 @@ import (
 	"strings"
 
 	"github.com/gogf/gf/v2/encoding/gjson"
-	"github.com/moqsien/goutils/pkgs/crypt"
-	"github.com/moqsien/goutils/pkgs/gtea/gprint"
-	"github.com/moqsien/goutils/pkgs/gutils"
-	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/vpnparser/pkgs/outbound"
-	"github.com/moqsien/vpnparser/pkgs/parser"
-	"github.com/moqsien/vpnparser/pkgs/utils"
+	"github.com/gvcgo/goutils/pkgs/crypt"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
+	"github.com/gvcgo/vpnparser/pkgs/parser"
+	"github.com/gvcgo/vpnparser/pkgs/utils"
+	"github.com/gvcgo/neobox/pkgs/conf"
 	qrcode "github.com/skip2/go-qrcode"
 )
 

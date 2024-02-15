@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"github.com/moqsien/neobox/pkgs/storage/model"
+	"github.com/gvcgo/neobox/pkgs/storage/model"
 )
 
 type Country struct{}

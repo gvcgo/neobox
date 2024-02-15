@@ -1,4 +1,4 @@
-module github.com/moqsien/neobox
+module github.com/gvcgo/neobox
 
 go 1.21.5
 
@@ -7,10 +7,10 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/glebarez/sqlite v1.9.0
 	github.com/gogf/gf/v2 v2.6.1
-	github.com/moqsien/goutils v0.8.1
-	github.com/moqsien/gshell v0.2.8
-	github.com/moqsien/vpnparser v0.2.6
-	github.com/moqsien/wgcf v0.0.0-20230611034603-e29859e0cae2
+	github.com/gvcgo/goutils v0.8.5
+	github.com/gvcgo/gshell v0.3.0
+	github.com/gvcgo/vpnparser v0.2.7
+	github.com/gvcgo/wgcf v0.0.0-20240215142944-92afb07aa1ec
 	github.com/prometheus-community/pro-bing v0.3.0
 	github.com/reeflective/console v0.1.15
 	github.com/robfig/cron/v3 v3.0.1
@@ -80,6 +80,7 @@ require (
 	github.com/gookit/color v1.5.3 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/grokify/html-strip-tags-go v0.0.1 // indirect
+	github.com/gvcgo/xtractr v0.0.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
@@ -115,7 +116,6 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/moqsien/xtractr v0.0.2 // indirect
 	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/moqsien/neobox/pkgs/conf"
+	"github.com/gvcgo/neobox/pkgs/conf"
 )
 
 func isIPv4(ip string) bool {

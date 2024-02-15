@@ -5,12 +5,12 @@ import (
 	"path/filepath"
 
 	json "github.com/bytedance/sonic"
-	"github.com/moqsien/goutils/pkgs/gtea/gprint"
-	"github.com/moqsien/goutils/pkgs/gutils"
-	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/neobox/pkgs/storage/dao"
-	"github.com/moqsien/vpnparser/pkgs/outbound"
-	"github.com/moqsien/vpnparser/pkgs/parser"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
+	"github.com/gvcgo/vpnparser/pkgs/parser"
+	"github.com/gvcgo/neobox/pkgs/conf"
+	"github.com/gvcgo/neobox/pkgs/storage/dao"
 )
 
 // prepare wireguard outbound

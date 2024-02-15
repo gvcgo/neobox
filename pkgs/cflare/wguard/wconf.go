@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/moqsien/goutils/pkgs/gtea/gprint"
-	"github.com/moqsien/goutils/pkgs/gutils"
-	"github.com/moqsien/goutils/pkgs/koanfer"
-	"github.com/moqsien/wgcf/cloudflare"
-	"github.com/moqsien/wgcf/config"
-	"github.com/moqsien/wgcf/util"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/goutils/pkgs/koanfer"
+	"github.com/gvcgo/wgcf/cloudflare"
+	"github.com/gvcgo/wgcf/config"
+	"github.com/gvcgo/wgcf/util"
 )
 
 /*

@@ -4,10 +4,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/moqsien/goutils/pkgs/gtea/confirm"
-	"github.com/moqsien/goutils/pkgs/gtea/gprint"
-	"github.com/moqsien/goutils/pkgs/gutils"
-	"github.com/moqsien/goutils/pkgs/koanfer"
+	"github.com/gvcgo/goutils/pkgs/gtea/confirm"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/goutils/pkgs/koanfer"
 )
 
 type PortRange struct {

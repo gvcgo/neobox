@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/moqsien/goutils/pkgs/gutils"
+	"github.com/gvcgo/goutils/pkgs/gutils"
 )
 
 const (

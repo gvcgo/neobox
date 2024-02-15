@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/moqsien/goutils/pkgs/gutils"
+	"github.com/gvcgo/goutils/pkgs/gutils"
 )
 
 var (

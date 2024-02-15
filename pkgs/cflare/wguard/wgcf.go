@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/moqsien/goutils/pkgs/gtea/gprint"
-	"github.com/moqsien/goutils/pkgs/gutils"
-	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/wgcf/cloudflare"
-	"github.com/moqsien/wgcf/config"
-	"github.com/moqsien/wgcf/wireguard"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/wgcf/cloudflare"
+	"github.com/gvcgo/wgcf/config"
+	"github.com/gvcgo/wgcf/wireguard"
+	"github.com/gvcgo/neobox/pkgs/conf"
 )
 
 const (

@@ -9,14 +9,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/moqsien/goutils/pkgs/gtea/bar"
-	"github.com/moqsien/goutils/pkgs/gtea/gprint"
-	"github.com/moqsien/goutils/pkgs/gutils"
-	"github.com/moqsien/goutils/pkgs/request"
-	"github.com/moqsien/neobox/pkgs/cflare/wspeed"
-	"github.com/moqsien/neobox/pkgs/conf"
-	"github.com/moqsien/neobox/pkgs/storage/dao"
-	"github.com/moqsien/neobox/pkgs/storage/model"
+	"github.com/gvcgo/goutils/pkgs/gtea/bar"
+	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
+	"github.com/gvcgo/goutils/pkgs/gutils"
+	"github.com/gvcgo/goutils/pkgs/request"
+	"github.com/gvcgo/neobox/pkgs/cflare/wspeed"
+	"github.com/gvcgo/neobox/pkgs/conf"
+	"github.com/gvcgo/neobox/pkgs/storage/dao"
+	"github.com/gvcgo/neobox/pkgs/storage/model"
 )
 
 type CPinger struct {

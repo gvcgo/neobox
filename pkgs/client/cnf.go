@@ -6,9 +6,9 @@ import (
 
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/util/gconv"
-	"github.com/moqsien/neobox/pkgs/utils"
-	"github.com/moqsien/vpnparser/pkgs/outbound"
-	vutils "github.com/moqsien/vpnparser/pkgs/utils"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
+	vutils "github.com/gvcgo/vpnparser/pkgs/utils"
+	"github.com/gvcgo/neobox/pkgs/utils"
 )
 
 /*

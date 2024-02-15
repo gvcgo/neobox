@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 
-	"github.com/moqsien/vpnparser/pkgs/outbound"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
 	"gorm.io/gorm"
 )
 

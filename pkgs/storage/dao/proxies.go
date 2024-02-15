@@ -3,8 +3,8 @@ package dao
 import (
 	"time"
 
-	"github.com/moqsien/neobox/pkgs/storage/model"
-	"github.com/moqsien/vpnparser/pkgs/outbound"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
+	"github.com/gvcgo/neobox/pkgs/storage/model"
 )
 
 type Proxy struct{}

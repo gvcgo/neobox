@@ -11,10 +11,10 @@ import (
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/logs"
 	"github.com/gvcgo/goutils/pkgs/request"
-	"github.com/gvcgo/vpnparser/pkgs/outbound"
 	"github.com/gvcgo/neobox/pkgs/conf"
 	"github.com/gvcgo/neobox/pkgs/storage/dao"
 	"github.com/gvcgo/neobox/pkgs/storage/model"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
 )
 
 type ProxyFetcher struct {
@@ -53,21 +53,21 @@ func (that *ProxyFetcher) DecryptAndLoad() {
 			c := crypt.NewCrptWithKey([]byte(that.Key.Key))
 			result, err := c.AesDecrypt(content)
 			if err != nil {
-				logs.Error(err)
+				logs.Error("decryption failed: ", err)
 				return
 			}
 			err = os.WriteFile(that.decryptedFile, result, os.ModePerm)
 			if err != nil {
-				logs.Error(err)
+				logs.Error("saving decrypted result failed: ", err)
 				return
 			}
 			err = json.Unmarshal(result, that.Result)
 			if err != nil {
-				logs.Error(err)
+				logs.Error("unmarshal decrypted result failed: ", err)
 				return
 			}
 		} else {
-			logs.Error(err.Error())
+			logs.Error("read raw file failed: ", err.Error())
 		}
 	}
 }

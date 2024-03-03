@@ -30,7 +30,7 @@ func NewDBEngine(cnf *conf.NeoConf) (db *gorm.DB, err error) {
 	)
 	if err != nil {
 		gprint.PrintError("Open sqlite.db failed: %s", dbPath)
-		logs.Error(err)
+		logs.Error("open sqlite db failed: ", err)
 		panic(err)
 	}
 	if !existed {

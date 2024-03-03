@@ -12,12 +12,12 @@ import (
 
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/logs"
-	"github.com/gvcgo/vpnparser/pkgs/outbound"
 	"github.com/gvcgo/neobox/pkgs/client"
 	"github.com/gvcgo/neobox/pkgs/conf"
 	"github.com/gvcgo/neobox/pkgs/storage/dao"
 	"github.com/gvcgo/neobox/pkgs/storage/model"
 	"github.com/gvcgo/neobox/pkgs/utils"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
 )
 
 type Verifier struct {
@@ -108,7 +108,7 @@ func (that *Verifier) startClient(inboundPort int, cType outbound.ClientType) {
 	that.wg.Add(1)
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Error(r)
+			logs.Error("verifier start client:", r)
 		}
 		that.wg.Done()
 	}()

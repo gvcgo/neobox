@@ -13,6 +13,5 @@ temp_xxxx
 *.sql
 *.exe~
 test/main.go
-nbox
 nbox.exe
 test/*

@@ -1,6 +1,7 @@
 package run
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
@@ -11,17 +12,16 @@ import (
 	"strings"
 	"time"
 
-	json "github.com/bytedance/sonic"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gvcgo/goutils/pkgs/daemon"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
-	"github.com/gvcgo/vpnparser/pkgs/outbound"
 	"github.com/gvcgo/neobox/pkgs/cflare/wguard"
 	"github.com/gvcgo/neobox/pkgs/client"
 	"github.com/gvcgo/neobox/pkgs/conf"
 	"github.com/gvcgo/neobox/pkgs/proxy"
 	"github.com/gvcgo/neobox/pkgs/storage/dao"
 	"github.com/gvcgo/neobox/pkgs/storage/model"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
 	cron "github.com/robfig/cron/v3"
 )
 

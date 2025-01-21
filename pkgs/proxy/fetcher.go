@@ -1,11 +1,11 @@
 package proxy
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"time"
 
-	json "github.com/bytedance/sonic"
 	"github.com/gvcgo/goutils/pkgs/crypt"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"

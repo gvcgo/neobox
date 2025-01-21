@@ -1,16 +1,16 @@
 package wguard
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 
-	json "github.com/bytedance/sonic"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
-	"github.com/gvcgo/vpnparser/pkgs/outbound"
-	"github.com/gvcgo/vpnparser/pkgs/parser"
 	"github.com/gvcgo/neobox/pkgs/conf"
 	"github.com/gvcgo/neobox/pkgs/storage/dao"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
+	"github.com/gvcgo/vpnparser/pkgs/parser"
 )
 
 // prepare wireguard outbound

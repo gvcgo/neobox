@@ -3,7 +3,6 @@ module github.com/gvcgo/neobox
 go 1.21.5
 
 require (
-	github.com/bytedance/sonic v1.8.8
 	github.com/gin-gonic/gin v1.9.0
 	github.com/glebarez/sqlite v1.9.0
 	github.com/gogf/gf/v2 v2.6.1
@@ -36,6 +35,7 @@ require (
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/sevenzip v1.4.2 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
+	github.com/bytedance/sonic v1.8.8 // indirect
 	github.com/caddyserver/certmagic v0.20.0 // indirect
 	github.com/charmbracelet/bubbles v0.16.1 // indirect
 	github.com/charmbracelet/bubbletea v0.24.2 // indirect

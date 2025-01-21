@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -9,15 +10,14 @@ import (
 	"path/filepath"
 	"sync"
 
-	json "github.com/bytedance/sonic"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gvcgo/goutils/pkgs/gtea/gprint"
 	"github.com/gvcgo/goutils/pkgs/gutils"
 	"github.com/gvcgo/goutils/pkgs/logs"
 	"github.com/gvcgo/goutils/pkgs/request"
-	"github.com/gvcgo/vpnparser/pkgs/outbound"
 	"github.com/gvcgo/neobox/pkgs/conf"
 	"github.com/gvcgo/neobox/pkgs/storage/dao"
+	"github.com/gvcgo/vpnparser/pkgs/outbound"
 )
 
 /*
